@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake Z21Tests",
+      "type": "shell",
+      "isBackground": true,
+      "command": "cmake -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Debug"
+    },
+    {
+      "label": "CMake Z21Tests Clang",
+      "type": "shell",
+      "isBackground": true,
+      "command": "cmake -Bbuild -GNinja -DCMAKE_TOOLCHAIN_FILE=CMakeModules/src/toolchains/clang.cmake -DCMAKE_BUILD_TYPE=Debug"
+    },
+    {
+      "label": "Ninja Z21Tests",
+      "type": "shell",
+      "isBackground": true,
+      "command": "ninja -C build Z21Tests"
+    },
+    {
+      "label": "Run Z21Tests",
+      "type": "shell",
+      "isBackground": true,
+      "command": "./build/tests/Z21Tests"
+    }
+  ]
+}
