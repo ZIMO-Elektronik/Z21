@@ -5,7 +5,6 @@
 - Useful wireshark filter:  
   udp && (ip.dst==192.168.0.111 || ip.src==192.168.0.111)
 - I'm somewhat torn between giving programming mode it's own getter/setter or not. On the one hand it's additional overhead and the Z21 app seems to ignore the LAN_X_BC_PROGRAMMING_MODE broadcast anyhow. On the other hand it would most likely simplify the user implementation because then user's wouldn't need to check if they are in service mode when receiving e.g. LAN_X_CV_READ. Then again... should the system even know about anything else but DCC? Ok, let's try something. Let's go one step further in the other direction. Let's remove the trackPower getter! Why should it fail? Because if it fails in case of a short or so, then there is a broadcast for that... if it fails because some other mode is active, just don't receive and execute that command in the first place.
-- Color palette generator: https://mokole.com/palette.html
 
 ####
 Typical CV process for LAN_X_CV_READ:

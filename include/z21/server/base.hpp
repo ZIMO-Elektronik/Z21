@@ -72,7 +72,7 @@ public:
 
   ///
   void execute() {
-    for (auto& [sock, client] : _clients) execute(sock, client);
+    for (auto it{begin(_clients)}; it != end(_clients);) it = execute(it);
   }
 
   ///
@@ -157,9 +157,10 @@ private:
   ///
   ///
   /// \param  sock  Socket (copy!)
-  void lanLogoff(Socket sock) {
-    _clients.erase(sock);
+  Clients::iterator lanLogoff(Socket sock, Clients::iterator it) {
+    it = _clients.erase(it);
     this->logoff(sock);
+    return it;
   }
 
   ///
@@ -1098,7 +1099,9 @@ private:
 
 private:
   ///
-  void execute(Socket const& sock, Client& client) {
+  Clients::iterator execute(Clients::iterator it) {
+    auto& [sock, client]{*it};
+
     while (!empty(client.datasets)) {
       switch (auto const& [header, chunk]{client.datasets.front()}; header) {
         case Header::LAN_GET_SERIAL_NUMBER:
@@ -1116,10 +1119,10 @@ private:
           lanGetHwInfo(sock);
           break;
 
-        // LAN_LOGOFF erased the client, it is crucial to return here!
+        // LAN_LOGOFF erases the client, it is crucial to return here!
         case Header::LAN_LOGOFF:
           logf('C', sock, "LAN_LOGOFF", chunk);
-          return lanLogoff(sock);
+          return lanLogoff(sock, it);
 
         case Header::LAN_X:
           if (exor(chunk)) {
@@ -1537,6 +1540,8 @@ private:
 
       client.datasets.pop_front();
     }
+
+    return ++it;
   }
 
   ///

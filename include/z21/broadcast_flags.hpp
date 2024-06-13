@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-///
+/// Broadcast flags
 ///
 /// \file   z21/broadcast_flags.hpp
 /// \author Vincent Hamp
