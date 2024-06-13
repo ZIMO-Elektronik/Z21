@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  esp-elf-gcc:
+    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/esp-elf-gcc.yml@v0.0.7
+    with:
+      path: examples/posix
+      target: esp32
+
+  x86_64-linux-gnu-gcc:
+    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/x86_64-linux-gnu-gcc.yml@v0.0.7
+    with:
+      pre-build: |
+        sudo apt update -y
+        sudo apt install -y '^libxcb.*-dev' libglu1-mesa-dev libx11-xcb-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev ninja-build
+      args: -DCMAKE_BUILD_TYPE=Release
+      upload-artifact: true
+
+  x86_64-w64-mingw32-gcc:
+    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/x86_64-linux-gnu-gcc.yml@v0.0.7
+    with:
+      pre-build: |
+        sudo apt update -y
+        sudo apt install -y mingw-w64 ninja-build
+        sudo pip install aqtinstall --break-system-packages
+      args: -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=CMakeModules/cmake/toolchain-x86_64-w64-mingw32-gcc.cmake
+      upload-artifact: true
