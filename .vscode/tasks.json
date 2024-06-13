@@ -2,16 +2,22 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "CMake Z21Tests",
+      "label": "CMake Debug",
       "type": "shell",
       "isBackground": true,
       "command": "cmake -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Debug"
     },
     {
-      "label": "CMake Z21Tests Clang",
+      "label": "Ninja Z21Posix",
       "type": "shell",
       "isBackground": true,
-      "command": "cmake -Bbuild -GNinja -DCMAKE_TOOLCHAIN_FILE=CMakeModules/src/toolchains/clang.cmake -DCMAKE_BUILD_TYPE=Debug"
+      "command": "ninja -C build Z21Posix"
+    },
+    {
+      "label": "Ninja Z21Sim",
+      "type": "shell",
+      "isBackground": true,
+      "command": "ninja -C build Z21Sim"
     },
     {
       "label": "Ninja Z21Tests",
@@ -24,6 +30,30 @@
       "type": "shell",
       "isBackground": true,
       "command": "./build/tests/Z21Tests"
+    },
+    {
+      "label": "act esp-elf-gcc",
+      "type": "shell",
+      "isBackground": true,
+      "command": "act -j esp-elf-gcc --input path=examples/posix --input target=esp32"
+    },
+    {
+      "label": "act x86_64-linux-gnu-gcc",
+      "type": "shell",
+      "isBackground": true,
+      "command": "act --artifact-server-path build -j x86_64-linux-gnu-gcc --input pre-build=\"sudo apt update -y && sudo apt install -y '^libxcb.*-dev' libglu1-mesa-dev libx11-xcb-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev ninja-build\" --input args=-DCMAKE_BUILD_TYPE=Release --input upload-artifact=true"
+    },
+    {
+      "label": "act x86_64-w64-mingw32-gcc",
+      "type": "shell",
+      "isBackground": true,
+      "command": "act --artifact-server-path build -j x86_64-w64-mingw32-gcc --input pre-build=\"sudo apt update -y && sudo apt install -y mingw-w64 ninja-build && sudo pip install aqtinstall --break-system-packages\" --input args=\"-DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=CMakeModules/cmake/toolchain-x86_64-w64-mingw32-gcc.cmake\" --input upload-artifact=true"
+    },
+    {
+      "label": "act tests",
+      "type": "shell",
+      "isBackground": true,
+      "command": "act -j tests --input pre-build=\"sudo apt update -y && sudo apt install -y qt6-base-dev\" --input args=-DCMAKE_BUILD_TYPE=Debug"
     }
   ]
 }

@@ -1,0 +1,18 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/x86_64-linux-gnu-gcc.yml@v0.0.7
+    with:
+      pre-build: |
+        sudo apt update
+        sudo apt install -y qt6-base-dev
+      args: -DCMAKE_BUILD_TYPE=Debug
+      target: Z21Tests
+      post-build: ctest --test-dir build --schedule-random --timeout 86400

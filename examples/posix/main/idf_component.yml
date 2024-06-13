@@ -1,0 +1,4 @@
+dependencies:
+  ZIMO-Elektronik/Z21:
+    version: "*"
+    override_path: '../../../'

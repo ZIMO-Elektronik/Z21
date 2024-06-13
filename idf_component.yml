@@ -1,0 +1,8 @@
+description: Z21 protocol for open LAN interface
+url: https://www.z21.eu
+documentation: https://github.com/ZIMO-Elektronik/Z21/blob/master/README.md
+repository: https://github.com/ZIMO-Elektronik/Z21.git
+issues: https://github.com/ZIMO-Elektronik/Z21/issues
+
+maintainers:
+  - "Vincent Hamp <hamp@zimo.at>"

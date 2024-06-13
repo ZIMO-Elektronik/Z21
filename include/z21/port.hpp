@@ -4,11 +4,16 @@
 
 ///
 ///
-/// \file   z21/z21.hpp
+/// \file   z21/port.hpp
 /// \author Vincent Hamp
 /// \date   04/11/2023
 
 #pragma once
 
-#include "port.hpp"
-#include "server/base.hpp"
+#include <cstdint>
+
+namespace z21 {
+
+inline constexpr uint16_t port{21105u};
+
+}  // namespace z21

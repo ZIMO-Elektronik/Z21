@@ -4,11 +4,18 @@
 
 ///
 ///
-/// \file   z21/z21.hpp
+/// \file   z21/datasets.hpp
 /// \author Vincent Hamp
 /// \date   04/11/2023
 
 #pragma once
 
-#include "port.hpp"
-#include "server/base.hpp"
+#include <ztl/inplace_deque.hpp>
+#include "dataset.hpp"
+
+namespace z21 {
+
+///
+using Datasets = ztl::inplace_deque<Dataset, Z21_SERVER_DEQUE_SIZE>;
+
+}  // namespace z21

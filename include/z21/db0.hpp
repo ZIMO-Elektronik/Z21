@@ -1,0 +1,66 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+///
+///
+/// \file   z21/db0.hpp
+/// \author Vincent Hamp
+/// \date   10/11/2023
+
+#pragma once
+
+#include <cstdint>
+
+namespace z21 {
+
+///
+enum class DB0 : uint8_t {
+  // clang-format off
+  // Client to Z21
+  LAN_X_GET_VERSION = 0x21u,
+  LAN_X_GET_STATUS = 0x24u,
+  LAN_X_SET_TRACK_POWER_OFF = 0x80u,
+  LAN_X_SET_TRACK_POWER_ON = 0x81u,
+  LAN_X_DCC_READ_REGISTER = 0x11u,
+  LAN_X_CV_READ = 0x11u,
+  LAN_X_DCC_WRITE_REGISTER = 0x12u,
+  LAN_X_CV_WRITE = 0x12u,
+  LAN_X_MM_WRITE_BYTE = 0xFFu,
+  LAN_X_PURGE_LOCO = 0x44u,
+  LAN_X_GET_LOCO_INFO = 0xF0u,
+  LAN_X_SET_LOCO_DRIVE_14 = 0x10u,
+  LAN_X_SET_LOCO_DRIVE_28 = 0x12u,
+  LAN_X_SET_LOCO_DRIVE_128 = 0x13u,
+  LAN_X_SET_LOCO_FUNCTION = 0xF8u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_1 = 0x20u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_2 = 0x21u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_3 = 0x22u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_4 = 0x23u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_5 = 0x28u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_6 = 0x29u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_7 = 0x2Au,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_8 = 0x2Bu,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_9 = 0x50u,
+  LAN_X_SET_LOCO_FUNCTION_GROUP_10 = 0x51u,
+  LAN_X_SET_LOCO_BINARY_STATE = 0x5Fu,
+  LAN_X_CV_POM = 0x30u, LAN_X_CV_POM_WRITE_BYTE = 0x30u, LAN_X_CV_POM_WRITE_BIT = 0x30u, LAN_X_CV_POM_READ_BYTE = 0x30u,
+  LAN_X_CV_POM_ACCESSORY = 0x31u, LAN_X_CV_POM_ACCESSORY_WRITE_BYTE = 0x31u, LAN_X_CV_POM_ACCESSORY_WRITE_BIT = 0x31u, LAN_X_CV_POM_ACCESSORY_READ_BYTE = 0x31u,
+  LAN_X_GET_FIRMWARE_VERSION = 0x0Au,
+
+  // Z21 to Client
+  LAN_X_BC_TRACK_POWER_OFF = 0x00u,
+  LAN_X_BC_TRACK_POWER_ON = 0x01u,
+  LAN_X_BC_PROGRAMMING_MODE = 0x02u,
+  LAN_X_BC_TRACK_SHORT_CIRCUIT = 0x08u,
+  LAN_X_CV_NACK_SC = 0x12u,
+  LAN_X_CV_NACK = 0x13u,
+  LAN_X_UNKNOWN_COMMAND = 0x82u,
+  LAN_X_STATUS_CHANGED = 0x22u,
+  Reply_to_LAN_X_GET_VERSION = 0x21u,
+  LAN_X_CV_RESULT = 0x14u,
+  Reply_to_LAN_X_GET_FIRMWARE_VERSION = 0x0Au,
+  // clang-format on
+};
+
+}  // namespace z21
