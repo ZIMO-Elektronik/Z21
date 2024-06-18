@@ -63,8 +63,11 @@ public:
 
       auto& [header, chunk]{*end(datasets)};
       header = static_cast<Header>(first[2uz]);
-      std::ranges::copy_n(first + 4, len - 4uz, begin(chunk));
-      chunk.resize(len - 4uz);
+      std::ranges::copy_n(
+        first + 4,
+        static_cast<std::iter_difference_t<decltype(chunk)>>(len - 4uz),
+        begin(chunk));
+      chunk.resize(static_cast<decltype(chunk)::size_type>(len - 4uz));
       datasets.push_back();
       first += len;
     }
@@ -287,7 +290,7 @@ private:
   }
 
   ///
-  void lanXSetLocoDrive(Socket const& sock,
+  void lanXSetLocoDrive(Socket const&,
                         uint16_t addr,
                         LocoInfo::SpeedSteps speed_steps,
                         uint8_t rvvvvvvv)
@@ -297,18 +300,18 @@ private:
   }
 
   ///
-  void lanXSetLocoFunction(Socket const& sock,
+  void lanXSetLocoFunction(Socket const&,
                            uint16_t addr,
                            uint8_t state,
                            uint8_t index)
     requires(std::derived_from<Base, intf::Driving>)
   {
     assert(state < 0b10u);
-    this->function(addr, 1u << index, state << index);
+    this->function(addr, 1u << index, static_cast<uint32_t>(state << index));
   }
 
   ///
-  void lanXSetLocoFunctionGroup(Socket const& sock,
+  void lanXSetLocoFunctionGroup(Socket const&,
                                 uint16_t addr,
                                 uint8_t group,
                                 uint8_t state)
@@ -325,7 +328,7 @@ private:
   }
 
   ///
-  void lanXCvPomWriteByte(Socket const& sock,
+  void lanXCvPomWriteByte(Socket const&,
                           uint16_t addr,
                           uint16_t cv_addr,
                           uint8_t byte)
@@ -1556,7 +1559,7 @@ private:
             auto&&... ts) requires(std::derived_from<Base, intf::Logging>)
   {
     static constexpr auto max_ip4_strlen{16uz};
-    static constexpr auto max_ip6_strlen{46uz};
+    // static constexpr auto max_ip6_strlen{46uz};
     static constexpr auto len_post_prefix{sizeof(c) + sizeof(' ')};
     static constexpr auto len_post_ip{len_post_prefix + max_ip4_strlen +
                                       sizeof(' ')};
@@ -1575,12 +1578,14 @@ private:
     while (len < len_post_ip) buffer[len++] = ' ';
 
     // Command
-    len += snprintf(data(buffer) + len, size(buffer) - len, "%s ", str);
+    len += static_cast<size_t>(
+      snprintf(data(buffer) + len, size(buffer) - len, "%s ", str));
     while (len < len_post_cmd) buffer[len++] = ' ';
 
     // Data
     for (auto const byte : chunk)
-      len += snprintf(data(buffer) + len, size(buffer) - len, "%02X ", byte);
+      len += static_cast<size_t>(
+        snprintf(data(buffer) + len, size(buffer) - len, "%02X ", byte));
 
     // Additional arguments
     if constexpr (sizeof...(ts) > 0uz)

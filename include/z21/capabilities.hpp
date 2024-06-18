@@ -15,6 +15,8 @@
 
 namespace z21 {
 
+/// Capabilities supported by the server
+///
 ///
 enum class Capabilities : uint8_t {
   DCC = 0x01u,              ///< Capable of DCC
