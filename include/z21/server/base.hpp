@@ -195,6 +195,7 @@ private:
   void lanXCvRead(Socket const& sock, uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
+    if (full(_cv_request_deque)) return;
     lanXBcProgrammingMode();
     _cv_request_deque.push_back(&sock);
     this->cvRead(cv_addr);
@@ -211,6 +212,7 @@ private:
   void lanXCvWrite(Socket const& sock, uint16_t cv_addr, uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
+    if (full(_cv_request_deque)) return;
     lanXBcProgrammingMode();
     _cv_request_deque.push_back(&sock);
     this->cvWrite(cv_addr, byte);
@@ -348,6 +350,7 @@ private:
   void lanXCvPomReadByte(Socket const& sock, uint16_t addr, uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
+    if (full(_cv_request_deque)) return;
     _cv_request_deque.push_back(&sock);
     this->cvPomRead(addr, cv_addr);
   }
