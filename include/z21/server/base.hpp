@@ -879,11 +879,8 @@ private:
     auto const db4{
       static_cast<uint8_t>(loco_info.double_traction << 6u |       //
                            loco_info.smart_search << 5u |          //
-                           (loco_info.f31_0 & 0b1'0000u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'1000u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'0100u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'0010u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'0001u) << 4u)};  //
+                           (loco_info.f31_0 & 0b1'1110u) >> 1u |   // F4-F1
+                           (loco_info.f31_0 & 0b0'0001u) << 4u)};  // F0
 
     std::array<uint8_t, 0x0Fuz> reply{
       0x0Fu,                                         // Length
