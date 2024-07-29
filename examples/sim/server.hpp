@@ -37,7 +37,7 @@ private:
   // System interface
   void trackPower(bool on) final;
   void stop() final;
-  z21::SystemState systemState() final;
+  z21::SystemState& systemState() final;
 
   // Driving interface
   z21::LocoInfo::Mode locoMode(uint16_t addr) final;

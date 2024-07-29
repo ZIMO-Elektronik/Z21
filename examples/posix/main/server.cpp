@@ -22,8 +22,5 @@ void Server::trackPower(bool on) { _track_power = on; }
 // Send emergency stop
 void Server::stop() {}
 
-// System state
-z21::SystemState Server::systemState() { return {}; }
-
 // printf is sufficient
 void Server::log(char const* str) { printf("%s\n", str); }

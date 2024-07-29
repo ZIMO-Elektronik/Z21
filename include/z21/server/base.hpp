@@ -41,8 +41,9 @@ class Base : public Ts... {
 
 public:
   /// Ctor
-  explicit constexpr Base(HwType hw_type = HwType::Z21_NEW)
-    : _hw_type{hw_type} {}
+  explicit constexpr Base(SystemState initial_sys_state = {},
+                          HwType hw_type = HwType::Z21_NEW)
+    : intf::System{initial_sys_state}, _hw_type{hw_type} {}
 
   /// Dtor
   virtual constexpr ~Base() = default;
@@ -80,19 +81,27 @@ public:
   ///
   Clients const& clients() { return _clients; }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - TrackVoltageOff
   void broadcastTrackPowerOff() final { lanXBcTrackPowerOff(); }
 
-  ///
+  /// Implicitly clears the following CentralState flags
+  /// - EmergencyStop
+  /// - TrackVoltageOff
+  /// - ShortCircuit
+  /// - ProgrammingModeActive
   void broadcastTrackPowerOn() final { lanXBcTrackPowerOn(); }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - ProgrammingModeActive
   void broadcastProgrammingMode() final { lanXBcProgrammingMode(); }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - ShortCircuit
   void broadcastTrackShortCircuit() final { lanXBcTrackShortCircuit(); }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - EmergencyStop
   void broadcastStopped() final { lanXBcStopped(); }
 
   ///
@@ -616,6 +625,9 @@ private:
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcTrackPowerOff(Socket const& sock = {}) {
     //
+    intf::System::systemState().central_state |= CentralState::TrackVoltageOff;
+
+    //
     _cv_request_deque.clear();
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
@@ -643,6 +655,13 @@ private:
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcTrackPowerOn(Socket const& sock = {}) {
     //
+    intf::System::systemState().central_state &=
+      ~(CentralState::EmergencyStop |          //
+        CentralState::TrackVoltageOff |        //
+        CentralState::ShortCircuit |           //
+        CentralState::ProgrammingModeActive);  //
+
+    //
     _cv_request_deque.clear();
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
@@ -669,6 +688,9 @@ private:
   /// LAN_X_CV_WRITE and the respective client has activated the corresponding
   /// broadcast.
   void lanXBcProgrammingMode(Socket const& sock = {}) {
+    intf::System::systemState().central_state |=
+      CentralState::ProgrammingModeActive;
+
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                                   // Length
       0x00u,                                                   //
@@ -692,6 +714,8 @@ private:
   /// short circuit has occurred and the relevant client has activated the
   /// corresponding broadcast.
   void lanXBcTrackShortCircuit() {
+    intf::System::systemState().central_state |= CentralState::ShortCircuit;
+
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                                      // Length
       0x00u,                                                      //
@@ -759,17 +783,15 @@ private:
 
   ///
   void lanXStatusChanged(Socket const& sock) {
-    auto const sys_state{this->systemState()};
-
     std::array<uint8_t, 0x08uz> reply{
-      0x08u,                                              // Length
-      0x00u,                                              //
-      std::to_underlying(Header::LAN_X_STATUS_CHANGED),   // Header
-      0x00u,                                              //
-      std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),  // X-Header
-      std::to_underlying(DB0::LAN_X_STATUS_CHANGED),      // DB0
-      std::to_underlying(sys_state.central_state),        // DB1
-      0x00u};                                             // XOR
+      0x08u,                                                  // Length
+      0x00u,                                                  //
+      std::to_underlying(Header::LAN_X_STATUS_CHANGED),       // Header
+      0x00u,                                                  //
+      std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),      // X-Header
+      std::to_underlying(DB0::LAN_X_STATUS_CHANGED),          // DB0
+      std::to_underlying(this->systemState().central_state),  // DB1
+      0x00u};                                                 // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_STATUS_CHANGED", reply);
@@ -819,6 +841,8 @@ private:
   /// - or the emergency stop was triggered by some input device
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcStopped(Socket const& sock = {}) {
+    intf::System::systemState().central_state |= CentralState::EmergencyStop;
+
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                          // Length
       0x00u,                                          //

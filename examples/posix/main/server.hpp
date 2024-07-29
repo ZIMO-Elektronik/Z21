@@ -18,9 +18,6 @@ private:
   // Emergency stop
   void stop() final;
 
-  // System state
-  z21::SystemState systemState() final;
-
   // Log received and transmitted data
   void log(char const* str) final;
 

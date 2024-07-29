@@ -50,13 +50,16 @@ namespace z21::server::intf {
 /// - Reply_to_LAN_GET_BROADCASTFLAGS
 /// - LAN_SYSTEMSTATE_DATACHANGED
 struct System {
+  /// Ctor
+  explicit constexpr System(SystemState initial_sys_state)
+    : _sys_state{initial_sys_state} {}
+
   /// Dtor
   virtual ~System() = default;
 
   //
   virtual void trackPower(bool on) = 0;
   virtual void stop() = 0;
-  virtual SystemState systemState() = 0;
 
   //
   virtual void broadcastTrackPowerOff() = 0;
@@ -69,6 +72,10 @@ struct System {
   //
   virtual int32_t serialNumber() const { return 0; }
   virtual void logoff(Socket const&) {}
+  virtual SystemState& systemState() { return _sys_state; }
+
+private:
+  SystemState _sys_state{};
 };
 
 }  // namespace z21::server::intf
