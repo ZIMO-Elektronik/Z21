@@ -41,9 +41,8 @@ class Base : public Ts... {
 
 public:
   /// Ctor
-  explicit constexpr Base(SystemState initial_sys_state = {},
-                          HwType hw_type = HwType::Z21_NEW)
-    : _sys_state{initial_sys_state}, _hw_type{hw_type} {}
+  explicit constexpr Base(HwType hw_type = HwType::Z21_NEW)
+    : _hw_type{hw_type} {}
 
   /// Dtor
   virtual constexpr ~Base() = default;
@@ -76,14 +75,6 @@ public:
   ///
   void execute() {
     for (auto it{begin(_clients)}; it != end(_clients);) it = execute(it);
-  }
-
-  ///
-  Capabilities capabilities() const { return _sys_state.capabilities; }
-
-  ///
-  void capabilities(Capabilities capabilities) {
-    _sys_state.capabilities = capabilities;
   }
 
   ///
@@ -625,9 +616,6 @@ private:
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcTrackPowerOff(Socket const& sock = {}) {
     //
-    _sys_state.central_state |= CentralState::TrackVoltageOff;
-
-    //
     _cv_request_deque.clear();
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
@@ -655,12 +643,6 @@ private:
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcTrackPowerOn(Socket const& sock = {}) {
     //
-    _sys_state.central_state &= ~(CentralState::EmergencyStop |          //
-                                  CentralState::TrackVoltageOff |        //
-                                  CentralState::ShortCircuit |           //
-                                  CentralState::ProgrammingModeActive);  //
-
-    //
     _cv_request_deque.clear();
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
@@ -687,8 +669,6 @@ private:
   /// LAN_X_CV_WRITE and the respective client has activated the corresponding
   /// broadcast.
   void lanXBcProgrammingMode(Socket const& sock = {}) {
-    _sys_state.central_state |= CentralState::ProgrammingModeActive;
-
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                                   // Length
       0x00u,                                                   //
@@ -712,8 +692,6 @@ private:
   /// short circuit has occurred and the relevant client has activated the
   /// corresponding broadcast.
   void lanXBcTrackShortCircuit() {
-    _sys_state.central_state |= CentralState::ShortCircuit;
-
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                                      // Length
       0x00u,                                                      //
@@ -781,6 +759,8 @@ private:
 
   ///
   void lanXStatusChanged(Socket const& sock) {
+    auto const sys_state{this->systemState()};
+
     std::array<uint8_t, 0x08uz> reply{
       0x08u,                                              // Length
       0x00u,                                              //
@@ -788,7 +768,7 @@ private:
       0x00u,                                              //
       std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),  // X-Header
       std::to_underlying(DB0::LAN_X_STATUS_CHANGED),      // DB0
-      std::to_underlying(_sys_state.central_state),       // DB1
+      std::to_underlying(sys_state.central_state),        // DB1
       0x00u};                                             // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
@@ -839,8 +819,6 @@ private:
   /// - or the emergency stop was triggered by some input device
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcStopped(Socket const& sock = {}) {
-    _sys_state.central_state |= CentralState::EmergencyStop;
-
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                          // Length
       0x00u,                                          //
@@ -982,34 +960,29 @@ private:
   /// - activated the corresponding broadcast
   /// - explicitly requested the system status
   void lanSystemStateDataChanged(Socket const& sock = {}) {
-    auto const main_cur{this->mainCurrent()};
-    auto const prog_cur{this->progCurrent()};
-    auto const filt_main_cur{this->filteredMainCurrent()};
-    auto const temp{this->temperature()};
-    auto const supply{this->supplyVoltage()};
-    auto const vcc{this->vccVoltage()};
+    auto const sys_state{this->systemState()};
 
     std::array<uint8_t, 0x14uz> reply{
       0x14u,                                                    // Length
       0x00u,                                                    //
       std::to_underlying(Header::LAN_SYSTEMSTATE_DATACHANGED),  // Header
       0x00u,                                                    //
-      static_cast<uint8_t>(main_cur >> 0u),          // MainCurrent [mA]
-      static_cast<uint8_t>(main_cur >> 8u),          //
-      static_cast<uint8_t>(prog_cur >> 0u),          // ProgCurrent [mA]
-      static_cast<uint8_t>(prog_cur >> 8u),          //
-      static_cast<uint8_t>(filt_main_cur >> 0u),     // FilteredMainCurrent [mA]
-      static_cast<uint8_t>(filt_main_cur >> 8u),     //
-      static_cast<uint8_t>(temp >> 0u),              // Temperature [°C]
-      static_cast<uint8_t>(temp >> 8u),              //
-      static_cast<uint8_t>(supply >> 0u),            // SupplyVoltage [mV]
-      static_cast<uint8_t>(supply >> 8u),            //
-      static_cast<uint8_t>(vcc >> 0u),               // VCCVoltage [mV]
-      static_cast<uint8_t>(vcc >> 8u),               //
-      std::to_underlying(_sys_state.central_state),  // CentralState
-      std::to_underlying(_sys_state.central_state_ex),  // CentralStateEx
-      0x00u,                                            // reserved
-      std::to_underlying(_sys_state.capabilities)};     // Capabilities
+      static_cast<uint8_t>(sys_state.main_current >> 0u),
+      static_cast<uint8_t>(sys_state.main_current >> 8u),
+      static_cast<uint8_t>(sys_state.prog_current >> 0u),
+      static_cast<uint8_t>(sys_state.prog_current >> 8u),
+      static_cast<uint8_t>(sys_state.filtered_main_current >> 0u),
+      static_cast<uint8_t>(sys_state.filtered_main_current >> 8u),
+      static_cast<uint8_t>(sys_state.temperature >> 0u),
+      static_cast<uint8_t>(sys_state.temperature >> 8u),
+      static_cast<uint8_t>(sys_state.supply_voltage >> 0u),
+      static_cast<uint8_t>(sys_state.supply_voltage >> 8u),
+      static_cast<uint8_t>(sys_state.vcc_voltage >> 0u),
+      static_cast<uint8_t>(sys_state.vcc_voltage >> 8u),
+      std::to_underlying(sys_state.central_state),     // CentralState
+      std::to_underlying(sys_state.central_state_ex),  // CentralStateEx
+      0x00u,                                           // reserved
+      std::to_underlying(sys_state.capabilities)};     // Capabilities
 
     // Transmit to every client with broadcast flag
     for (auto const& [s, c] : _clients)
@@ -1599,7 +1572,6 @@ private:
   Clients _clients;
   ztl::inplace_deque<Socket const*, Z21_SERVER_MAX_LOCO_ADDRESSES_PER_CLIENT>
     _cv_request_deque{};
-  SystemState _sys_state;
   HwType _hw_type;
 };
 

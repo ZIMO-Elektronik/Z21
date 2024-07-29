@@ -37,12 +37,7 @@ private:
   // System interface
   void trackPower(bool on) final;
   void stop() final;
-  virtual int16_t mainCurrent() const final;
-  virtual int16_t progCurrent() const final;
-  virtual int16_t filteredMainCurrent() const final;
-  virtual int16_t temperature() const final;
-  virtual uint16_t supplyVoltage() const final;
-  virtual uint16_t vccVoltage() const final;
+  z21::SystemState systemState() final;
 
   // Driving interface
   z21::LocoInfo::Mode locoMode(uint16_t addr) final;

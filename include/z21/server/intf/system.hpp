@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <span>
 #include "../../socket.hpp"
+#include "../../system_state.hpp"
 
 namespace z21::server::intf {
 
@@ -55,6 +56,7 @@ struct System {
   //
   virtual void trackPower(bool on) = 0;
   virtual void stop() = 0;
+  virtual SystemState systemState() = 0;
 
   //
   virtual void broadcastTrackPowerOff() = 0;
@@ -67,14 +69,6 @@ struct System {
   //
   virtual int32_t serialNumber() const { return 0; }
   virtual void logoff(Socket const&) {}
-
-  //
-  virtual int16_t mainCurrent() const { return 0; }
-  virtual int16_t progCurrent() const { return 0; }
-  virtual int16_t filteredMainCurrent() const { return 0; }
-  virtual int16_t temperature() const { return 0; }
-  virtual uint16_t supplyVoltage() const { return 0u; }
-  virtual uint16_t vccVoltage() const { return 0u; }
 };
 
 }  // namespace z21::server::intf

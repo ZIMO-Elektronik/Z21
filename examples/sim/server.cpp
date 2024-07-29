@@ -122,24 +122,9 @@ void Server::trackPower(bool on) {
 void Server::stop() { emit ledStatus(Led::Stop); }
 
 //
-int16_t Server::mainCurrent() const { return _system->mainCurrent(); }
-
-//
-int16_t Server::progCurrent() const { return _system->progCurrent(); }
-
-//
-int16_t Server::filteredMainCurrent() const {
-  return _system->filteredMainCurrent();
+z21::SystemState Server::systemState() {
+  return {.main_current = _system->mainCurrent()};
 }
-
-//
-int16_t Server::temperature() const { return _system->temperature(); }
-
-//
-uint16_t Server::supplyVoltage() const { return _system->supplyVoltage(); }
-
-//
-uint16_t Server::vccVoltage() const { return _system->vccVoltage(); }
 
 //
 void Server::drive(uint16_t addr,
