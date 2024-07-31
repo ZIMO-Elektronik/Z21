@@ -58,6 +58,7 @@ public:
       auto const len{first[0uz]};
 
       // Payload might be zero padded
+      // (e.g. entering the "steering" mode of the app does trigger padding)
       if (!len || len > Z21_MAX_DATASET_SIZE)
         return logf('C', sock, "Length out of range");
 
@@ -260,7 +261,7 @@ private:
   }
 
   ///
-  void lanXSetLocoEStop(Socket const& sock, uint16_t addr)
+  void lanXSetLocoEStop(Socket const&, uint16_t addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
     auto const loco_info{this->locoInfo(addr)};
@@ -314,9 +315,9 @@ private:
 
   ///
   void lanXSetLocoFunctionGroup(Socket const&,
-                                uint16_t addr,
-                                uint8_t group,
-                                uint8_t state)
+                                [[maybe_unused]] uint16_t addr,
+                                [[maybe_unused]] uint8_t group,
+                                [[maybe_unused]] uint8_t state)
     requires(std::derived_from<Base, intf::Driving>)
   {
     // TODO
@@ -356,10 +357,10 @@ private:
   }
 
   ///
-  void lanXCvPomAccessoryWriteByte(Socket const& sock,
-                                   uint16_t addr,
-                                   uint16_t cv_addr,
-                                   uint8_t byte)
+  void lanXCvPomAccessoryWriteByte([[maybe_unused]] Socket const& sock,
+                                   [[maybe_unused]] uint16_t addr,
+                                   [[maybe_unused]] uint16_t cv_addr,
+                                   [[maybe_unused]] uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
     // TODO
@@ -373,9 +374,9 @@ private:
   }
 
   ///
-  void lanXCvPomAccessoryReadByte(Socket const& sock,
-                                  uint16_t addr,
-                                  uint16_t cv_addr)
+  void lanXCvPomAccessoryReadByte([[maybe_unused]] Socket const& sock,
+                                  [[maybe_unused]] uint16_t addr,
+                                  [[maybe_unused]] uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
     // TODO

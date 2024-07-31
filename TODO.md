@@ -1,5 +1,5 @@
 - When entering the "steering" mode the app seems to flush the UDP buffer by sending 1000 zeros...?
-- Currently all examples are IPv4 only
+- IPv6 support, currently all examples are IPv4 only
 - On Linux system, use socat to listen to UDP stuff:  
   sudo socat UDP4-LISTEN:21105,fork,reuseaddr UDP4:192.168.0.111:21105
 - Useful wireshark filter:  

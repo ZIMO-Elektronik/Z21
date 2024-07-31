@@ -57,22 +57,22 @@ struct System {
   /// Dtor
   virtual ~System() = default;
 
-  //
-  virtual void trackPower(bool on) = 0;
-  virtual void stop() = 0;
+  // Required
+  [[nodiscard]] virtual bool trackPower(bool on) = 0;
+  [[nodiscard]] virtual bool stop() = 0;
 
-  //
+  // Optional
+  [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
+  virtual void logoff(Socket const&) {}
+  [[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
+
+  // Implemented by Base
   virtual void broadcastTrackPowerOff() = 0;
   virtual void broadcastTrackPowerOn() = 0;
   virtual void broadcastProgrammingMode() = 0;
   virtual void broadcastTrackShortCircuit() = 0;
   virtual void broadcastStopped() = 0;
   virtual void broadcastSystemStateData() = 0;
-
-  //
-  virtual int32_t serialNumber() const { return 0; }
-  virtual void logoff(Socket const&) {}
-  virtual SystemState& systemState() { return _sys_state; }
 
 private:
   SystemState _sys_state{};

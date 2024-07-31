@@ -35,9 +35,10 @@ private:
                 std::span<uint8_t const> datasets) final;
 
   // System interface
-  void trackPower(bool on) final;
-  void stop() final;
-  z21::SystemState& systemState() final;
+  [[nodiscard]] bool trackPower(bool on) final;
+  [[nodiscard]] bool stop() final;
+
+  [[nodiscard]] z21::SystemState& systemState() final;
 
   // Driving interface
   z21::LocoInfo::Mode locoMode(uint16_t addr) final;

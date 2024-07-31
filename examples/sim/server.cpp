@@ -39,20 +39,17 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
   //
   connect(_system, &::System::broadcastTrackPowerOff, [this] {
-    trackPower(false);
-    broadcastTrackPowerOff();
+    if (trackPower(false)) broadcastTrackPowerOff();
   });
   connect(_system, &::System::broadcastTrackPowerOn, [this] {
-    trackPower(true);
-    broadcastTrackPowerOn();
+    if (trackPower(true)) broadcastTrackPowerOn();
   });
   connect(_system, &::System::broadcastTrackShortCircuit, [this] {
     broadcastTrackShortCircuit();
     emit ledStatus(Led::ShortCircuit);
   });
   connect(_system, &::System::broadcastStopped, [this] {
-    broadcastStopped();
-    emit ledStatus(Led::Stop);
+    if (stop()) broadcastStopped();
   });
   connect(_loco_list, &::LocoList::broadcastLocoInfo, [this](uint16_t addr) {
     broadcastLocoInfo(addr);
@@ -114,12 +111,16 @@ void Server::transmit(z21::Socket const& sock,
 }
 
 //
-void Server::trackPower(bool on) {
+bool Server::trackPower(bool on) {
   emit ledStatus(on ? Led::NormalOperation : Led::Stop);
+  return true;
 }
 
 //
-void Server::stop() { emit ledStatus(Led::Stop); }
+bool Server::stop() {
+  emit ledStatus(Led::Stop);
+  return true;
+}
 
 //
 z21::SystemState& Server::systemState() {

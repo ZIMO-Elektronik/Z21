@@ -33,15 +33,15 @@ struct Driving {
   /// Dtor
   virtual ~Driving() = default;
 
-  //
+  // Required
   virtual LocoInfo::Mode locoMode(uint16_t addr) = 0;
   virtual void locoMode(uint16_t addr, LocoInfo::Mode mode) = 0;
   virtual void
   drive(uint16_t addr, LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv) = 0;
   virtual void function(uint16_t addr, uint32_t mask, uint32_t state) = 0;
-  virtual LocoInfo locoInfo(uint16_t addr) = 0;
+  [[nodiscard]] virtual LocoInfo locoInfo(uint16_t addr) = 0;
 
-  //
+  // Implemented by Base
   virtual void broadcastLocoInfo(uint16_t addr) = 0;
 };
 

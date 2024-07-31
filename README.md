@@ -92,21 +92,21 @@ idf.py create-project-from-example "zimo-elektronik/z21^0.0.0:esp32"
 
 ### Server
 
-| Interface   | Responsibility                                                              |
-| ----------- | --------------------------------------------------------------------------- |
-| Can         | Send and receive messages from CAN occupancy detectors                      |
-| Driving     | Control mobile decoders                                                     |
-| FastClock   | Control fast clock                                                          |
-| LocoNet     | Send and receive messages from LocoNet gateway                              |
-| Programming | Reading and writing decoder CVs in service or POM mode                      |
-| RailCom     | Reading RailCom data of mobile decoders                                     |
-| RBus        | Send and receive messages from R-Bus feedback modules                       |
-| Settings    | Change persistently stored settings                                         |
-| Switching   | Control accessory decoders                                                  |
-| System      | Mandatory system features (e.g. track power, get hardware information, ...) |
-| ZLink       | Send and receive messages from zLink devices                                |
-|             |                                                                             |
-| Logging     | Print received and transmitted UDP datasets (not part of Z21 protocol)      |
+| Interface             | Responsibility                                                         |
+| --------------------- | ---------------------------------------------------------------------- |
+| Can                   | Send and receive messages from CAN occupancy detectors                 |
+| Driving               | Control mobile decoders                                                |
+| FastClock             | Control fast clock                                                     |
+| LocoNet               | Send and receive messages from LocoNet gateway                         |
+| Programming           | Reading and writing decoder CVs in service or POM mode                 |
+| RailCom               | Reading RailCom data of mobile decoders                                |
+| RBus                  | Send and receive messages from R-Bus feedback modules                  |
+| Settings              | Change persistently stored settings                                    |
+| Switching             | Control accessory decoders                                             |
+| System (**required**) | System features (e.g. track power, get hardware information, ...)      |
+| ZLink                 | Send and receive messages from zLink devices                           |
+|                       |                                                                        |
+| Logging               | Print received and transmitted UDP datasets (not part of Z21 protocol) |
 
 ## All commands
 | Command                      | Reply                               | Broadcast                    |
