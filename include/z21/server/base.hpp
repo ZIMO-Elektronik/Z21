@@ -197,9 +197,9 @@ private:
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (full(_cv_request_deque)) return;
-    lanXBcProgrammingMode();
-    _cv_request_deque.push_back(&sock);
-    this->cvRead(cv_addr);
+    else if (_cv_request_deque.push_back(&sock); this->cvRead(cv_addr))
+      lanXBcProgrammingMode();
+    else _cv_request_deque.pop_back();
   }
 
   ///
@@ -214,9 +214,9 @@ private:
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (full(_cv_request_deque)) return;
-    lanXBcProgrammingMode();
-    _cv_request_deque.push_back(&sock);
-    this->cvWrite(cv_addr, byte);
+    else if (_cv_request_deque.push_back(&sock); this->cvWrite(cv_addr, byte))
+      lanXBcProgrammingMode();
+    else _cv_request_deque.pop_back();
   }
 
   ///

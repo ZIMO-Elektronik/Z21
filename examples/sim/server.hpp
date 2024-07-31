@@ -50,8 +50,8 @@ private:
   z21::LocoInfo locoInfo(uint16_t addr) final;
 
   // Programming interface
-  void cvRead(uint16_t cv_addr) final;
-  void cvWrite(uint16_t cv_addr, uint8_t byte) final;
+  [[nodiscard]] bool cvRead(uint16_t cv_addr) final;
+  [[nodiscard]] bool cvWrite(uint16_t cv_addr, uint8_t byte) final;
   void cvPomRead(uint16_t addr, uint16_t cv_addr) final;
   void cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) final;
 

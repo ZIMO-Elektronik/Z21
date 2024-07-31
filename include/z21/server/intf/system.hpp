@@ -58,20 +58,42 @@ struct System {
   virtual ~System() = default;
 
   // Required
+
+  /// TODO
   [[nodiscard]] virtual bool trackPower(bool on) = 0;
+
+  /// TODO
   [[nodiscard]] virtual bool stop() = 0;
 
   // Optional
+
+  /// TODO
   [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
+
+  /// TODO
   virtual void logoff(Socket const&) {}
+
+  /// TODO
   [[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
 
   // Implemented by Base
+
+  /// TODO
   virtual void broadcastTrackPowerOff() = 0;
+
+  /// TODO
   virtual void broadcastTrackPowerOn() = 0;
+
+  /// TODO
   virtual void broadcastProgrammingMode() = 0;
+
+  /// TODO
   virtual void broadcastTrackShortCircuit() = 0;
+
+  /// TODO
   virtual void broadcastStopped() = 0;
+
+  /// TODO
   virtual void broadcastSystemStateData() = 0;
 
 private:

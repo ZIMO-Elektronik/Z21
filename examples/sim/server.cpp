@@ -162,15 +162,17 @@ z21::LocoInfo Server::locoInfo(uint16_t addr) {
 }
 
 //
-void Server::cvRead(uint16_t cv_addr) {
+bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
   if (!programmingFailure()) _loco_list->cvRead(cv_addr);
+  return true;
 }
 
 //
-void Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
+bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit ledStatus(Led::ProgrammingMode);
   if (!programmingFailure()) _loco_list->cvWrite(cv_addr, byte);
+  return true;
 }
 
 //
