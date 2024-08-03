@@ -37,7 +37,7 @@ private:
   // System interface
   [[nodiscard]] bool trackPower(bool on) final;
   [[nodiscard]] bool stop() final;
-
+  void logoff(z21::Socket const&) final;
   [[nodiscard]] z21::SystemState& systemState() final;
 
   // Driving interface

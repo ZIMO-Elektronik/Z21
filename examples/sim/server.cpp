@@ -46,11 +46,9 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   });
   connect(_system, &::System::broadcastProgrammingMode, [this] {
     broadcastProgrammingMode();
-    emit ledStatus(Led::ProgrammingMode);
   });
   connect(_system, &::System::broadcastTrackShortCircuit, [this] {
     broadcastTrackShortCircuit();
-    emit ledStatus(Led::ShortCircuit);
   });
   connect(_system, &::System::broadcastStopped, [this] {
     if (stop()) broadcastStopped();
@@ -92,6 +90,20 @@ void Server::receive() {
       {std::data(rx), static_cast<size_t>(len)});
     execute();
   }
+
+  // Priorities are copied from the app
+  if (!_connected) emit ledStatus(Led::Disconnected);
+  else if (auto const central_state{systemState().central_state};
+           std::to_underlying(central_state &
+                              z21::CentralState::ProgrammingModeActive))
+    emit ledStatus(Led::ProgrammingMode);
+  else if (std::to_underlying(central_state & z21::CentralState::ShortCircuit))
+    emit ledStatus(Led::ShortCircuit);
+  else if (std::to_underlying(
+             (central_state & z21::CentralState::TrackVoltageOff) |
+             (central_state & z21::CentralState::EmergencyStop)))
+    emit ledStatus(Led::Stop);
+  else emit ledStatus(Led::NormalOperation);
 }
 
 //
@@ -115,15 +127,14 @@ void Server::transmit(z21::Socket const& sock,
 }
 
 //
-bool Server::trackPower(bool on) {
-  emit ledStatus(on ? Led::NormalOperation : Led::Stop);
-  return true;
-}
+bool Server::trackPower(bool on) { return true; }
 
 //
-bool Server::stop() {
-  emit ledStatus(Led::Stop);
-  return true;
+bool Server::stop() { return true; }
+
+//
+void Server::logoff(z21::Socket const&) {
+  if (empty(this->clients())) disconnected();
 }
 
 //

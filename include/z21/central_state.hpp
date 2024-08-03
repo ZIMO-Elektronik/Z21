@@ -20,10 +20,8 @@ enum class CentralState : uint8_t {
   EmergencyStop = 0x01u,          ///< The emergency stop for decoder
   TrackVoltageOff = 0x02u,        ///< The track voltage is switched off
   ShortCircuit = 0x04u,           ///< Short-circuit
-  ConfigMode = 0x10u,             ///< Configuration mode is active
   ProgrammingModeActive = 0x20u,  ///< The programming mode is active
-  All = EmergencyStop | TrackVoltageOff | ShortCircuit | ConfigMode |
-        ProgrammingModeActive,
+  All = EmergencyStop | TrackVoltageOff | ShortCircuit | ProgrammingModeActive,
 };
 
 ZTL_MAKE_ENUM_CLASS_FLAGS(CentralState)
