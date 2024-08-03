@@ -28,6 +28,7 @@ System::System(QWidget* parent) : QWidget{parent} {
     auto grid{new QGridLayout};
     auto track_power_off_button{new QPushButton{"Track power off"}};
     auto track_power_on_button{new QPushButton{"Track power on"}};
+    auto programming_mode_button{new QPushButton{"Programming mode"}};
     auto short_circuit_button{new QPushButton{"Short circuit"}};
     auto estop_button{new QPushButton{"E-Stop"}};
     int row{};
@@ -35,6 +36,8 @@ System::System(QWidget* parent) : QWidget{parent} {
     grid->addWidget(track_power_off_button, row++, 1);
     grid->addWidget(new QLabel{"Broadcast track power on"}, row, 0);
     grid->addWidget(track_power_on_button, row++, 1);
+    grid->addWidget(new QLabel{"Broadcast programming mode"}, row, 0);
+    grid->addWidget(programming_mode_button, row++, 1);
     grid->addWidget(new QLabel{"Broadcast short circuit"}, row, 0);
     grid->addWidget(short_circuit_button, row++, 1);
     grid->addWidget(new QLabel{"Broadcast E-Stop"}, row, 0);
@@ -47,6 +50,10 @@ System::System(QWidget* parent) : QWidget{parent} {
             &QPushButton::clicked,
             this,
             &System::broadcastTrackPowerOn);
+    connect(programming_mode_button,
+            &QPushButton::clicked,
+            this,
+            &System::broadcastProgrammingMode);
     connect(short_circuit_button,
             &QPushButton::clicked,
             this,

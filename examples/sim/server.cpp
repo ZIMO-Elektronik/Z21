@@ -44,6 +44,10 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   connect(_system, &::System::broadcastTrackPowerOn, [this] {
     if (trackPower(true)) broadcastTrackPowerOn();
   });
+  connect(_system, &::System::broadcastProgrammingMode, [this] {
+    broadcastProgrammingMode();
+    emit ledStatus(Led::ProgrammingMode);
+  });
   connect(_system, &::System::broadcastTrackShortCircuit, [this] {
     broadcastTrackShortCircuit();
     emit ledStatus(Led::ShortCircuit);
