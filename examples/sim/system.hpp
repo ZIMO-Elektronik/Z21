@@ -24,6 +24,7 @@ public:
 signals:
   void broadcastTrackPowerOff();
   void broadcastTrackPowerOn();
+  void broadcastProgrammingMode();
   void broadcastTrackShortCircuit();
   void broadcastStopped();
   void broadcastSystemStateData();

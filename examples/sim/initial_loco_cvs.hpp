@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 
-// CV8 currently must be 145 for "visual programming"
+// CV8 currently must be 145 to support the Loco (POM) programming mode
 inline constexpr std::array<uint8_t, 1024uz> initial_loco_cvs{
   3u,   1u,   2u,   1u,   1u,   1u,   4u,   145u /*13u*/, 55u,  0u,   0u,
   117u, 128u, 195u, 0u,   0u,   192u, 128u, 0u,           0u,   0u,   0u,

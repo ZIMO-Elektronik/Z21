@@ -21,10 +21,10 @@ namespace z21 {
 /// \param  chunk Chunk to calculate ex-or for
 /// \return Ex-or
 constexpr uint8_t exor(std::span<uint8_t const> chunk) {
-  return std::accumulate(cbegin(chunk),
-                         cend(chunk),
-                         static_cast<uint8_t>(0u),
-                         [](uint8_t a, uint8_t b) { return a ^ b; });
+  return accumulate(cbegin(chunk),
+                    cend(chunk),
+                    static_cast<uint8_t>(0u),
+                    [](uint8_t a, uint8_t b) { return a ^ b; });
 }
 
 }  // namespace z21

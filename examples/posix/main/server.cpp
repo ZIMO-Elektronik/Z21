@@ -16,11 +16,14 @@ void Server::transmit(z21::Socket const& sock,
 
 // Enable/disable track power
 //
-// In real systems this would most likely set or clear a GPIO pin.
-void Server::trackPower(bool on) { _track_power = on; }
+// In real systems this would for example set or clear a GPIO pin.
+bool Server::trackPower(bool on) {
+  _track_power = on;
+  return true;
+}
 
 // Send emergency stop
-void Server::stop() {}
+bool Server::stop() { return true; }
 
 // printf is sufficient
 void Server::log(char const* str) { printf("%s\n", str); }

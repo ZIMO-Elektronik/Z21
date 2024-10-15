@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <span>
 #include "../../socket.hpp"
+#include "../../system_state.hpp"
 
 namespace z21::server::intf {
 
@@ -49,32 +50,54 @@ namespace z21::server::intf {
 /// - Reply_to_LAN_GET_BROADCASTFLAGS
 /// - LAN_SYSTEMSTATE_DATACHANGED
 struct System {
+  /// Ctor
+  explicit constexpr System(SystemState initial_sys_state)
+    : _sys_state{initial_sys_state} {}
+
   /// Dtor
   virtual ~System() = default;
 
-  //
-  virtual void trackPower(bool on) = 0;
-  virtual void stop() = 0;
+  // Required
 
-  //
-  virtual void broadcastTrackPowerOff() = 0;
-  virtual void broadcastTrackPowerOn() = 0;
-  virtual void broadcastProgrammingMode() = 0;
-  virtual void broadcastTrackShortCircuit() = 0;
-  virtual void broadcastStopped() = 0;
-  virtual void broadcastSystemStateData() = 0;
+  /// TODO
+  [[nodiscard]] virtual bool trackPower(bool on) = 0;
 
-  //
-  virtual int32_t serialNumber() const { return 0; }
+  /// TODO
+  [[nodiscard]] virtual bool stop() = 0;
+
+  // Optional
+
+  /// TODO
+  [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
+
+  /// TODO
   virtual void logoff(Socket const&) {}
 
-  //
-  virtual int16_t mainCurrent() const { return 0; }
-  virtual int16_t progCurrent() const { return 0; }
-  virtual int16_t filteredMainCurrent() const { return 0; }
-  virtual int16_t temperature() const { return 0; }
-  virtual uint16_t supplyVoltage() const { return 0u; }
-  virtual uint16_t vccVoltage() const { return 0u; }
+  /// TODO
+  [[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
+
+  // Implemented by Base
+
+  /// TODO
+  virtual void broadcastTrackPowerOff() = 0;
+
+  /// TODO
+  virtual void broadcastTrackPowerOn() = 0;
+
+  /// TODO
+  virtual void broadcastProgrammingMode() = 0;
+
+  /// TODO
+  virtual void broadcastTrackShortCircuit() = 0;
+
+  /// TODO
+  virtual void broadcastStopped() = 0;
+
+  /// TODO
+  virtual void broadcastSystemStateData() = 0;
+
+private:
+  SystemState _sys_state{};
 };
 
 }  // namespace z21::server::intf

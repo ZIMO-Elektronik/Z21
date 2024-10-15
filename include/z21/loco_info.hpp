@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-///
+/// Loco info
 ///
 /// \file   z21/loco_info.hpp
 /// \author Vincent Hamp
@@ -85,11 +85,11 @@ constexpr int32_t decode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps,
 constexpr uint8_t
 encode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps, bool dir, int32_t speed) {
   // Halt
-  if (!speed) return dir << 7u;
+  if (!speed) return static_cast<uint8_t>(dir << 7u);
   // E-Stop
-  else if (speed < 0) return dir << 7u | 0b1u;
+  else if (speed < 0) return static_cast<uint8_t>(dir << 7u) | 0b1u;
 
-  auto vvvvvvv{(speed + 1)};
+  auto vvvvvvv{static_cast<uint32_t>(speed + 1)};
 
   // 28 speed steps with intermediate
   if (speed_steps == LocoInfo::DCC28) {
@@ -97,7 +97,7 @@ encode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps, bool dir, int32_t speed) {
     if (!(speed % 2)) vvvvvvv |= ztl::make_mask(4u);
   }
 
-  return dir << 7u | vvvvvvv;
+  return static_cast<uint8_t>(static_cast<uint32_t>(dir << 7u) | vvvvvvv);
 }
 
 }  // namespace z21

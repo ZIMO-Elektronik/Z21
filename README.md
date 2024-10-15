@@ -1,17 +1,17 @@
-# Z21
+# :construction: Z21 :construction:
 
-[![build](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml) [![tests](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml)
+[![build](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml) [![tests](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml) [![license](https://img.shields.io/github/license/ZIMO-Elektronik/Z21)](https://github.com/ZIMO-Elektronik/Z21/raw/master/LICENSE)
 
 <img src="https://github.com/ZIMO-Elektronik/Z21/raw/master/data/images/logo.png" width="15%" align="right">
 
 The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command station with support for LocoNet, R-Bus and XPressNet devices. It has an open LAN interface with a well-documented protocol that has been continuously developed since then. This C++ library of the same name contains platform-independent code for the server-side (i.e. the part that runs on a command station) implementation of the protocol.
 
 <details>
-  <summary>Table of contents</summary>
+  <summary>Table of Contents</summary>
   <ol>
     <li><a href="#protocol">Protocol</a></li>
     <li><a href="#features">Features</a></li>
-    <li><a href="#getting-started">Getting started</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
@@ -36,7 +36,7 @@ The official documentation of the protocol can be downloaded from the ROCO homep
 - Fine grained interfaces (implement only what you need)
 - Examples for Linux, Windows and ESP32
 
-## Getting started
+## Getting Started
 
 ### Prerequisites
 - C++23 compatible compiler
@@ -92,23 +92,23 @@ idf.py create-project-from-example "zimo-elektronik/z21^0.0.0:esp32"
 
 ### Server
 
-| Interface   | Responsibility                                                              |
-| ----------- | --------------------------------------------------------------------------- |
-| Can         | Send and receive messages from CAN occupancy detectors                      |
-| Driving     | Control mobile decoders                                                     |
-| FastClock   | Control fast clock                                                          |
-| LocoNet     | Send and receive messages from LocoNet gateway                              |
-| Programming | Reading and writing decoder CVs in service or POM mode                      |
-| RailCom     | Reading RailCom data of mobile decoders                                     |
-| RBus        | Send and receive messages from R-Bus feedback modules                       |
-| Settings    | Change persistently stored settings                                         |
-| Switching   | Control accessory decoders                                                  |
-| System      | Mandatory system features (e.g. track power, get hardware information, ...) |
-| ZLink       | Send and receive messages from zLink devices                                |
-|             |                                                                             |
-| Logging     | Print received and transmitted UDP datasets (not part of Z21 protocol)      |
+| Interface             | Responsibility                                                         |
+| --------------------- | ---------------------------------------------------------------------- |
+| Can                   | Send and receive messages from CAN occupancy detectors                 |
+| Driving               | Control mobile decoders                                                |
+| FastClock             | Control fast clock                                                     |
+| LocoNet               | Send and receive messages from LocoNet gateway                         |
+| Programming           | Reading and writing decoder CVs in service or POM mode                 |
+| RailCom               | Reading RailCom data of mobile decoders                                |
+| RBus                  | Send and receive messages from R-Bus feedback modules                  |
+| Settings              | Change persistently stored settings                                    |
+| Switching             | Control accessory decoders                                             |
+| System (**required**) | System features (e.g. track power, get hardware information, ...)      |
+| ZLink                 | Send and receive messages from zLink devices                           |
+|                       |                                                                        |
+| Logging               | Print received and transmitted UDP datasets (not part of Z21 protocol) |
 
-## All commands
+## All Commands
 | Command                      | Reply                               | Broadcast                    |
 | ---------------------------- | ----------------------------------- | ---------------------------- |
 | lanGetSerialNumber           | replyToLanGetSerialNumber           |                              |

@@ -35,14 +35,10 @@ private:
                 std::span<uint8_t const> datasets) final;
 
   // System interface
-  void trackPower(bool on) final;
-  void stop() final;
-  virtual int16_t mainCurrent() const final;
-  virtual int16_t progCurrent() const final;
-  virtual int16_t filteredMainCurrent() const final;
-  virtual int16_t temperature() const final;
-  virtual uint16_t supplyVoltage() const final;
-  virtual uint16_t vccVoltage() const final;
+  [[nodiscard]] bool trackPower(bool on) final;
+  [[nodiscard]] bool stop() final;
+  void logoff(z21::Socket const&) final;
+  [[nodiscard]] z21::SystemState& systemState() final;
 
   // Driving interface
   z21::LocoInfo::Mode locoMode(uint16_t addr) final;
@@ -54,8 +50,8 @@ private:
   z21::LocoInfo locoInfo(uint16_t addr) final;
 
   // Programming interface
-  void cvRead(uint16_t cv_addr) final;
-  void cvWrite(uint16_t cv_addr, uint8_t byte) final;
+  [[nodiscard]] bool cvRead(uint16_t cv_addr) final;
+  [[nodiscard]] bool cvWrite(uint16_t cv_addr, uint8_t byte) final;
   void cvPomRead(uint16_t addr, uint16_t cv_addr) final;
   void cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) final;
 

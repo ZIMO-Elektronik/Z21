@@ -30,15 +30,29 @@ struct Programming {
   /// Dtor
   virtual ~Programming() = default;
 
-  //
-  virtual void cvRead(uint16_t cv_addr) = 0;
-  virtual void cvWrite(uint16_t cv_addr, uint8_t byte) = 0;
+  // Required
+
+  /// TODO
+  [[nodiscard]] virtual bool cvRead(uint16_t cv_addr) = 0;
+
+  /// TODO
+  [[nodiscard]] virtual bool cvWrite(uint16_t cv_addr, uint8_t byte) = 0;
+
+  /// TODO
   virtual void cvPomRead(uint16_t addr, uint16_t cv_addr) = 0;
+
+  /// TODO
   virtual void cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) = 0;
 
-  //
+  // Implemented by Base
+
+  /// TODO
   virtual void cvNackShortCircuit() = 0;
+
+  /// TODO
   virtual void cvNack() = 0;
+
+  /// TODO
   virtual void cvAck(uint16_t cv_addr, uint8_t byte) = 0;
 };
 

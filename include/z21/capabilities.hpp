@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-///
+/// Capabilities
 ///
 /// \file   z21/capabilities.hpp
 /// \author Vincent Hamp
@@ -15,6 +15,8 @@
 
 namespace z21 {
 
+/// Capabilities supported by the server
+///
 ///
 enum class Capabilities : uint8_t {
   DCC = 0x01u,              ///< Capable of DCC

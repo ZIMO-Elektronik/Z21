@@ -39,20 +39,19 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
   //
   connect(_system, &::System::broadcastTrackPowerOff, [this] {
-    trackPower(false);
-    broadcastTrackPowerOff();
+    if (trackPower(false)) broadcastTrackPowerOff();
   });
   connect(_system, &::System::broadcastTrackPowerOn, [this] {
-    trackPower(true);
-    broadcastTrackPowerOn();
+    if (trackPower(true)) broadcastTrackPowerOn();
+  });
+  connect(_system, &::System::broadcastProgrammingMode, [this] {
+    broadcastProgrammingMode();
   });
   connect(_system, &::System::broadcastTrackShortCircuit, [this] {
     broadcastTrackShortCircuit();
-    emit ledStatus(Led::ShortCircuit);
   });
   connect(_system, &::System::broadcastStopped, [this] {
-    broadcastStopped();
-    emit ledStatus(Led::Stop);
+    if (stop()) broadcastStopped();
   });
   connect(_loco_list, &::LocoList::broadcastLocoInfo, [this](uint16_t addr) {
     broadcastLocoInfo(addr);
@@ -91,6 +90,20 @@ void Server::receive() {
       {std::data(rx), static_cast<size_t>(len)});
     execute();
   }
+
+  // Priorities are copied from the app
+  if (!_connected) emit ledStatus(Led::Disconnected);
+  else if (auto const central_state{systemState().central_state};
+           std::to_underlying(central_state &
+                              z21::CentralState::ProgrammingModeActive))
+    emit ledStatus(Led::ProgrammingMode);
+  else if (std::to_underlying(central_state & z21::CentralState::ShortCircuit))
+    emit ledStatus(Led::ShortCircuit);
+  else if (std::to_underlying(
+             (central_state & z21::CentralState::TrackVoltageOff) |
+             (central_state & z21::CentralState::EmergencyStop)))
+    emit ledStatus(Led::Stop);
+  else emit ledStatus(Led::NormalOperation);
 }
 
 //
@@ -114,32 +127,27 @@ void Server::transmit(z21::Socket const& sock,
 }
 
 //
-void Server::trackPower(bool on) {
-  emit ledStatus(on ? Led::NormalOperation : Led::Stop);
+bool Server::trackPower(bool on) { return true; }
+
+//
+bool Server::stop() { return true; }
+
+//
+void Server::logoff(z21::Socket const&) {
+  if (empty(this->clients())) disconnected();
 }
 
 //
-void Server::stop() { emit ledStatus(Led::Stop); }
-
-//
-int16_t Server::mainCurrent() const { return _system->mainCurrent(); }
-
-//
-int16_t Server::progCurrent() const { return _system->progCurrent(); }
-
-//
-int16_t Server::filteredMainCurrent() const {
-  return _system->filteredMainCurrent();
+z21::SystemState& Server::systemState() {
+  auto& sys_state{ServerBase::systemState()};
+  sys_state.main_current = _system->mainCurrent();
+  sys_state.prog_current = _system->progCurrent();
+  sys_state.filtered_main_current = _system->filteredMainCurrent();
+  sys_state.temperature = _system->temperature();
+  sys_state.supply_voltage = _system->supplyVoltage();
+  sys_state.vcc_voltage = _system->vccVoltage();
+  return ServerBase::systemState();
 }
-
-//
-int16_t Server::temperature() const { return _system->temperature(); }
-
-//
-uint16_t Server::supplyVoltage() const { return _system->supplyVoltage(); }
-
-//
-uint16_t Server::vccVoltage() const { return _system->vccVoltage(); }
 
 //
 void Server::drive(uint16_t addr,
@@ -169,15 +177,17 @@ z21::LocoInfo Server::locoInfo(uint16_t addr) {
 }
 
 //
-void Server::cvRead(uint16_t cv_addr) {
+bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
   if (!programmingFailure()) _loco_list->cvRead(cv_addr);
+  return true;
 }
 
 //
-void Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
+bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit ledStatus(Led::ProgrammingMode);
   if (!programmingFailure()) _loco_list->cvWrite(cv_addr, byte);
+  return true;
 }
 
 //

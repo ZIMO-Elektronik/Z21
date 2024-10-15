@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-///
+/// Broadcast flags
 ///
 /// \file   z21/broadcast_flags.hpp
 /// \author Vincent Hamp
@@ -16,7 +16,10 @@
 
 namespace z21 {
 
+/// Broadcast flags assigned per client
 ///
+/// These flags determine whether a client has subscribed to a broadcast message
+/// or not. Only subscribed clients receive the respective messages.
 enum class BroadcastFlags : uint32_t {
   DrivingSwitching = 0x00000001u,
   RBus = 0x00000002u,
@@ -39,35 +42,34 @@ enum class BroadcastFlags : uint32_t {
 
 ZTL_MAKE_ENUM_CLASS_FLAGS(BroadcastFlags)
 
-///
-inline void print_broadcast_flags(BroadcastFlags flags) {
-  printf("broadcast flags: ");
+// TODO REMOVE
+inline void print_broadcast_flags(BroadcastFlags flags,
+                                  decltype(printf) fp = printf) {
+  fp("broadcast flags: ");
   if (std::to_underlying(flags & BroadcastFlags::DrivingSwitching))
-    printf("%s ", "DrivingSwitching");
-  if (std::to_underlying(flags & BroadcastFlags::RBus)) printf("%s ", "RBus");
+    fp("%s ", "DrivingSwitching");
+  if (std::to_underlying(flags & BroadcastFlags::RBus)) fp("%s ", "RBus");
   if (std::to_underlying(flags & BroadcastFlags::RailComSubscribed))
-    printf("%s ", "RailComSubscribed");
+    fp("%s ", "RailComSubscribed");
   if (std::to_underlying(flags & BroadcastFlags::SystemStatus))
-    printf("%s ", "SystemStatus");
+    fp("%s ", "SystemStatus");
   if (std::to_underlying(flags & BroadcastFlags::DrivingSwitchingEx))
-    printf("%s ", "DrivingSwitchingEx");
-  if (std::to_underlying(flags & BroadcastFlags::LocoNet))
-    printf("%s ", "LocoNet");
+    fp("%s ", "DrivingSwitchingEx");
+  if (std::to_underlying(flags & BroadcastFlags::LocoNet)) fp("%s ", "LocoNet");
   if (std::to_underlying(flags & BroadcastFlags::LocoNetDriving))
-    printf("%s ", "LocoNetDriving");
+    fp("%s ", "LocoNetDriving");
   if (std::to_underlying(flags & BroadcastFlags::LocoNetSwitching))
-    printf("%s ", "LocoNetSwitching");
+    fp("%s ", "LocoNetSwitching");
   if (std::to_underlying(flags & BroadcastFlags::LocoNetDetector))
-    printf("%s ", "LocoNetDetector");
-  if (std::to_underlying(flags & BroadcastFlags::RailCom))
-    printf("%s ", "RailCom");
+    fp("%s ", "LocoNetDetector");
+  if (std::to_underlying(flags & BroadcastFlags::RailCom)) fp("%s ", "RailCom");
   if (std::to_underlying(flags & BroadcastFlags::CANDetector))
-    printf("%s ", "CANDetector");
+    fp("%s ", "CANDetector");
   if (std::to_underlying(flags & BroadcastFlags::CANBooster))
-    printf("%s ", "CANBooster");
+    fp("%s ", "CANBooster");
   if (std::to_underlying(flags & BroadcastFlags::FastClock))
-    printf("%s ", "FastClock");
-  printf("\n");
+    fp("%s ", "FastClock");
+  fp("\n");
 }
 
 }  // namespace z21
