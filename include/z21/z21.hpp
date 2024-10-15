@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-///
+/// Z21
 ///
 /// \file   z21/z21.hpp
 /// \author Vincent Hamp

@@ -43,7 +43,7 @@ public:
   /// Ctor
   explicit constexpr Base(SystemState initial_sys_state = {},
                           HwType hw_type = HwType::Z21_NEW)
-    : _sys_state{initial_sys_state}, _hw_type{hw_type} {}
+    : intf::System{initial_sys_state}, _hw_type{hw_type} {}
 
   /// Dtor
   virtual constexpr ~Base() = default;
@@ -58,13 +58,17 @@ public:
       auto const len{first[0uz]};
 
       // Payload might be zero padded
+      // (e.g. entering the "steering" mode of the app does trigger padding)
       if (!len || len > Z21_MAX_DATASET_SIZE)
         return logf('C', sock, "Length out of range");
 
       auto& [header, chunk]{*end(datasets)};
       header = static_cast<Header>(first[2uz]);
-      std::ranges::copy_n(first + 4, len - 4uz, begin(chunk));
-      chunk.resize(len - 4uz);
+      std::ranges::copy_n(
+        first + 4,
+        static_cast<std::iter_difference_t<decltype(chunk)>>(len - 4uz),
+        begin(chunk));
+      chunk.resize(static_cast<decltype(chunk)::size_type>(len - 4uz));
       datasets.push_back();
       first += len;
     }
@@ -72,33 +76,33 @@ public:
 
   ///
   void execute() {
-    for (auto& [sock, client] : _clients) execute(sock, client);
-  }
-
-  ///
-  Capabilities capabilities() const { return _sys_state.capabilities; }
-
-  ///
-  void capabilities(Capabilities capabilities) {
-    _sys_state.capabilities = capabilities;
+    for (auto it{begin(_clients)}; it != end(_clients);) it = execute(it);
   }
 
   ///
   Clients const& clients() { return _clients; }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - TrackVoltageOff
   void broadcastTrackPowerOff() final { lanXBcTrackPowerOff(); }
 
-  ///
+  /// Implicitly clears the following CentralState flags
+  /// - EmergencyStop
+  /// - TrackVoltageOff
+  /// - ShortCircuit
+  /// - ProgrammingModeActive
   void broadcastTrackPowerOn() final { lanXBcTrackPowerOn(); }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - ProgrammingModeActive
   void broadcastProgrammingMode() final { lanXBcProgrammingMode(); }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - ShortCircuit
   void broadcastTrackShortCircuit() final { lanXBcTrackShortCircuit(); }
 
-  ///
+  /// Implicitly sets the following CentralState flags
+  /// - EmergencyStop
   void broadcastStopped() final { lanXBcStopped(); }
 
   ///
@@ -157,9 +161,10 @@ private:
   ///
   ///
   /// \param  sock  Socket (copy!)
-  void lanLogoff(Socket sock) {
-    _clients.erase(sock);
+  Clients::iterator lanLogoff(Socket sock, Clients::iterator it) {
+    it = _clients.erase(it);
     this->logoff(sock);
+    return it;
   }
 
   ///
@@ -191,9 +196,10 @@ private:
   void lanXCvRead(Socket const& sock, uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    lanXBcProgrammingMode();
-    _cv_request_deque.push_back(&sock);
-    this->cvRead(cv_addr);
+    if (full(_cv_request_deque)) return;
+    else if (_cv_request_deque.push_back(&sock); this->cvRead(cv_addr))
+      lanXBcProgrammingMode();
+    else _cv_request_deque.pop_back();
   }
 
   ///
@@ -207,9 +213,10 @@ private:
   void lanXCvWrite(Socket const& sock, uint16_t cv_addr, uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    lanXBcProgrammingMode();
-    _cv_request_deque.push_back(&sock);
-    this->cvWrite(cv_addr, byte);
+    if (full(_cv_request_deque)) return;
+    else if (_cv_request_deque.push_back(&sock); this->cvWrite(cv_addr, byte))
+      lanXBcProgrammingMode();
+    else _cv_request_deque.pop_back();
   }
 
   ///
@@ -254,7 +261,7 @@ private:
   }
 
   ///
-  void lanXSetLocoEStop(Socket const& sock, uint16_t addr)
+  void lanXSetLocoEStop(Socket const&, uint16_t addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
     auto const loco_info{this->locoInfo(addr)};
@@ -286,7 +293,7 @@ private:
   }
 
   ///
-  void lanXSetLocoDrive(Socket const& sock,
+  void lanXSetLocoDrive(Socket const&,
                         uint16_t addr,
                         LocoInfo::SpeedSteps speed_steps,
                         uint8_t rvvvvvvv)
@@ -296,21 +303,21 @@ private:
   }
 
   ///
-  void lanXSetLocoFunction(Socket const& sock,
+  void lanXSetLocoFunction(Socket const&,
                            uint16_t addr,
                            uint8_t state,
                            uint8_t index)
     requires(std::derived_from<Base, intf::Driving>)
   {
     assert(state < 0b10u);
-    this->function(addr, 1u << index, state << index);
+    this->function(addr, 1u << index, static_cast<uint32_t>(state << index));
   }
 
   ///
-  void lanXSetLocoFunctionGroup(Socket const& sock,
-                                uint16_t addr,
-                                uint8_t group,
-                                uint8_t state)
+  void lanXSetLocoFunctionGroup(Socket const&,
+                                [[maybe_unused]] uint16_t addr,
+                                [[maybe_unused]] uint8_t group,
+                                [[maybe_unused]] uint8_t state)
     requires(std::derived_from<Base, intf::Driving>)
   {
     // TODO
@@ -324,7 +331,7 @@ private:
   }
 
   ///
-  void lanXCvPomWriteByte(Socket const& sock,
+  void lanXCvPomWriteByte(Socket const&,
                           uint16_t addr,
                           uint16_t cv_addr,
                           uint8_t byte)
@@ -344,15 +351,16 @@ private:
   void lanXCvPomReadByte(Socket const& sock, uint16_t addr, uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
+    if (full(_cv_request_deque)) return;
     _cv_request_deque.push_back(&sock);
     this->cvPomRead(addr, cv_addr);
   }
 
   ///
-  void lanXCvPomAccessoryWriteByte(Socket const& sock,
-                                   uint16_t addr,
-                                   uint16_t cv_addr,
-                                   uint8_t byte)
+  void lanXCvPomAccessoryWriteByte([[maybe_unused]] Socket const& sock,
+                                   [[maybe_unused]] uint16_t addr,
+                                   [[maybe_unused]] uint16_t cv_addr,
+                                   [[maybe_unused]] uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
     // TODO
@@ -366,9 +374,9 @@ private:
   }
 
   ///
-  void lanXCvPomAccessoryReadByte(Socket const& sock,
-                                  uint16_t addr,
-                                  uint16_t cv_addr)
+  void lanXCvPomAccessoryReadByte([[maybe_unused]] Socket const& sock,
+                                  [[maybe_unused]] uint16_t addr,
+                                  [[maybe_unused]] uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
     // TODO
@@ -618,7 +626,7 @@ private:
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcTrackPowerOff(Socket const& sock = {}) {
     //
-    _sys_state.central_state |= CentralState::TrackVoltageOff;
+    intf::System::systemState().central_state |= CentralState::TrackVoltageOff;
 
     //
     _cv_request_deque.clear();
@@ -648,10 +656,11 @@ private:
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcTrackPowerOn(Socket const& sock = {}) {
     //
-    _sys_state.central_state &= ~(CentralState::EmergencyStop |          //
-                                  CentralState::TrackVoltageOff |        //
-                                  CentralState::ShortCircuit |           //
-                                  CentralState::ProgrammingModeActive);  //
+    intf::System::systemState().central_state &=
+      ~(CentralState::EmergencyStop |          //
+        CentralState::TrackVoltageOff |        //
+        CentralState::ShortCircuit |           //
+        CentralState::ProgrammingModeActive);  //
 
     //
     _cv_request_deque.clear();
@@ -680,7 +689,8 @@ private:
   /// LAN_X_CV_WRITE and the respective client has activated the corresponding
   /// broadcast.
   void lanXBcProgrammingMode(Socket const& sock = {}) {
-    _sys_state.central_state |= CentralState::ProgrammingModeActive;
+    intf::System::systemState().central_state |=
+      CentralState::ProgrammingModeActive;
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                                   // Length
@@ -705,7 +715,7 @@ private:
   /// short circuit has occurred and the relevant client has activated the
   /// corresponding broadcast.
   void lanXBcTrackShortCircuit() {
-    _sys_state.central_state |= CentralState::ShortCircuit;
+    intf::System::systemState().central_state |= CentralState::ShortCircuit;
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                                      // Length
@@ -775,14 +785,14 @@ private:
   ///
   void lanXStatusChanged(Socket const& sock) {
     std::array<uint8_t, 0x08uz> reply{
-      0x08u,                                              // Length
-      0x00u,                                              //
-      std::to_underlying(Header::LAN_X_STATUS_CHANGED),   // Header
-      0x00u,                                              //
-      std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),  // X-Header
-      std::to_underlying(DB0::LAN_X_STATUS_CHANGED),      // DB0
-      std::to_underlying(_sys_state.central_state),       // DB1
-      0x00u};                                             // XOR
+      0x08u,                                                  // Length
+      0x00u,                                                  //
+      std::to_underlying(Header::LAN_X_STATUS_CHANGED),       // Header
+      0x00u,                                                  //
+      std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),      // X-Header
+      std::to_underlying(DB0::LAN_X_STATUS_CHANGED),          // DB0
+      std::to_underlying(this->systemState().central_state),  // DB1
+      0x00u};                                                 // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_STATUS_CHANGED", reply);
@@ -832,7 +842,7 @@ private:
   /// - or the emergency stop was triggered by some input device
   /// - and the relevant client has activated the corresponding broadcast
   void lanXBcStopped(Socket const& sock = {}) {
-    _sys_state.central_state |= CentralState::EmergencyStop;
+    intf::System::systemState().central_state |= CentralState::EmergencyStop;
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
       0x07u,                                          // Length
@@ -872,11 +882,8 @@ private:
     auto const db4{
       static_cast<uint8_t>(loco_info.double_traction << 6u |       //
                            loco_info.smart_search << 5u |          //
-                           (loco_info.f31_0 & 0b1'0000u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'1000u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'0100u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'0010u) >> 1u |   //
-                           (loco_info.f31_0 & 0b0'0001u) << 4u)};  //
+                           (loco_info.f31_0 & 0b1'1110u) >> 1u |   // F4-F1
+                           (loco_info.f31_0 & 0b0'0001u) << 4u)};  // F0
 
     std::array<uint8_t, 0x0Fuz> reply{
       0x0Fu,                                         // Length
@@ -978,34 +985,29 @@ private:
   /// - activated the corresponding broadcast
   /// - explicitly requested the system status
   void lanSystemStateDataChanged(Socket const& sock = {}) {
-    auto const main_cur{this->mainCurrent()};
-    auto const prog_cur{this->progCurrent()};
-    auto const filt_main_cur{this->filteredMainCurrent()};
-    auto const temp{this->temperature()};
-    auto const supply{this->supplyVoltage()};
-    auto const vcc{this->vccVoltage()};
+    auto const sys_state{this->systemState()};
 
     std::array<uint8_t, 0x14uz> reply{
       0x14u,                                                    // Length
       0x00u,                                                    //
       std::to_underlying(Header::LAN_SYSTEMSTATE_DATACHANGED),  // Header
       0x00u,                                                    //
-      static_cast<uint8_t>(main_cur >> 0u),          // MainCurrent [mA]
-      static_cast<uint8_t>(main_cur >> 8u),          //
-      static_cast<uint8_t>(prog_cur >> 0u),          // ProgCurrent [mA]
-      static_cast<uint8_t>(prog_cur >> 8u),          //
-      static_cast<uint8_t>(filt_main_cur >> 0u),     // FilteredMainCurrent [mA]
-      static_cast<uint8_t>(filt_main_cur >> 8u),     //
-      static_cast<uint8_t>(temp >> 0u),              // Temperature [°C]
-      static_cast<uint8_t>(temp >> 8u),              //
-      static_cast<uint8_t>(supply >> 0u),            // SupplyVoltage [mV]
-      static_cast<uint8_t>(supply >> 8u),            //
-      static_cast<uint8_t>(vcc >> 0u),               // VCCVoltage [mV]
-      static_cast<uint8_t>(vcc >> 8u),               //
-      std::to_underlying(_sys_state.central_state),  // CentralState
-      std::to_underlying(_sys_state.central_state_ex),  // CentralStateEx
-      0x00u,                                            // reserved
-      std::to_underlying(_sys_state.capabilities)};     // Capabilities
+      static_cast<uint8_t>(sys_state.main_current >> 0u),
+      static_cast<uint8_t>(sys_state.main_current >> 8u),
+      static_cast<uint8_t>(sys_state.prog_current >> 0u),
+      static_cast<uint8_t>(sys_state.prog_current >> 8u),
+      static_cast<uint8_t>(sys_state.filtered_main_current >> 0u),
+      static_cast<uint8_t>(sys_state.filtered_main_current >> 8u),
+      static_cast<uint8_t>(sys_state.temperature >> 0u),
+      static_cast<uint8_t>(sys_state.temperature >> 8u),
+      static_cast<uint8_t>(sys_state.supply_voltage >> 0u),
+      static_cast<uint8_t>(sys_state.supply_voltage >> 8u),
+      static_cast<uint8_t>(sys_state.vcc_voltage >> 0u),
+      static_cast<uint8_t>(sys_state.vcc_voltage >> 8u),
+      std::to_underlying(sys_state.central_state),     // CentralState
+      std::to_underlying(sys_state.central_state_ex),  // CentralStateEx
+      0x00u,                                           // reserved
+      std::to_underlying(sys_state.capabilities)};     // Capabilities
 
     // Transmit to every client with broadcast flag
     for (auto const& [s, c] : _clients)
@@ -1098,7 +1100,9 @@ private:
 
 private:
   ///
-  void execute(Socket const& sock, Client& client) {
+  Clients::iterator execute(Clients::iterator it) {
+    auto& [sock, client]{*it};
+
     while (!empty(client.datasets)) {
       switch (auto const& [header, chunk]{client.datasets.front()}; header) {
         case Header::LAN_GET_SERIAL_NUMBER:
@@ -1116,10 +1120,10 @@ private:
           lanGetHwInfo(sock);
           break;
 
-        // LAN_LOGOFF erased the client, it is crucial to return here!
+        // LAN_LOGOFF erases the client, it is crucial to return here!
         case Header::LAN_LOGOFF:
           logf('C', sock, "LAN_LOGOFF", chunk);
-          return lanLogoff(sock);
+          return lanLogoff(sock, it);
 
         case Header::LAN_X:
           if (exor(chunk)) {
@@ -1537,6 +1541,8 @@ private:
 
       client.datasets.pop_front();
     }
+
+    return ++it;
   }
 
   ///
@@ -1551,7 +1557,7 @@ private:
             auto&&... ts) requires(std::derived_from<Base, intf::Logging>)
   {
     static constexpr auto max_ip4_strlen{16uz};
-    static constexpr auto max_ip6_strlen{46uz};
+    // static constexpr auto max_ip6_strlen{46uz};
     static constexpr auto len_post_prefix{sizeof(c) + sizeof(' ')};
     static constexpr auto len_post_ip{len_post_prefix + max_ip4_strlen +
                                       sizeof(' ')};
@@ -1570,12 +1576,14 @@ private:
     while (len < len_post_ip) buffer[len++] = ' ';
 
     // Command
-    len += snprintf(data(buffer) + len, size(buffer) - len, "%s ", str);
+    len += static_cast<size_t>(
+      snprintf(data(buffer) + len, size(buffer) - len, "%s ", str));
     while (len < len_post_cmd) buffer[len++] = ' ';
 
     // Data
     for (auto const byte : chunk)
-      len += snprintf(data(buffer) + len, size(buffer) - len, "%02X ", byte);
+      len += static_cast<size_t>(
+        snprintf(data(buffer) + len, size(buffer) - len, "%02X ", byte));
 
     // Additional arguments
     if constexpr (sizeof...(ts) > 0uz)
@@ -1589,7 +1597,6 @@ private:
   Clients _clients;
   ztl::inplace_deque<Socket const*, Z21_SERVER_MAX_LOCO_ADDRESSES_PER_CLIENT>
     _cv_request_deque{};
-  SystemState _sys_state;
   HwType _hw_type;
 };
 

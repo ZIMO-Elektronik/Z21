@@ -40,7 +40,7 @@ concept Interface = ztl::contains_type_v<T,
                                                     intf::RBus,
                                                     intf::Settings,
                                                     intf::Switching,
-                                                    intf::System,  // Mandatory
+                                                    intf::System,  // Required
                                                     intf::ZLink>>;
 
 }  // namespace z21::server::intf

@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-///
+/// Dataset header
 ///
 /// \file   z21/header.hpp
 /// \author Vincent Hamp
@@ -69,7 +69,7 @@ enum class Header : uint8_t {
   // LAN_LOCONET_DISPATCH_ADDR = 0xA3u,
   // LAN_LOCONET_DETECTOR = 0xA4u,
   // LAN_CAN_DETECTOR = 0xC4u,
-  Reply_to_LAN_CAN_DETECTOR = 0xC8u,
+  Reply_to_LAN_CAN_DEVICE_GET_DESCRIPTION = 0xC8u,
   LAN_CAN_BOOSTER_SYSTEMSTATE_CHANGED = 0xCAu,
   LAN_FAST_CLOCK_DATA = 0xCDu,
   // LAN_FAST_CLOCK_SETTINGS_GET = 0xCEu,

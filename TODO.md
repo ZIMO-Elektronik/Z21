@@ -1,11 +1,15 @@
 - When entering the "steering" mode the app seems to flush the UDP buffer by sending 1000 zeros...?
-- Currently all examples are IPv4 only
+- IPv6 support, currently all examples are IPv4 only
 - On Linux system, use socat to listen to UDP stuff:  
   sudo socat UDP4-LISTEN:21105,fork,reuseaddr UDP4:192.168.0.111:21105
 - Useful wireshark filter:  
   udp && (ip.dst==192.168.0.111 || ip.src==192.168.0.111)
-- I'm somewhat torn between giving programming mode it's own getter/setter or not. On the one hand it's additional overhead and the Z21 app seems to ignore the LAN_X_BC_PROGRAMMING_MODE broadcast anyhow. On the other hand it would most likely simplify the user implementation because then user's wouldn't need to check if they are in service mode when receiving e.g. LAN_X_CV_READ. Then again... should the system even know about anything else but DCC? Ok, let's try something. Let's go one step further in the other direction. Let's remove the trackPower getter! Why should it fail? Because if it fails in case of a short or so, then there is a broadcast for that... if it fails because some other mode is active, just don't receive and execute that command in the first place.
-- Color palette generator: https://mokole.com/palette.html
+- Users may now overwrite SystemState by implementing
+  ```cpp
+  virtual SystemState& systemState()
+  ```
+  This allows to mix implicit and explicit state changes to the users liking. If this function does not get overridden, then the libraries defaults will be used and commands like `LAN_X_SET_TRACK_POWER_ON` simply set or clear their corresponding flags. If this function does get overridden however, users may update any flags to whatever.
+- `System::trackPower(bool on)`, `System::stop()` as well as `Programming::cvRead(uint16_t cv_addr)` and `Programming::cvWrite(uint16_t cv_addr, uint8_t byte)` should probably return a bool to indicate success? This would help in accidentally sending any broadcast replies although some command might have failed.
 
 ####
 Typical CV process for LAN_X_CV_READ:

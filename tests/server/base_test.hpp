@@ -5,7 +5,7 @@
 
 using namespace ::testing;
 
-//
+// Server base test fixture
 struct BaseTest : ::testing::Test {
 protected:
   BaseTest();

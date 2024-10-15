@@ -13,8 +13,6 @@ Led::Led(QWidget* parent) : QWidget{parent} {
 
 // Set status and immediately emit an update
 void Led::setStatus(Status status) {
-  // Only LAN_X_SET_TRACK_POWER_ON (=NormalOperation) can clear short circuit
-  if (_status == ShortCircuit && status != NormalOperation) return;
   _status = status;
   emit update();
 }

@@ -13,10 +13,10 @@ private:
                 std::span<uint8_t const> datasets) final;
 
   // Enable/disable track power
-  void trackPower(bool on) final;
+  bool trackPower(bool on) final;
 
   // Emergency stop
-  void stop() final;
+  bool stop() final;
 
   // Log received and transmitted data
   void log(char const* str) final;
