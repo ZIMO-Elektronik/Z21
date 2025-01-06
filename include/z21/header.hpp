@@ -19,6 +19,10 @@ enum class Header : uint8_t {
   // clang-format off
   // Client to Z21
   LAN_GET_SERIAL_NUMBER = 0x10u,
+  LAN_GET_COMMON_SETTINGS = 0x12u,
+  LAN_SET_COMMON_SETTINGS = 0x13u,
+  LAN_GET_MMDCC_SETTINGS = 0x16u,
+  LAN_SET_MMDCC_SETTINGS = 0x17u,
   LAN_GET_CODE = 0x18u,
   LAN_GET_HWINFO = 0x1A,
   LAN_LOGOFF = 0x30u,
@@ -54,6 +58,8 @@ enum class Header : uint8_t {
 
   // Z21 to Client
   Reply_to_LAN_GET_SERIAL_NUMBER = 0x10u,
+  Reply_to_LAN_GET_COMMON_SETTINGS = 0x12u,
+  Reply_to_LAN_GET_MMDCC_SETTINGS = 0x16u,
   Reply_to_LAN_GET_CODE = 0x18u,
   Reply_to_LAN_GET_HWINFO = 0x1Au,
   LAN_X_TURNOUT_INFO = 0x40u, LAN_X_EXT_ACCESSORY_INFO = 0x40u, LAN_X_BC_TRACK_POWER_OFF = 0x40u, LAN_X_BC_TRACK_POWER_ON = 0x40u, LAN_X_BC_PROGRAMMING_MODE = 0x40u, LAN_X_BC_TRACK_SHORT_CIRCUIT = 0x40u, LAN_X_CV_NACK_SC = 0x40u, LAN_X_CV_NACK = 0x40u, LAN_X_UNKNOWN_COMMAND = 0x40u, LAN_X_STATUS_CHANGED = 0x40u, Reply_to_LAN_X_GET_VERSION = 0x40u, LAN_X_CV_RESULT = 0x40u, LAN_X_BC_STOPPED = 0x40u, LAN_X_LOCO_INFO = 0x40u, Reply_to_LAN_X_GET_FIRMWARE_VERSION = 0x40u,
@@ -81,4 +87,4 @@ enum class Header : uint8_t {
   // clang-format on
 };
 
-}  // namespace z21
+} // namespace z21

@@ -44,7 +44,7 @@ int get_socket([[maybe_unused]] bool blocking) {
 
   // Also Windows does not support opening it non-blocking so use ioctlsocket
   if (!blocking) {
-    u_long mode{1};  // 1 to enable non-blocking socket
+    u_long mode{1}; // 1 to enable non-blocking socket
     if (auto const err{ioctlsocket(sock, FIONBIO, &mode)}) {
       printf("ioctlsocket failed %d\n", err);
       return -1;
@@ -69,7 +69,7 @@ int get_socket([[maybe_unused]] bool blocking) {
   return sock;
 }
 
-}  // namespace
+} // namespace
 
 int get_blocking_socket() { return get_socket(true); }
 

@@ -10,14 +10,29 @@
 
 #pragma once
 
+#include "../../common_settings.hpp"
+#include "../../mm_dcc_settings.hpp"
+
 namespace z21::server::intf {
 
-/// TODO
+/// \todo
+///
+/// Commands:
+/// - LAN_GET_COMMON_SETTINGS
+/// - LAN_GET_MMDCC_SETTINGS
+///
+/// Replies:
+/// - LAN_SET_COMMON_SETTINGS
+/// - LAN_SET_MMDCC_SETTINGS
 struct Settings {
-  Settings() { assert(false); }
-
   /// Dtor
   virtual ~Settings() = default;
+
+  [[nodiscard]] virtual CommonSettings commonSettings() = 0;
+  virtual void commonSettings(CommonSettings const&) = 0;
+
+  [[nodiscard]] virtual MmDccSettings mmDccSettings() = 0;
+  virtual void mmDccSettings(MmDccSettings const&) = 0;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

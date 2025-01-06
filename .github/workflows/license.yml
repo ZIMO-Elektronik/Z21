@@ -1,0 +1,11 @@
+name: license
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  license:
+    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/license-checker.yml@v0.0.8

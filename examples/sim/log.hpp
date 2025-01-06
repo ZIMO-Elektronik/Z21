@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QRegularExpression>
 #include <QWidget>
 #include "text_view.hpp"
 
@@ -9,11 +10,14 @@ class Log : public QWidget {
 
 public:
   explicit Log(QWidget* parent = nullptr);
+  ~Log();
 
 public slots:
   void append(QString const& text);
   void clear();
 
 private:
+  QString _name{};
   TextView* _text_view{new TextView{this}};
+  QRegularExpression _re_filter;
 };

@@ -22,4 +22,4 @@ struct Dataset {
   ztl::inplace_vector<uint8_t, Z21_MAX_DATASET_SIZE> chunk{};
 };
 
-}  // namespace z21
+} // namespace z21

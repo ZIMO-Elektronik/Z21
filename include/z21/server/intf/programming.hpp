@@ -56,4 +56,4 @@ struct Programming {
   virtual void cvAck(uint16_t cv_addr, uint8_t byte) = 0;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

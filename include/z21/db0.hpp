@@ -63,4 +63,4 @@ enum class DB0 : uint8_t {
   // clang-format on
 };
 
-}  // namespace z21
+} // namespace z21

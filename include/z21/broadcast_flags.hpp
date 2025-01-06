@@ -72,4 +72,4 @@ inline void print_broadcast_flags(BroadcastFlags flags,
   fp("\n");
 }
 
-}  // namespace z21
+} // namespace z21

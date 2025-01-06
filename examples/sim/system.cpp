@@ -3,7 +3,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <random>
-#include "settings.hpp"
+#include "config.hpp"
 
 namespace {
 
@@ -15,7 +15,7 @@ double random_failure() {
   return dis(gen);
 }
 
-}  // namespace
+} // namespace
 
 //
 System::System(QWidget* parent) : QWidget{parent} {
@@ -30,7 +30,7 @@ System::System(QWidget* parent) : QWidget{parent} {
     auto track_power_on_button{new QPushButton{"Track power on"}};
     auto programming_mode_button{new QPushButton{"Programming mode"}};
     auto short_circuit_button{new QPushButton{"Short circuit"}};
-    auto estop_button{new QPushButton{"E-Stop"}};
+    auto estop_button{new QPushButton{"EStop"}};
     int row{};
     grid->addWidget(new QLabel{"Broadcast track power off"}, row, 0);
     grid->addWidget(track_power_off_button, row++, 1);
@@ -40,7 +40,7 @@ System::System(QWidget* parent) : QWidget{parent} {
     grid->addWidget(programming_mode_button, row++, 1);
     grid->addWidget(new QLabel{"Broadcast short circuit"}, row, 0);
     grid->addWidget(short_circuit_button, row++, 1);
-    grid->addWidget(new QLabel{"Broadcast E-Stop"}, row, 0);
+    grid->addWidget(new QLabel{"Broadcast EStop"}, row, 0);
     grid->addWidget(estop_button, row++, 1);
     connect(track_power_off_button,
             &QPushButton::clicked,
@@ -65,28 +65,30 @@ System::System(QWidget* parent) : QWidget{parent} {
   }
 
   {
-    initFailureRatesSliders();
+    initFailureRatesWidgets();
     auto groupbox{new QGroupBox{"Failure rates"}};
     auto grid{new QGridLayout};
-    auto& [labels, values, widgets]{_failure_rates_sliders};
+    grid->setColumnMinimumWidth(1, 3 * 10);
+    auto& [labels, values, sliders]{_failure_rates_widgets};
     for (auto i{0uz}; i < std::size(labels); ++i) {
-      grid->addWidget(labels[i], i, 0);
-      grid->addWidget(values[i], i, 1);
-      grid->addWidget(widgets[i], i, 2);
+      grid->addWidget(labels[i], static_cast<int>(i), 0);
+      grid->addWidget(values[i], static_cast<int>(i), 1);
+      grid->addWidget(sliders[i], static_cast<int>(i), 2);
     }
     groupbox->setLayout(grid);
     layout->addWidget(groupbox, 1, 0, 1, 1);
   }
 
   {
-    initCurrentsVoltagesTemperatureSliders();
+    initCurrentsVoltagesTemperatureWidgets();
     auto groupbox{new QGroupBox{"Currents, voltages and temperature"}};
     auto grid{new QGridLayout};
-    auto& [labels, values, widgets]{_system_state_sliders};
+    grid->setColumnMinimumWidth(1, 5 * 10);
+    auto& [labels, values, sliders]{_system_state_widgets};
     for (auto i{0uz}; i < std::size(labels); ++i) {
-      grid->addWidget(labels[i], i, 0);
-      grid->addWidget(values[i], i, 1);
-      grid->addWidget(widgets[i], i, 2);
+      grid->addWidget(labels[i], static_cast<int>(i), 0);
+      grid->addWidget(values[i], static_cast<int>(i), 1);
+      grid->addWidget(sliders[i], static_cast<int>(i), 2);
     }
     groupbox->setLayout(grid);
     layout->addWidget(groupbox, 2, 0, 4, 1);
@@ -97,28 +99,28 @@ System::System(QWidget* parent) : QWidget{parent} {
 
 //
 System::~System() {
-  Settings settings;
+  Config config;
 
   {
-    auto& widgets{get<2uz>(_failure_rates_sliders)};
-    settings.setValue("system_prog_short_failure_rate", widgets[0uz]->value());
-    settings.setValue("system_prog_failure_rate", widgets[1uz]->value());
+    auto& sliders{get<2uz>(_failure_rates_widgets)};
+    config.setValue("system_prog_short_failure_rate", sliders[0uz]->value());
+    config.setValue("system_prog_failure_rate", sliders[1uz]->value());
   }
 
   {
-    auto& widgets{get<2uz>(_system_state_sliders)};
-    settings.setValue("system_main_current", widgets[0uz]->value());
-    settings.setValue("system_prog_current", widgets[1uz]->value());
-    settings.setValue("system_filtered_main_current", widgets[2uz]->value());
-    settings.setValue("system_temperature", widgets[3uz]->value());
-    settings.setValue("system_supply_voltage", widgets[4uz]->value());
-    settings.setValue("system_vcc_voltage", widgets[5uz]->value());
+    auto& sliders{get<2uz>(_system_state_widgets)};
+    config.setValue("system_main_current", sliders[0uz]->value());
+    config.setValue("system_prog_current", sliders[1uz]->value());
+    config.setValue("system_filtered_main_current", sliders[2uz]->value());
+    config.setValue("system_temperature", sliders[3uz]->value());
+    config.setValue("system_supply_voltage", sliders[4uz]->value());
+    config.setValue("system_vcc_voltage", sliders[5uz]->value());
   }
 }
 
 //
 bool System::programmingShortCircuitFailure() const {
-  auto const& slider{get<2uz>(_failure_rates_sliders)[0uz]};
+  auto const& slider{get<2uz>(_failure_rates_widgets)[0uz]};
   return slider->value() &&
          random_failure() <=
            (static_cast<double>(slider->value()) / slider->maximum());
@@ -126,7 +128,7 @@ bool System::programmingShortCircuitFailure() const {
 
 //
 bool System::programmingFailure() const {
-  auto const& slider{get<2uz>(_failure_rates_sliders)[1uz]};
+  auto const& slider{get<2uz>(_failure_rates_widgets)[1uz]};
   return slider->value() &&
          random_failure() <=
            (static_cast<double>(slider->value()) / slider->maximum());
@@ -134,143 +136,145 @@ bool System::programmingFailure() const {
 
 //
 int16_t System::mainCurrent() const {
-  return static_cast<int16_t>(get<2uz>(_system_state_sliders)[0uz]->value());
+  return static_cast<int16_t>(get<2uz>(_system_state_widgets)[0uz]->value());
 }
 
 //
 int16_t System::progCurrent() const {
-  return static_cast<int16_t>(get<2uz>(_system_state_sliders)[1uz]->value());
+  return static_cast<int16_t>(get<2uz>(_system_state_widgets)[1uz]->value());
 }
 
 //
 int16_t System::filteredMainCurrent() const {
-  return static_cast<int16_t>(get<2uz>(_system_state_sliders)[2uz]->value());
+  return static_cast<int16_t>(get<2uz>(_system_state_widgets)[2uz]->value());
 }
 
 //
 int16_t System::temperature() const {
-  return static_cast<int16_t>(get<2uz>(_system_state_sliders)[3uz]->value());
+  return static_cast<int16_t>(get<2uz>(_system_state_widgets)[3uz]->value());
 }
 
 //
 uint16_t System::supplyVoltage() const {
-  return static_cast<uint16_t>(get<2uz>(_system_state_sliders)[4uz]->value());
+  return static_cast<uint16_t>(get<2uz>(_system_state_widgets)[4uz]->value());
 }
 
 //
 uint16_t System::vccVoltage() const {
-  return static_cast<uint16_t>(get<2uz>(_system_state_sliders)[5uz]->value());
+  return static_cast<uint16_t>(get<2uz>(_system_state_widgets)[5uz]->value());
 }
 
 //
-void System::initFailureRatesSliders() {
-  auto& [labels, values, widgets]{_failure_rates_sliders};
+void System::initFailureRatesWidgets() {
+  auto& [labels, values, sliders]{_failure_rates_widgets};
 
   //
   labels.push_back(new QLabel{"Programming short circuit [%]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(0);
-  widgets.back()->setMaximum(100);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(100);
+  sliders.back()->setStatusTip(
+    "Failure rate at which short circuit might occur during programming");
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   labels.push_back(new QLabel{"Programming [%]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(0);
-  widgets.back()->setMaximum(100);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(100);
+  sliders.back()->setStatusTip("Failure rate at which programming might fail");
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   for (auto i{0uz}; i < std::size(labels); ++i)
     //
-    connect(widgets[i], &QSlider::valueChanged, [=, this](int value) {
-      std::get<1uz>(_failure_rates_sliders)[i]->setText(QString::number(value));
+    connect(sliders[i], &QSlider::valueChanged, [=, this](int value) {
+      std::get<1uz>(_failure_rates_widgets)[i]->setText(QString::number(value));
     });
 
   //
-  Settings const settings;
-  if (auto const value{settings.value("system_prog_short_failure_rate")};
+  Config const config;
+  if (auto const value{config.value("system_prog_short_failure_rate")};
       value.isValid())
-    widgets[0uz]->setValue(value.toInt());
-  if (auto const value{settings.value("system_prog_failure_rate")};
+    sliders[0uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_prog_failure_rate")};
       value.isValid())
-    widgets[1uz]->setValue(value.toInt());
+    sliders[1uz]->setValue(value.toInt());
 }
 
 //
-void System::initCurrentsVoltagesTemperatureSliders() {
-  auto& [labels, values, widgets]{_system_state_sliders};
+void System::initCurrentsVoltagesTemperatureWidgets() {
+  auto& [labels, values, sliders]{_system_state_widgets};
 
   //
   labels.push_back(new QLabel{"Current main [mA]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(0);
-  widgets.back()->setMaximum(10000);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(10000);
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   labels.push_back(new QLabel{"Current programming [mA]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(0);
-  widgets.back()->setMaximum(2000);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(2000);
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   labels.push_back(new QLabel{"Filtered current main [mA]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(0);
-  widgets.back()->setMaximum(widgets[0uz]->maximum());
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(sliders[0uz]->maximum());
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   labels.push_back(new QLabel{"Temperature [°C]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(0);
-  widgets.back()->setMaximum(100);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(100);
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   labels.push_back(new QLabel{"Supply voltage [mV]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(12000);
-  widgets.back()->setMaximum(widgets.back()->minimum() * 2);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(12000);
+  sliders.back()->setMaximum(sliders.back()->minimum() * 2);
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   labels.push_back(new QLabel{"VCC voltage [mV]"});
-  widgets.push_back(new QSlider{Qt::Horizontal});
-  widgets.back()->setMinimum(widgets[4uz]->minimum());
-  widgets.back()->setMaximum(widgets[4uz]->maximum() - 1000);
-  values.push_back(new QLabel{QString::number(widgets.back()->value())});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(sliders[4uz]->minimum());
+  sliders.back()->setMaximum(sliders[4uz]->maximum() - 1000);
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
   for (auto i{0uz}; i < std::size(labels); ++i) {
     //
-    connect(widgets[i], &QSlider::valueChanged, [=, this](int value) {
-      std::get<1uz>(_system_state_sliders)[i]->setText(QString::number(value));
+    connect(sliders[i], &QSlider::valueChanged, [=, this](int value) {
+      std::get<1uz>(_system_state_widgets)[i]->setText(QString::number(value));
     });
 
     //
-    connect(widgets[i],
+    connect(sliders[i],
             &QSlider::sliderReleased,
             this,
             &System::broadcastSystemStateData);
   }
 
   //
-  Settings const settings;
-  if (auto const value{settings.value("system_main_current")}; value.isValid())
-    widgets[0uz]->setValue(value.toInt());
-  if (auto const value{settings.value("system_prog_current")}; value.isValid())
-    widgets[1uz]->setValue(value.toInt());
-  if (auto const value{settings.value("system_filtered_main_current")};
+  Config const config;
+  if (auto const value{config.value("system_main_current")}; value.isValid())
+    sliders[0uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_prog_current")}; value.isValid())
+    sliders[1uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_filtered_main_current")};
       value.isValid())
-    widgets[2uz]->setValue(value.toInt());
-  if (auto const value{settings.value("system_temperature")}; value.isValid())
-    widgets[3uz]->setValue(value.toInt());
-  if (auto const value{settings.value("system_supply_voltage")};
-      value.isValid())
-    widgets[4uz]->setValue(value.toInt());
-  if (auto const value{settings.value("system_vcc_voltage")}; value.isValid())
-    widgets[5uz]->setValue(value.toInt());
+    sliders[2uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_temperature")}; value.isValid())
+    sliders[3uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_supply_voltage")}; value.isValid())
+    sliders[4uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_vcc_voltage")}; value.isValid())
+    sliders[5uz]->setValue(value.toInt());
 }

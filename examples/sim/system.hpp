@@ -30,12 +30,12 @@ signals:
   void broadcastSystemStateData();
 
 private:
-  using SlidersTriplet = std::
+  using WidgetTriplet = std::
     tuple<std::vector<QLabel*>, std::vector<QLabel*>, std::vector<QSlider*>>;
 
-  void initFailureRatesSliders();
-  void initCurrentsVoltagesTemperatureSliders();
+  void initFailureRatesWidgets();
+  void initCurrentsVoltagesTemperatureWidgets();
 
-  SlidersTriplet _failure_rates_sliders;
-  SlidersTriplet _system_state_sliders;
+  WidgetTriplet _failure_rates_widgets;
+  WidgetTriplet _system_state_widgets;
 };

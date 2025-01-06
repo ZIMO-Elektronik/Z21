@@ -44,7 +44,7 @@ struct LocoInfo {
 ///
 /// \param  speed_steps Speed steps
 /// \param  rvvvvvvv    Direction and speed byte
-/// \retval -1  E-Stop
+/// \retval -1  EStop
 /// \retval 0   Stop
 /// \retval >0  Speed
 constexpr int32_t decode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps,
@@ -53,7 +53,7 @@ constexpr int32_t decode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps,
   if (speed_steps == LocoInfo::DCC128) {
     // Halt
     if (!(rvvvvvvv & 0b0111'1111u)) return 0;
-    // E-Stop
+    // EStop
     else if (!(rvvvvvvv & 0b0111'1110u)) return -1;
     else return static_cast<int32_t>(rvvvvvvv & 0b0111'1111u) - 1;
   }
@@ -61,7 +61,7 @@ constexpr int32_t decode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps,
   else {
     // Halt
     if (!(rvvvvvvv & 0b0000'1111u)) return 0;
-    // E-Stop
+    // EStop
     else if (!(rvvvvvvv & 0b0000'1110u)) return -1;
 
     int32_t speed{static_cast<int32_t>(rvvvvvvv & 0b0000'1111u) - 1};
@@ -86,7 +86,7 @@ constexpr uint8_t
 encode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps, bool dir, int32_t speed) {
   // Halt
   if (!speed) return static_cast<uint8_t>(dir << 7u);
-  // E-Stop
+  // EStop
   else if (speed < 0) return static_cast<uint8_t>(dir << 7u) | 0b1u;
 
   auto vvvvvvv{static_cast<uint32_t>(speed + 1)};
@@ -100,4 +100,4 @@ encode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps, bool dir, int32_t speed) {
   return static_cast<uint8_t>(static_cast<uint32_t>(dir << 7u) | vvvvvvv);
 }
 
-}  // namespace z21
+} // namespace z21

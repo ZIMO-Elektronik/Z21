@@ -55,4 +55,4 @@ struct Driving {
   virtual void broadcastLocoInfo(uint16_t addr) = 0;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

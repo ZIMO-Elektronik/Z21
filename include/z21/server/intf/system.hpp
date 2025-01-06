@@ -17,7 +17,7 @@
 
 namespace z21::server::intf {
 
-/// TODO
+/// \todo
 ///
 /// Commands:
 /// - LAN_GET_SERIAL
@@ -100,4 +100,4 @@ private:
   SystemState _sys_state{};
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

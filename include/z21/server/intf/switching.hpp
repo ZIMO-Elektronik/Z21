@@ -20,4 +20,4 @@ struct Switching {
   virtual ~Switching() = default;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

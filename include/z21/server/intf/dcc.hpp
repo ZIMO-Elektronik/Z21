@@ -19,4 +19,4 @@ namespace z21::server::intf {
 
 struct Dcc : Driving, Programming /*, RailCom, Switching*/ {};
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

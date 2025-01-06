@@ -74,7 +74,7 @@ void Loco::updateLabel() {
 
   if (auto const speed{z21::decode_rvvvvvvv(speed_steps, rvvvvvvv)}; !speed)
     text += "Stop";
-  else if (speed == -1) text += "E-Stop";
+  else if (speed == -1) text += "EStop";
   else text += "V" + QString::number(speed);
   text += " ";
 

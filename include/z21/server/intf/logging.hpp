@@ -20,4 +20,4 @@ struct Logging {
   virtual void log(char const* str) = 0;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

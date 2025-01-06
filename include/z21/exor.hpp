@@ -27,4 +27,4 @@ constexpr uint8_t exor(std::span<uint8_t const> chunk) {
                     [](uint8_t a, uint8_t b) { return a ^ b; });
 }
 
-}  // namespace z21
+} // namespace z21

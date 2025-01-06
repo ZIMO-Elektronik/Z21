@@ -20,4 +20,4 @@ struct LocoNet {
   virtual ~LocoNet() = default;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

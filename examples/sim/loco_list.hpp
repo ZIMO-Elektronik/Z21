@@ -35,7 +35,7 @@ signals:
 private:
   Loco* operator[](uint16_t addr);
 
-  // Create a separate loco for service mode.This leaks intentionally, we don't
+  // Create a separate loco for service mode. This leaks intentionally, we don't
   // want this loco to be part of the actual list.
   Loco* _service_loco{new Loco};
 };

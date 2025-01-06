@@ -17,18 +17,17 @@ namespace z21 {
 
 ///
 enum class CentralStateEx : uint8_t {
-  HighTemperature = 0x01,        ///< Temperature too high
-  PowerLost = 0x02u,             ///< Input voltage too low
-  ShortCircuitExternal = 0x04u,  ///< S.C. at the external booster output
-  ShortCircuitInternal =
-    0x08u,             ///< S.C. at the main track or programming track
-  RevPol = 0x10u,      ///< Supply voltage error
-  RCN213 = 0x20u,      ///< Turnout addresses according to RCN-213
-  NoDCCInput = 0x80u,  ///< No DCC input signal
+  HighTemperature = 0x01,       ///< Temperature too high
+  PowerLost = 0x02u,            ///< Input voltage too low
+  ShortCircuitExternal = 0x04u, ///< S.C. at the external booster output
+  ShortCircuitInternal = 0x08u, ///< S.C. at the main track or programming track
+  RevPol = 0x10u,               ///< Supply voltage error
+  RCN213 = 0x20u,               ///< Turnout addresses according to RCN-213
+  NoDCCInput = 0x80u,           ///< No DCC input signal
   All = HighTemperature | PowerLost | ShortCircuitExternal |
         ShortCircuitInternal | RevPol | RCN213 | NoDCCInput,
 };
 
 ZTL_MAKE_ENUM_CLASS_FLAGS(CentralStateEx)
 
-}  // namespace z21
+} // namespace z21

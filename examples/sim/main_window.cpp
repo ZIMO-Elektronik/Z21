@@ -8,14 +8,14 @@
 #include <QScreen>
 #include <QStatusBar>
 #include <QToolBar>
+#include "config.hpp"
 #include "led.hpp"
 #include "server.hpp"
-#include "settings.hpp"
 
 // Add menu and toolbar
 MainWindow::MainWindow() {
   // Initial size
-  setMinimumSize(1200, 900);
+  setMinimumSize(1600, 900);
 
   QToolBar* toolbar{addToolBar("")};
 
@@ -69,9 +69,9 @@ MainWindow::MainWindow() {
 
 //
 MainWindow::~MainWindow() {
-  Settings settings;
-  settings.setValue("main_window_geometry", saveGeometry());
-  settings.setValue("main_window_state", saveState());
+  Config config;
+  config.setValue("main_window_geometry", saveGeometry());
+  config.setValue("main_window_state", saveState());
 }
 
 // Show about message box
@@ -88,8 +88,8 @@ void MainWindow::about() {
   about.setTextFormat(Qt::RichText);
   about.setText("<b>Possible IP addresses</b><br>" + ip_addrs_str);
   about.setDetailedText("@Version\n" + QCoreApplication::applicationVersion() +
-                        "\n\n" +       //
-                        "@GitHub\n" +  //
+                        "\n\n" +      //
+                        "@GitHub\n" + //
                         "github.com/ZIMO-Elektronik/Z21");
   about.setStandardButtons(QMessageBox::Ok);
   about.setIconPixmap(QPixmap{":/images/logo.png"});
@@ -99,10 +99,10 @@ void MainWindow::about() {
 
 //
 void MainWindow::restoreGeometryState() {
-  Settings const settings;
-  if (auto const geometry{settings.value("main_window_geometry")};
+  Config const config;
+  if (auto const geometry{config.value("main_window_geometry")};
       geometry.isValid())
     restoreGeometry(geometry.toByteArray());
-  if (auto const state{settings.value("main_window_state")}; state.isValid())
+  if (auto const state{config.value("main_window_state")}; state.isValid())
     restoreState(state.toByteArray());
 }

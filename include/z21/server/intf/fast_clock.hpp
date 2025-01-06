@@ -20,4 +20,4 @@ struct FastClock {
   virtual ~FastClock() = default;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

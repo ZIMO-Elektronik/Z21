@@ -10,8 +10,11 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   auto layout{new QGridLayout};
   layout->setContentsMargins(0, 0, 0, 0);
 
-  _system_tabs->addTab(_system, QPixmap{":/dark-green/computer.svg"}, "System");
-  layout->addWidget(_system_tabs, 0, 0, -1, 1);
+  _system_settings_tabs->addTab(
+    _system, QPixmap{":/dark-green/computer.svg"}, "System");
+  _system_settings_tabs->addTab(
+    _settings, QPixmap{":/dark-green/menu.svg"}, "Settings");
+  layout->addWidget(_system_settings_tabs, 0, 0, -1, 1);
 
   _decoders_tabs->addTab(_loco_list, QPixmap{":/icons/loco.svg"}, "Locos");
   _decoders_tabs->addTab(
@@ -22,7 +25,6 @@ Server::Server(QWidget* parent) : QWidget{parent} {
     _client_log, QPixmap{":/dark-green/file.svg"}, "Client log");
   layout->addWidget(_client_log_tabs, 0, 2, 1, 1);
 
-  auto tabs{new QTabWidget};
   _server_log_tabs->addTab(
     _server_log, QPixmap{":/dark-green/file.svg"}, "Server log");
   layout->addWidget(_server_log_tabs, 1, 2, 1, 1);
@@ -127,7 +129,7 @@ void Server::transmit(z21::Socket const& sock,
 }
 
 //
-bool Server::trackPower(bool on) { return true; }
+bool Server::trackPower(bool) { return true; }
 
 //
 bool Server::stop() { return true; }
@@ -201,6 +203,26 @@ void Server::cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) {
 }
 
 //
+z21::CommonSettings Server::commonSettings() {
+  return _settings->commonSettings();
+}
+
+//
+void Server::commonSettings(z21::CommonSettings const& common_settings) {
+  _settings->commonSettings(common_settings);
+}
+
+//
+z21::MmDccSettings Server::mmDccSettings() {
+  return _settings->mmDccSettings();
+}
+
+//
+void Server::mmDccSettings(z21::MmDccSettings const& mm_dcc_settings) {
+  _settings->mmDccSettings(mm_dcc_settings);
+}
+
+//
 void Server::log(char const* str) {
   QString tmp{str};
   tmp.remove(0, 2);
@@ -223,7 +245,7 @@ bool Server::programmingFailure() {
 //
 void Server::connected() {
   _connected = true;
-  _system_tabs->setDisabled(false);
+  _system_settings_tabs->setDisabled(false);
   _decoders_tabs->setDisabled(false);
   _client_log_tabs->setDisabled(false);
   _server_log_tabs->setDisabled(false);
@@ -233,7 +255,7 @@ void Server::connected() {
 //
 void Server::disconnected() {
   _connected = false;
-  _system_tabs->setDisabled(true);
+  _system_settings_tabs->setDisabled(true);
   _decoders_tabs->setDisabled(true);
   _client_log_tabs->setDisabled(true);
   _server_log_tabs->setDisabled(true);

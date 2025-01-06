@@ -7,11 +7,13 @@
 #include "led.hpp"
 #include "loco_list.hpp"
 #include "log.hpp"
+#include "settings.hpp"
 #include "system.hpp"
 
 using ServerBase = z21::server::Base<z21::server::intf::System,
                                      z21::server::intf::Driving,
                                      z21::server::intf::Programming,
+                                     z21::server::intf::Settings,
                                      z21::server::intf::Logging>;
 
 //
@@ -35,7 +37,7 @@ private:
                 std::span<uint8_t const> datasets) final;
 
   // System interface
-  [[nodiscard]] bool trackPower(bool on) final;
+  [[nodiscard]] bool trackPower(bool) final;
   [[nodiscard]] bool stop() final;
   void logoff(z21::Socket const&) final;
   [[nodiscard]] z21::SystemState& systemState() final;
@@ -55,6 +57,12 @@ private:
   void cvPomRead(uint16_t addr, uint16_t cv_addr) final;
   void cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) final;
 
+  // Settings interface
+  [[nodiscard]] z21::CommonSettings commonSettings() final;
+  void commonSettings(z21::CommonSettings const& common_settings) final;
+  [[nodiscard]] z21::MmDccSettings mmDccSettings() final;
+  void mmDccSettings(z21::MmDccSettings const& mm_dcc_settings) final;
+
   // Log interface
   void log(char const* str) final;
 
@@ -62,7 +70,7 @@ private:
   void connected();
   void disconnected();
 
-  QTabWidget* _system_tabs{new QTabWidget{this}};
+  QTabWidget* _system_settings_tabs{new QTabWidget{this}};
   QTabWidget* _decoders_tabs{new QTabWidget{this}};
   QTabWidget* _client_log_tabs{new QTabWidget{this}};
   QTabWidget* _server_log_tabs{new QTabWidget{this}};
@@ -71,6 +79,7 @@ private:
   ::Log* _server_log{new ::Log{this}};
   ::LocoList* _loco_list{new ::LocoList{this}};
   ::System* _system{new ::System{this}};
+  ::Settings* _settings{new ::Settings{this}};
 
   int _sock{get_non_blocking_socket()};
   bool _connected{};
