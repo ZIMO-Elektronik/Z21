@@ -20,4 +20,4 @@ struct Can {
   virtual ~Can() = default;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

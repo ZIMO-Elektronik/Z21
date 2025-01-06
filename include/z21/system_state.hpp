@@ -29,4 +29,4 @@ struct SystemState {
   Capabilities capabilities{Capabilities::All};
 };
 
-}  // namespace z21
+} // namespace z21

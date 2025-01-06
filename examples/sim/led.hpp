@@ -5,7 +5,7 @@
 // LED status indicator
 //
 // For color codes see:
-// https://www.z21.eu/en/products/z21/connections-z21
+// https://www.z21.eu/en/products/z21/connections-z21#52-1222
 class Led : public QWidget {
   Q_OBJECT
 public:

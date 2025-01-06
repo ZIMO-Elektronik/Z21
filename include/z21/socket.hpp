@@ -39,4 +39,4 @@ struct Socket {
   socklen_t len{};
 };
 
-}  // namespace z21
+} // namespace z21

@@ -18,4 +18,4 @@ namespace z21 {
 ///
 using Datasets = ztl::inplace_deque<Dataset, Z21_SERVER_DEQUE_SIZE>;
 
-}  // namespace z21
+} // namespace z21

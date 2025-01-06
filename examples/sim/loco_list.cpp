@@ -2,7 +2,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QSlider>
-#include "settings.hpp"
+#include "config.hpp"
 
 //
 LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
@@ -12,14 +12,14 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
 
   setIconSize(QSize{30, 30});
 
-  Settings settings;
+  Config config;
 
-  auto const size{settings.beginReadArray("loco_list")};
+  auto const size{config.beginReadArray("loco_list")};
   for (auto i{0}; i < size; ++i) {
-    settings.setArrayIndex(i);
+    config.setArrayIndex(i);
 
-    auto const addr{settings.value("address")};
-    auto const loco_info{settings.value("loco_info")};
+    auto const addr{config.value("address")};
+    auto const loco_info{config.value("loco_info")};
     if (!addr.isValid() || !loco_info.isValid()) continue;
 
     auto list_widget{
@@ -30,21 +30,21 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
     setItemWidget(list_widget, loco);
   }
 
-  settings.endArray();
+  config.endArray();
 }
 
 //
 LocoList::~LocoList() {
-  Settings settings;
-  settings.beginWriteArray("loco_list");
+  Config config;
+  config.beginWriteArray("loco_list");
   for (auto i{0}; i < count(); ++i) {
-    settings.setArrayIndex(i);
+    config.setArrayIndex(i);
     auto list_widget{item(i)};
     auto loco{static_cast<Loco*>(itemWidget(list_widget))};
-    settings.setValue("address", list_widget->text());
-    settings.setValue("loco_info", QVariant::fromValue(loco->locoInfo()));
+    config.setValue("address", list_widget->text());
+    config.setValue("loco_info", QVariant::fromValue(loco->locoInfo()));
   }
-  settings.endArray();
+  config.endArray();
 }
 
 //

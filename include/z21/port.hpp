@@ -16,4 +16,4 @@ namespace z21 {
 
 inline constexpr uint16_t port{21105u};
 
-}  // namespace z21
+} // namespace z21

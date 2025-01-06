@@ -17,10 +17,10 @@ std::vector<uint8_t> make_lan_set_broadcastflags_dataset(uint32_t flags) {
           0x00u,
           std::to_underlying(z21::Header::LAN_SET_BROADCASTFLAGS),
           0x00u,
-          static_cast<uint8_t>(flags >> 0u),    //
-          static_cast<uint8_t>(flags >> 8u),    //
-          static_cast<uint8_t>(flags >> 16u),   //
-          static_cast<uint8_t>(flags >> 24u)};  //
+          static_cast<uint8_t>(flags >> 0u),   //
+          static_cast<uint8_t>(flags >> 8u),   //
+          static_cast<uint8_t>(flags >> 16u),  //
+          static_cast<uint8_t>(flags >> 24u)}; //
 }
 
 std::vector<uint8_t> make_lan_logoff_dataset() {

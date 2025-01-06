@@ -40,7 +40,7 @@ void server_task(int sock) {
   }
 }
 
-}  // namespace
+} // namespace
 
 // ESP32 entry point
 extern "C" void app_main() {

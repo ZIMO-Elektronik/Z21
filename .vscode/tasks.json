@@ -2,30 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Z21Posix",
-      "type": "shell",
-      "isBackground": true,
-      "command": "cmake --build build --parallel --target Z21Posix"
-    },
-    {
-      "label": "Build Z21Sim",
-      "type": "shell",
-      "isBackground": true,
-      "command": "cmake --build build --parallel --target Z21Sim"
-    },
-    {
-      "label": "Build Z21Tests",
-      "type": "shell",
-      "isBackground": true,
-      "command": "cmake --build build --parallel --target Z21Tests"
-    },
-    {
-      "label": "Config Debug",
-      "type": "shell",
-      "isBackground": true,
-      "command": "cmake -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Debug"
-    },
-    {
       "label": "Run act esp-elf-gcc",
       "type": "shell",
       "isBackground": true,
@@ -54,6 +30,18 @@
       "type": "shell",
       "isBackground": true,
       "command": "./build/tests/Z21Tests"
-    }
+    },
+    {
+      "label": "Run rm -rf build",
+      "type": "shell",
+      "isBackground": true,
+      "command": "rm -rf build",
+    },
+    {
+      "label": "Run rm -rf build/examples/config.ini",
+      "type": "shell",
+      "isBackground": true,
+      "command": "rm -rf build/examples/config.ini",
+    },
   ]
 }

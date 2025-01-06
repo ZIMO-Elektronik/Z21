@@ -20,4 +20,4 @@ struct RailCom {
   virtual ~RailCom() = default;
 };
 
-}  // namespace z21::server::intf
+} // namespace z21::server::intf

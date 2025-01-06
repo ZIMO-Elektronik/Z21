@@ -106,7 +106,7 @@ public:
   void broadcastStopped() final { lanXBcStopped(); }
 
   ///
-  void broadcastLocoInfo(uint16_t addr)  // final
+  void broadcastLocoInfo(uint16_t addr) // final
     requires(std::derived_from<Base, intf::Driving>)
   {
     lanXLocoInfo(addr);
@@ -116,7 +116,7 @@ public:
   void broadcastSystemStateData() final { lanSystemStateDataChanged(); }
 
   ///
-  void cvNackShortCircuit()  // final
+  void cvNackShortCircuit() // final
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (empty(_cv_request_deque)) return;
@@ -125,7 +125,7 @@ public:
   }
 
   ///
-  void cvNack()  // final
+  void cvNack() // final
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (empty(_cv_request_deque)) return;
@@ -134,7 +134,7 @@ public:
   }
 
   ///
-  void cvAck(uint16_t cv_addr, uint8_t byte)  // final
+  void cvAck(uint16_t cv_addr, uint8_t byte) // final
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (empty(_cv_request_deque)) return;
@@ -150,6 +150,36 @@ private:
   ///
   void lanGetSerialNumber(Socket const& sock) {
     replyToLanGetSerialNumber(sock);
+  }
+
+  ///
+  void lanGetCommonSettings(Socket const& sock)
+    requires(std::derived_from<Base, intf::Settings>)
+  {
+    replyToLanGetCommonSettings(sock);
+  }
+
+  ///
+  void lanSetCommonSettings(Socket const& sock,
+                            CommonSettings const& common_settings)
+    requires(std::derived_from<Base, intf::Settings>)
+  {
+    this->commonSettings(common_settings);
+  }
+
+  ///
+  void lanGetMmDccSettings(Socket const& sock)
+    requires(std::derived_from<Base, intf::Settings>)
+  {
+    replyToLanGetMmDccSettings(sock);
+  }
+
+  ///
+  void lanSetMmDccSettings(Socket const& sock,
+                           MmDccSettings const& mm_dcc_settings)
+    requires(std::derived_from<Base, intf::Settings>)
+  {
+    this->mmDccSettings(mm_dcc_settings);
   }
 
   ///
@@ -175,14 +205,12 @@ private:
 
   ///
   void lanXSetTrackPowerOff(Socket const& sock) {
-    this->trackPower(false);
-    lanXBcTrackPowerOff(sock);
+    if (this->trackPower(false)) lanXBcTrackPowerOff(sock);
   }
 
   ///
   void lanXSetTrackPowerOn(Socket const& sock) {
-    this->trackPower(true);
-    lanXBcTrackPowerOn(sock);
+    if (this->trackPower(true)) lanXBcTrackPowerOn(sock);
   }
 
   ///
@@ -256,8 +284,7 @@ private:
 
   ///
   void lanXSetStop(Socket const& sock) {
-    this->stop();
-    lanXBcStopped(sock);
+    if (this->stop()) lanXBcStopped(sock);
   }
 
   ///
@@ -285,7 +312,7 @@ private:
         std::to_underlying(_clients[sock].bc_flags &
                            BroadcastFlags::DrivingSwitching) &&
         !std::ranges::contains(addrs, addr)) {
-      if (full(addrs)) addrs.pop_front();  // FIFO full, replace first
+      if (full(addrs)) addrs.pop_front(); // FIFO full, replace first
       addrs.push_back(addr);
     }
 
@@ -344,7 +371,7 @@ private:
   void lanXCvPomWriteBit(Socket const&)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    assert(false);  // Only implement this if really necessary
+    assert(false); // Only implement this if really necessary
   }
 
   ///
@@ -370,7 +397,7 @@ private:
   void lanXCvPomAccessoryWriteBit(Socket const&)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    assert(false);  // Only implement this if really necessary
+    assert(false); // Only implement this if really necessary
   }
 
   ///
@@ -565,26 +592,80 @@ private:
     auto const sn{this->serialNumber()};
     if (!sn) return;
     std::array<uint8_t, 0x08uz> const reply{
-      0x08u,                                                       // Length
-      0x00u,                                                       //
-      std::to_underlying(Header::Reply_to_LAN_GET_SERIAL_NUMBER),  // Header
-      0x00u,                                                       //
-      static_cast<uint8_t>(sn >> 0u),    // Serial number
-      static_cast<uint8_t>(sn >> 8u),    //
-      static_cast<uint8_t>(sn >> 16u),   //
-      static_cast<uint8_t>(sn >> 24u)};  //
+      0x08u,                                                      // Length
+      0x00u,                                                      //
+      std::to_underlying(Header::Reply_to_LAN_GET_SERIAL_NUMBER), // Header
+      0x00u,                                                      //
+      static_cast<uint8_t>(sn >> 0u),   // Serial number
+      static_cast<uint8_t>(sn >> 8u),   //
+      static_cast<uint8_t>(sn >> 16u),  //
+      static_cast<uint8_t>(sn >> 24u)}; //
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_SERIAL_NUMBER", reply);
   }
 
   ///
+  void replyToLanGetCommonSettings(Socket const& sock)
+    requires(std::derived_from<Base, intf::Settings>)
+  {
+    auto const common_settings{this->commonSettings()};
+    std::array<uint8_t, 0x0Euz> const reply{
+      0x0Eu,                                                        // Length
+      0x00u,                                                        //
+      std::to_underlying(Header::Reply_to_LAN_GET_COMMON_SETTINGS), // Header
+      0x00u,                                                        //
+      common_settings.enable_railcom,                               //
+      common_settings.enable_bit_modify_on_long_address,            //
+      common_settings.key_stop_mode,                                //
+      common_settings.programming_type,                             //
+      common_settings.enable_loconet_current_source,                //
+      common_settings.loconet_fast_clock_rate,                      //
+      common_settings.loconet_mode,                                 //
+      common_settings.ext_settings,                                 //
+      common_settings.purging_time,                                 //
+      common_settings.bus_settings};                                //
+    this->transmit(sock, reply);
+    logf('S', sock, "Reply_to_LAN_GET_COMMON_SETTINGS", reply);
+  }
+
+  ///
+  void replyToLanGetMmDccSettings(Socket const& sock)
+    requires(std::derived_from<Base, intf::Settings>)
+  {
+    auto const mm_dcc_settings{this->mmDccSettings()};
+    std::array<uint8_t, 0x14uz> const reply{
+      0x14u,                                                           // Length
+      0x00u,                                                           //
+      std::to_underlying(Header::Reply_to_LAN_GET_MMDCC_SETTINGS),     // Header
+      0x00u,                                                           //
+      mm_dcc_settings.startup_reset_package_count,                     //
+      mm_dcc_settings.continue_reset_packet_count,                     //
+      mm_dcc_settings.program_package_count,                           //
+      mm_dcc_settings.bit_verify_to_one,                               //
+      0x00u,                                                           //
+      0x00u,                                                           //
+      0x00u,                                                           //
+      0x00u,                                                           //
+      0x00u,                                                           //
+      0x00u,                                                           //
+      mm_dcc_settings.programming_ack_current,                         //
+      mm_dcc_settings.flags,                                           //
+      static_cast<uint8_t>(mm_dcc_settings.output_voltage >> 0u),      //
+      static_cast<uint8_t>(mm_dcc_settings.output_voltage >> 8u),      //
+      static_cast<uint8_t>(mm_dcc_settings.programming_voltage >> 0u), //
+      static_cast<uint8_t>(mm_dcc_settings.programming_voltage >> 8u)}; //
+    this->transmit(sock, reply);
+    logf('S', sock, "Reply_to_LAN_GET_MMDCC_SETTINGS", reply);
+  }
+
+  ///
   void replyToLanGetCode(Socket const& sock) {
     static constexpr std::array<uint8_t, 0x05uz> reply{
-      0x08u,                                              // Length
-      0x00u,                                              //
-      std::to_underlying(Header::Reply_to_LAN_GET_CODE),  // Header
-      0x00u,                                              //
-      0x00u};                                             // Code
+      0x08u,                                             // Length
+      0x00u,                                             //
+      std::to_underlying(Header::Reply_to_LAN_GET_CODE), // Header
+      0x00u,                                             //
+      0x00u};                                            // Code
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_CODE", reply);
   }
@@ -592,18 +673,18 @@ private:
   ///
   void replyToLanGetHwInfo(Socket const& sock) {
     std::array<uint8_t, 0x0Cuz> const reply{
-      0x0Cu,                                                      // Length
-      0x00u,                                                      //
-      std::to_underlying(Header::Reply_to_LAN_GET_HWINFO),        // Header
-      0x00u,                                                      //
-      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 0u),   // HW type
-      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 8u),   //
-      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 16u),  //
-      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 24u),  //
-      Z21_VERSION_MINOR,                                          // FW version
-      Z21_VERSION_MAJOR,                                          //
-      0x00u,                                                      //
-      0x00u};                                                     //
+      0x0Cu,                                                     // Length
+      0x00u,                                                     //
+      std::to_underlying(Header::Reply_to_LAN_GET_HWINFO),       // Header
+      0x00u,                                                     //
+      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 0u),  // HW type
+      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 8u),  //
+      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 16u), //
+      static_cast<uint8_t>(std::to_underlying(_hw_type) >> 24u), //
+      Z21_VERSION_MINOR,                                         // FW version
+      Z21_VERSION_MAJOR,                                         //
+      0x00u,                                                     //
+      0x00u};                                                    //
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_HWINFO", reply);
   }
@@ -632,13 +713,13 @@ private:
     _cv_request_deque.clear();
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                                  // Length
-      0x00u,                                                  //
-      std::to_underlying(Header::LAN_X_BC_TRACK_POWER_OFF),   // Header
-      0x00u,                                                  //
-      std::to_underlying(XHeader::LAN_X_BC_TRACK_POWER_OFF),  // X-Header
-      std::to_underlying(DB0::LAN_X_BC_TRACK_POWER_OFF),      // DB0
-      0x61u};                                                 // XOR
+      0x07u,                                                 // Length
+      0x00u,                                                 //
+      std::to_underlying(Header::LAN_X_BC_TRACK_POWER_OFF),  // Header
+      0x00u,                                                 //
+      std::to_underlying(XHeader::LAN_X_BC_TRACK_POWER_OFF), // X-Header
+      std::to_underlying(DB0::LAN_X_BC_TRACK_POWER_OFF),     // DB0
+      0x61u};                                                // XOR
 
     for (auto const& [s, c] : _clients)
       if (s == sock ||
@@ -657,22 +738,22 @@ private:
   void lanXBcTrackPowerOn(Socket const& sock = {}) {
     //
     intf::System::systemState().central_state &=
-      ~(CentralState::EmergencyStop |          //
-        CentralState::TrackVoltageOff |        //
-        CentralState::ShortCircuit |           //
-        CentralState::ProgrammingModeActive);  //
+      ~(CentralState::EmergencyStop |         //
+        CentralState::TrackVoltageOff |       //
+        CentralState::ShortCircuit |          //
+        CentralState::ProgrammingModeActive); //
 
     //
     _cv_request_deque.clear();
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                                 // Length
-      0x00u,                                                 //
-      std::to_underlying(Header::LAN_X_BC_TRACK_POWER_ON),   // Header
-      0x00u,                                                 //
-      std::to_underlying(XHeader::LAN_X_BC_TRACK_POWER_ON),  // X-Header
-      std::to_underlying(DB0::LAN_X_BC_TRACK_POWER_ON),      // DB0
-      0x60u};                                                // XOR
+      0x07u,                                                // Length
+      0x00u,                                                //
+      std::to_underlying(Header::LAN_X_BC_TRACK_POWER_ON),  // Header
+      0x00u,                                                //
+      std::to_underlying(XHeader::LAN_X_BC_TRACK_POWER_ON), // X-Header
+      std::to_underlying(DB0::LAN_X_BC_TRACK_POWER_ON),     // DB0
+      0x60u};                                               // XOR
 
     for (auto const& [s, c] : _clients)
       if (s == sock ||
@@ -693,13 +774,13 @@ private:
       CentralState::ProgrammingModeActive;
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                                   // Length
-      0x00u,                                                   //
-      std::to_underlying(Header::LAN_X_BC_PROGRAMMING_MODE),   // Header
-      0x00u,                                                   //
-      std::to_underlying(XHeader::LAN_X_BC_PROGRAMMING_MODE),  // X-Header
-      std::to_underlying(DB0::LAN_X_BC_PROGRAMMING_MODE),      // DB0
-      0x63u};                                                  // XOR
+      0x07u,                                                  // Length
+      0x00u,                                                  //
+      std::to_underlying(Header::LAN_X_BC_PROGRAMMING_MODE),  // Header
+      0x00u,                                                  //
+      std::to_underlying(XHeader::LAN_X_BC_PROGRAMMING_MODE), // X-Header
+      std::to_underlying(DB0::LAN_X_BC_PROGRAMMING_MODE),     // DB0
+      0x63u};                                                 // XOR
 
     for (auto const& [s, c] : _clients)
       if (s == sock ||
@@ -718,13 +799,13 @@ private:
     intf::System::systemState().central_state |= CentralState::ShortCircuit;
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                                      // Length
-      0x00u,                                                      //
-      std::to_underlying(Header::LAN_X_BC_TRACK_SHORT_CIRCUIT),   // Header
-      0x00u,                                                      //
-      std::to_underlying(XHeader::LAN_X_BC_TRACK_SHORT_CIRCUIT),  // X-Header
-      std::to_underlying(DB0::LAN_X_BC_TRACK_SHORT_CIRCUIT),      // DB0
-      0x69u};                                                     // XOR
+      0x07u,                                                     // Length
+      0x00u,                                                     //
+      std::to_underlying(Header::LAN_X_BC_TRACK_SHORT_CIRCUIT),  // Header
+      0x00u,                                                     //
+      std::to_underlying(XHeader::LAN_X_BC_TRACK_SHORT_CIRCUIT), // X-Header
+      std::to_underlying(DB0::LAN_X_BC_TRACK_SHORT_CIRCUIT),     // DB0
+      0x69u};                                                    // XOR
 
     for (auto const& [s, c] : _clients)
       if (std::to_underlying(c.bc_flags & BroadcastFlags::DrivingSwitching)) {
@@ -738,13 +819,13 @@ private:
     requires(std::derived_from<Base, intf::Programming>)
   {
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                          // Length
-      0x00u,                                          //
-      std::to_underlying(Header::LAN_X_CV_NACK_SC),   // Header
-      0x00u,                                          //
-      std::to_underlying(XHeader::LAN_X_CV_NACK_SC),  // X-Header
-      std::to_underlying(DB0::LAN_X_CV_NACK_SC),      // DB0
-      0x73u};                                         // XOR
+      0x07u,                                         // Length
+      0x00u,                                         //
+      std::to_underlying(Header::LAN_X_CV_NACK_SC),  // Header
+      0x00u,                                         //
+      std::to_underlying(XHeader::LAN_X_CV_NACK_SC), // X-Header
+      std::to_underlying(DB0::LAN_X_CV_NACK_SC),     // DB0
+      0x73u};                                        // XOR
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_CV_NACK_SC", reply);
   }
@@ -754,13 +835,13 @@ private:
     requires(std::derived_from<Base, intf::Programming>)
   {
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                       // Length
-      0x00u,                                       //
-      std::to_underlying(Header::LAN_X_CV_NACK),   // Header
-      0x00u,                                       //
-      std::to_underlying(XHeader::LAN_X_CV_NACK),  // X-Header
-      std::to_underlying(DB0::LAN_X_CV_NACK),      // DB0
-      0x72u};                                      // XOR
+      0x07u,                                      // Length
+      0x00u,                                      //
+      std::to_underlying(Header::LAN_X_CV_NACK),  // Header
+      0x00u,                                      //
+      std::to_underlying(XHeader::LAN_X_CV_NACK), // X-Header
+      std::to_underlying(DB0::LAN_X_CV_NACK),     // DB0
+      0x72u};                                     // XOR
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_CV_NACK", reply);
   }
@@ -771,13 +852,13 @@ private:
   /// invalid request.
   void lanXUnknownCommand(Socket const& sock) {
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                               // Length
-      0x00u,                                               //
-      std::to_underlying(Header::LAN_X_UNKNOWN_COMMAND),   // Header
-      0x00u,                                               //
-      std::to_underlying(XHeader::LAN_X_UNKNOWN_COMMAND),  // X-Header
-      std::to_underlying(DB0::LAN_X_UNKNOWN_COMMAND),      // DB0
-      0xE3u};                                              // XOR
+      0x07u,                                              // Length
+      0x00u,                                              //
+      std::to_underlying(Header::LAN_X_UNKNOWN_COMMAND),  // Header
+      0x00u,                                              //
+      std::to_underlying(XHeader::LAN_X_UNKNOWN_COMMAND), // X-Header
+      std::to_underlying(DB0::LAN_X_UNKNOWN_COMMAND),     // DB0
+      0xE3u};                                             // XOR
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_UNKNOWN_COMMAND", reply);
   }
@@ -785,14 +866,14 @@ private:
   ///
   void lanXStatusChanged(Socket const& sock) {
     std::array<uint8_t, 0x08uz> reply{
-      0x08u,                                                  // Length
-      0x00u,                                                  //
-      std::to_underlying(Header::LAN_X_STATUS_CHANGED),       // Header
-      0x00u,                                                  //
-      std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),      // X-Header
-      std::to_underlying(DB0::LAN_X_STATUS_CHANGED),          // DB0
-      std::to_underlying(this->systemState().central_state),  // DB1
-      0x00u};                                                 // XOR
+      0x08u,                                                 // Length
+      0x00u,                                                 //
+      std::to_underlying(Header::LAN_X_STATUS_CHANGED),      // Header
+      0x00u,                                                 //
+      std::to_underlying(XHeader::LAN_X_STATUS_CHANGED),     // X-Header
+      std::to_underlying(DB0::LAN_X_STATUS_CHANGED),         // DB0
+      std::to_underlying(this->systemState().central_state), // DB1
+      0x00u};                                                // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_STATUS_CHANGED", reply);
@@ -801,15 +882,15 @@ private:
   ///
   void replyToLanXGetVersion(Socket const& sock) {
     std::array<uint8_t, 0x09uz> reply{
-      0x09u,                                                    // Length
-      0x00u,                                                    //
-      std::to_underlying(Header::Reply_to_LAN_X_GET_VERSION),   // Header
-      0x00u,                                                    //
-      std::to_underlying(XHeader::Reply_to_LAN_X_GET_VERSION),  // X-Header
-      std::to_underlying(DB0::Reply_to_LAN_X_GET_VERSION),      // DB0
-      Z21_XBUS_VERSION,        // X-Bus protocol version
-      Z21_COMMAND_STATION_ID,  // Command station ID
-      0x00u};                  // XOR
+      0x09u,                                                   // Length
+      0x00u,                                                   //
+      std::to_underlying(Header::Reply_to_LAN_X_GET_VERSION),  // Header
+      0x00u,                                                   //
+      std::to_underlying(XHeader::Reply_to_LAN_X_GET_VERSION), // X-Header
+      std::to_underlying(DB0::Reply_to_LAN_X_GET_VERSION),     // DB0
+      Z21_XBUS_VERSION,       // X-Bus protocol version
+      Z21_COMMAND_STATION_ID, // Command station ID
+      0x00u};                 // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_X_GET_VERSION", reply);
@@ -820,16 +901,16 @@ private:
     requires(std::derived_from<Base, intf::Programming>)
   {
     std::array<uint8_t, 0x0Auz> reply{
-      0x0Au,                                         // Length
-      0x00u,                                         //
-      std::to_underlying(Header::LAN_X_CV_RESULT),   // Header
-      0x00u,                                         //
-      std::to_underlying(XHeader::LAN_X_CV_RESULT),  // X-Header
-      std::to_underlying(DB0::LAN_X_CV_RESULT),      // DB0
-      static_cast<uint8_t>(cv_addr >> 8u),           // CV address
-      static_cast<uint8_t>(cv_addr >> 0u),           //
-      byte,                                          // Value
-      0x00u};                                        //
+      0x0Au,                                        // Length
+      0x00u,                                        //
+      std::to_underlying(Header::LAN_X_CV_RESULT),  // Header
+      0x00u,                                        //
+      std::to_underlying(XHeader::LAN_X_CV_RESULT), // X-Header
+      std::to_underlying(DB0::LAN_X_CV_RESULT),     // DB0
+      static_cast<uint8_t>(cv_addr >> 8u),          // CV address
+      static_cast<uint8_t>(cv_addr >> 0u),          //
+      byte,                                         // Value
+      0x00u};                                       //
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
     logf('S', sock, "LAN_X_CV_RESULT", reply);
@@ -845,13 +926,13 @@ private:
     intf::System::systemState().central_state |= CentralState::EmergencyStop;
 
     static constexpr std::array<uint8_t, 0x07uz> reply{
-      0x07u,                                          // Length
-      0x00u,                                          //
-      std::to_underlying(Header::LAN_X_BC_STOPPED),   // Header
-      0x00u,                                          //
-      std::to_underlying(XHeader::LAN_X_BC_STOPPED),  // X-Header
-      0x00u,                                          // DB0
-      0x81u};                                         // XOR
+      0x07u,                                         // Length
+      0x00u,                                         //
+      std::to_underlying(Header::LAN_X_BC_STOPPED),  // Header
+      0x00u,                                         //
+      std::to_underlying(XHeader::LAN_X_BC_STOPPED), // X-Header
+      0x00u,                                         // DB0
+      0x81u};                                        // XOR
 
     for (auto const& [s, c] : _clients)
       if (s == sock ||
@@ -880,27 +961,27 @@ private:
                            std::to_underlying(loco_info.speed_steps))};
     auto const db3{loco_info.rvvvvvvv};
     auto const db4{
-      static_cast<uint8_t>(loco_info.double_traction << 6u |       //
-                           loco_info.smart_search << 5u |          //
-                           (loco_info.f31_0 & 0b1'1110u) >> 1u |   // F4-F1
-                           (loco_info.f31_0 & 0b0'0001u) << 4u)};  // F0
+      static_cast<uint8_t>(loco_info.double_traction << 6u |      //
+                           loco_info.smart_search << 5u |         //
+                           (loco_info.f31_0 & 0b1'1110u) >> 1u |  // F4-F1
+                           (loco_info.f31_0 & 0b0'0001u) << 4u)}; // F0
 
     std::array<uint8_t, 0x0Fuz> reply{
-      0x0Fu,                                         // Length
-      0x00u,                                         //
-      std::to_underlying(Header::LAN_X_LOCO_INFO),   // Header
-      0x00u,                                         //
-      std::to_underlying(XHeader::LAN_X_LOCO_INFO),  // X-Header
-      static_cast<uint8_t>((addr >> 8u) & 0x3Fu),    // DB0
-      static_cast<uint8_t>(addr),                    // DB1
-      db2,                                           // DB2
-      db3,                                           // DB3
-      db4,                                           // DB4
-      static_cast<uint8_t>(loco_info.f31_0 >> 5u),   // DB5
-      static_cast<uint8_t>(loco_info.f31_0 >> 13u),  // DB6
-      static_cast<uint8_t>(loco_info.f31_0 >> 21u),  // DB7
-      static_cast<uint8_t>(loco_info.f31_0 >> 29u),  // DB8
-      0x00u};                                        // XOR
+      0x0Fu,                                        // Length
+      0x00u,                                        //
+      std::to_underlying(Header::LAN_X_LOCO_INFO),  // Header
+      0x00u,                                        //
+      std::to_underlying(XHeader::LAN_X_LOCO_INFO), // X-Header
+      static_cast<uint8_t>((addr >> 8u) & 0x3Fu),   // DB0
+      static_cast<uint8_t>(addr),                   // DB1
+      db2,                                          // DB2
+      db3,                                          // DB3
+      db4,                                          // DB4
+      static_cast<uint8_t>(loco_info.f31_0 >> 5u),  // DB5
+      static_cast<uint8_t>(loco_info.f31_0 >> 13u), // DB6
+      static_cast<uint8_t>(loco_info.f31_0 >> 21u), // DB7
+      static_cast<uint8_t>(loco_info.f31_0 >> 29u), // DB8
+      0x00u};                                       // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
 
     //
@@ -921,17 +1002,16 @@ private:
   ///
   void replyToLanXGetFirmwareVersion(Socket const& sock) {
     std::array<uint8_t, 0x09uz> reply{
-      0x09uz,  // Length
-      0x00u,   //
+      0x09uz,                                                          // Length
+      0x00u,                                                           //
+      std::to_underlying(Header::Reply_to_LAN_X_GET_FIRMWARE_VERSION), // Header
+      0x00u,                                                           //
       std::to_underlying(
-        Header::Reply_to_LAN_X_GET_FIRMWARE_VERSION),  // Header
-      0x00u,                                           //
-      std::to_underlying(
-        XHeader::Reply_to_LAN_X_GET_FIRMWARE_VERSION),               // X-Header
-      std::to_underlying(DB0::Reply_to_LAN_X_GET_FIRMWARE_VERSION),  // DB0
-      Z21_VERSION_MAJOR,                                             // Major
-      Z21_VERSION_MINOR,                                             // Minor
-      0x00u};                                                        // XOR
+        XHeader::Reply_to_LAN_X_GET_FIRMWARE_VERSION),              // X-Header
+      std::to_underlying(DB0::Reply_to_LAN_X_GET_FIRMWARE_VERSION), // DB0
+      Z21_VERSION_MAJOR,                                            // Major
+      Z21_VERSION_MINOR,                                            // Minor
+      0x00u};                                                       // XOR
     reply.back() = exor({cbegin(reply), size(reply) - 1uz});
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_X_GET_FIRMWARE_VERSION", reply);
@@ -940,10 +1020,10 @@ private:
   ///
   void replyToLanGetBroadcastFlags(Socket const& sock) {
     std::array<uint8_t, 0x08uz> reply{
-      0x08u,                                                        // Length
-      0x00u,                                                        //
-      std::to_underlying(Header::Reply_to_LAN_GET_BROADCASTFLAGS),  // Header
-      0x00u};                                                       //
+      0x08u,                                                       // Length
+      0x00u,                                                       //
+      std::to_underlying(Header::Reply_to_LAN_GET_BROADCASTFLAGS), // Header
+      0x00u};                                                      //
     uint32_2data(std::to_underlying(_clients[sock].bc_flags), data(reply) + 4);
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_BROADCASTFLAGS", reply);
@@ -955,13 +1035,13 @@ private:
   {
     auto const mode{this->locoMode(addr)};
     std::array<uint8_t, 0x07uz> const reply{
-      0x07u,                                                  // Length
-      0x00u,                                                  //
-      std::to_underlying(Header::Reply_to_LAN_GET_LOCOMODE),  // Header
-      0x00u,                                                  //
-      static_cast<uint8_t>(addr >> 8u),                       // Address
-      static_cast<uint8_t>(addr >> 0u),                       //
-      std::to_underlying(mode)};                              // Mode
+      0x07u,                                                 // Length
+      0x00u,                                                 //
+      std::to_underlying(Header::Reply_to_LAN_GET_LOCOMODE), // Header
+      0x00u,                                                 //
+      static_cast<uint8_t>(addr >> 8u),                      // Address
+      static_cast<uint8_t>(addr >> 0u),                      //
+      std::to_underlying(mode)};                             // Mode
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_LOCOMODE", reply);
   }
@@ -988,10 +1068,10 @@ private:
     auto const sys_state{this->systemState()};
 
     std::array<uint8_t, 0x14uz> reply{
-      0x14u,                                                    // Length
-      0x00u,                                                    //
-      std::to_underlying(Header::LAN_SYSTEMSTATE_DATACHANGED),  // Header
-      0x00u,                                                    //
+      0x14u,                                                   // Length
+      0x00u,                                                   //
+      std::to_underlying(Header::LAN_SYSTEMSTATE_DATACHANGED), // Header
+      0x00u,                                                   //
       static_cast<uint8_t>(sys_state.main_current >> 0u),
       static_cast<uint8_t>(sys_state.main_current >> 8u),
       static_cast<uint8_t>(sys_state.prog_current >> 0u),
@@ -1004,10 +1084,10 @@ private:
       static_cast<uint8_t>(sys_state.supply_voltage >> 8u),
       static_cast<uint8_t>(sys_state.vcc_voltage >> 0u),
       static_cast<uint8_t>(sys_state.vcc_voltage >> 8u),
-      std::to_underlying(sys_state.central_state),     // CentralState
-      std::to_underlying(sys_state.central_state_ex),  // CentralStateEx
-      0x00u,                                           // reserved
-      std::to_underlying(sys_state.capabilities)};     // Capabilities
+      std::to_underlying(sys_state.central_state),    // CentralState
+      std::to_underlying(sys_state.central_state_ex), // CentralStateEx
+      0x00u,                                          // reserved
+      std::to_underlying(sys_state.capabilities)};    // Capabilities
 
     // Transmit to every client with broadcast flag
     for (auto const& [s, c] : _clients)
@@ -1108,6 +1188,52 @@ private:
         case Header::LAN_GET_SERIAL_NUMBER:
           logf('C', sock, "LAN_GET_SERIAL_NUMBER", chunk);
           lanGetSerialNumber(sock);
+          break;
+
+        case Header::LAN_GET_COMMON_SETTINGS:
+          logf('C', sock, "LAN_GET_COMMON_SETTINGS", chunk);
+          if constexpr (std::derived_from<Base, intf::Settings>)
+            lanGetCommonSettings(sock);
+          break;
+
+        case Header::LAN_SET_COMMON_SETTINGS:
+          logf('C', sock, "LAN_SET_COMMON_SETTINGS", chunk);
+          if constexpr (std::derived_from<Base, intf::Settings>)
+            lanSetCommonSettings(
+              sock,
+              CommonSettings{.enable_railcom = chunk[0uz],
+                             .enable_bit_modify_on_long_address = chunk[1uz],
+                             .key_stop_mode = chunk[2uz],
+                             .programming_type = chunk[3uz],
+                             .enable_loconet_current_source = chunk[4uz],
+                             .loconet_fast_clock_rate = chunk[5uz],
+                             .loconet_mode = chunk[6uz],
+                             .ext_settings = chunk[7uz],
+                             .purging_time = chunk[8uz],
+                             .bus_settings = chunk[9uz]});
+          break;
+
+        case Header::LAN_GET_MMDCC_SETTINGS:
+          logf('C', sock, "LAN_GET_MMDCC_SETTINGS", chunk);
+          if constexpr (std::derived_from<Base, intf::Settings>)
+            lanGetMmDccSettings(sock);
+          break;
+
+        case Header::LAN_SET_MMDCC_SETTINGS:
+          logf('C', sock, "LAN_SET_MMDCC_SETTINGS", chunk);
+          if constexpr (std::derived_from<Base, intf::Settings>)
+            lanSetMmDccSettings(
+              sock,
+              MmDccSettings{.startup_reset_package_count = chunk[0uz],
+                            .continue_reset_packet_count = chunk[1uz],
+                            .program_package_count = chunk[2uz],
+                            .bit_verify_to_one = chunk[3uz],
+                            .programming_ack_current = chunk[10uz],
+                            .flags = chunk[11uz],
+                            .output_voltage = static_cast<uint16_t>(
+                              chunk[13uz] << 8u | chunk[12uz] << 0u),
+                            .programming_voltage = static_cast<uint16_t>(
+                              chunk[15uz] << 8u | chunk[14uz] << 0u)});
           break;
 
         case Header::LAN_GET_CODE:
@@ -1600,4 +1726,4 @@ private:
   HwType _hw_type;
 };
 
-}  // namespace z21::server
+} // namespace z21::server
