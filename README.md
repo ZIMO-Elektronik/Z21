@@ -50,13 +50,13 @@ This library is meant to be consumed with CMake,
 
 ```cmake
 # Either by including it with CPM
-cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.0.0")
+cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.1.0")
 
 # or the FetchContent module
 FetchContent_Declare(
   DCC
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/Z21"
-  GIT_TAG v0.0.0)
+  GIT_TAG v0.1.0)
 
 target_link_libraries(YourTarget PRIVATE Z21::Z21)
 ```
@@ -65,7 +65,7 @@ or, on [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32), with
 ```yaml
 dependencies:
   zimo-elektronik/z21:
-    version: "0.0.0"
+    version: "0.1.0"
 ```
 
 ### Build
@@ -85,7 +85,7 @@ The simulator allows you to try out the library directly in a simple GUI. The ap
 On [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32) examples from the [examples](https://github.com/ZIMO-Elektronik/DCC/raw/master/examples) subfolder can be built directly using the [IDF Frontend](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-py.html).
 
 ```sh
-idf.py create-project-from-example "zimo-elektronik/z21^0.0.0:esp32"
+idf.py create-project-from-example "zimo-elektronik/z21^0.1.0:esp32"
 ```
 
 ## Usage
