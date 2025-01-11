@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0
       - uses: espressif/upload-components-ci-action@v1
         with:
-          name: MDU
+          name: Z21
           version: ${{ github.ref_name }}
           namespace: zimo-elektronik
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
