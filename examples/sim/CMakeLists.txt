@@ -1,3 +1,6 @@
+option(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS
+       "Hide settings not available in the Z21 app or maintenance tool" ON)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 23)
 set(QT_VERSION 6.6.3)
@@ -11,7 +14,11 @@ set(CMAKE_AUTORCC_OPTIONS "-compress-algo;zlib" "--compress;9")
 file(GLOB_RECURSE SRC *.c *.cpp)
 add_executable(Z21Sim WIN32 ${COMMON_SRC} ${SRC})
 
-target_compile_definitions(Z21Sim PRIVATE Z21SIM_VERSION="${PROJECT_VERSION}")
+target_compile_definitions(
+  Z21Sim
+  PRIVATE
+    Z21_SIM_VERSION="${PROJECT_VERSION}"
+    Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS=${Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS})
 
 target_include_directories(Z21Sim PRIVATE ${COMMON_INC})
 
@@ -117,6 +124,7 @@ qt_add_resources(
   BASE
   ${CMAKE_SOURCE_DIR}/data/icons
   FILES
+  ${CMAKE_SOURCE_DIR}/data/icons/accessory.svg
   ${CMAKE_SOURCE_DIR}/data/icons/loco.svg
   ${CMAKE_SOURCE_DIR}/data/icons/turnout.svg)
 

@@ -1,10 +1,10 @@
-# :construction: Z21 :construction:
+# Z21
 
 [![build](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml) [![tests](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml) [![license](https://img.shields.io/github/license/ZIMO-Elektronik/Z21)](https://github.com/ZIMO-Elektronik/Z21/raw/master/LICENSE)
 
 <img src="https://github.com/ZIMO-Elektronik/Z21/raw/master/data/images/logo.png" width="15%" align="right">
 
-The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command station with support for LocoNet, R-Bus and XPressNet devices. It has an open LAN interface with a well-documented protocol that has been continuously developed since then. This C++ library of the same name contains platform-independent code for the server-side (i.e. the part that runs on a command station) implementation of the protocol.
+The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command station with support for LocoNet, R-Bus and XpressNet devices. It has an open LAN interface with a well-documented protocol that has been continuously developed since then. This C++ library of the same name contains platform-independent code for the server-side (i.e. the part that runs on a command station) implementation of the protocol.
 
 <details>
   <summary>Table of Contents</summary>

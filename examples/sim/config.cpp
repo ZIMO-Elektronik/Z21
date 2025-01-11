@@ -9,5 +9,10 @@ Config::Config()
   call_once(_init_flag, [this] { init(); });
 }
 
-// Register z21::LocoInfo meta type when first used
-void Config::init() { qRegisterMetaType<z21::LocoInfo>(); }
+// Register z21::AccessoryInfo, z21::LocoInfo and z21::TurnoutInfo meta types
+// when first used
+void Config::init() {
+  qRegisterMetaType<z21::AccessoryInfo>();
+  qRegisterMetaType<z21::LocoInfo>();
+  qRegisterMetaType<z21::TurnoutInfo>();
+}

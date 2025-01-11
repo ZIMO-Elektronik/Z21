@@ -15,7 +15,9 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
     initCommonWidgets();
     auto groupbox{new QGroupBox{"Common"}};
     auto grid{new QGridLayout};
+#if !defined(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS)
     grid->setColumnMinimumWidth(1, 5 * 10);
+#endif
     int row{};
     grid->addWidget(new QLabel{"Activate RailCom"}, row, 0);
     grid->addWidget(_common.enable_railcom_checkbox, row++, 2);
@@ -26,6 +28,7 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
     grid->addWidget(_common.key_stop_mode_combobox, row++, 2);
     grid->addWidget(new QLabel{"Programming type"}, row, 0);
     grid->addWidget(_common.programming_type_combobox, row++, 2);
+#if !defined(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS)
     grid->addWidget(new QLabel{"Enable LocoNet current source"}, row, 0);
     grid->addWidget(_common.enable_loconet_current_source_checkbox, row++, 2);
     grid->addWidget(new QLabel{"LocoNet fast clock rate"}, row, 0);
@@ -33,28 +36,31 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
     grid->addWidget(_common.loconet_fast_clock_rate_slider, row++, 2);
     grid->addWidget(new QLabel{"LocoNet mode"}, row, 0);
     grid->addWidget(_common.loconet_mode_combobox, row++, 2);
+#endif
     grid->addWidget(new QLabel{"Ext disable turnout timeout"}, row, 0);
     grid->addWidget(
       _common.ext_flags.disable_turnout_timeout_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Ext auto deactivate turnout output"}, row, 0);
     grid->addWidget(
       _common.ext_flags.disable_turnout_auto_deact_checkbox, row++, 2);
-    grid->addWidget(new QLabel{"Ext accessory start group1"}, row, 0);
+    grid->addWidget(new QLabel{"Ext RCN-213 turnout addressing"}, row, 0);
     grid->addWidget(
       _common.ext_flags.accessory_start_group1_checkbox, row++, 2);
-    grid->addWidget(new QLabel{"Ext R-Bus as X-Bus2"}, row, 0);
+    grid->addWidget(new QLabel{"Ext R-Bus as second X-Bus"}, row, 0);
     grid->addWidget(_common.ext_flags.rbus_as_xbus2_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Ext invert accessory red/green"}, row, 0);
     grid->addWidget(
       _common.ext_flags.invert_accessory_red_green_checkbox, row++, 2);
+#if !defined(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS)
     grid->addWidget(new QLabel{"Purging time"}, row, 0);
     grid->addWidget(_common.purging_time_combobox, row++, 2);
-    grid->addWidget(new QLabel{"Bus CAN emulates R-Bus"}, row, 0);
+    grid->addWidget(new QLabel{"Bus disable CAN emulates R-Bus"}, row, 0);
     grid->addWidget(_common.bus_flags.emulate_rm_checkbox, row++, 2);
-    grid->addWidget(new QLabel{"Bus CAN emulates LocoNet"}, row, 0);
+    grid->addWidget(new QLabel{"Bus disable CAN emulates LocoNet"}, row, 0);
     grid->addWidget(_common.bus_flags.emulate_ln_checkbox, row++, 2);
-    grid->addWidget(new QLabel{"Bus CAN emulates Lissy"}, row, 0);
+    grid->addWidget(new QLabel{"Bus enable CAN emulates Lissy"}, row, 0);
     grid->addWidget(_common.bus_flags.emulate_lissy_checkbox, row++, 2);
+#endif
     grid->addWidget(new QLabel{"Bus X-Bus uses fallback version"}, row, 0);
     grid->addWidget(
       _common.bus_flags.xbus_use_fallback_version_checkbox, row++, 2);
@@ -93,9 +99,11 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
     grid->addWidget(_mm_dcc.flags.repeat_hfx_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Flags short loco address"}, row, 0);
     grid->addWidget(_mm_dcc.flags.short_combobox, row++, 2);
+#if !defined(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS)
     grid->addWidget(new QLabel{"Output voltage [mV]"}, row, 0);
     grid->addWidget(_mm_dcc.output_voltage_label, row, 1);
     grid->addWidget(_mm_dcc.output_voltage_slider, row++, 2);
+#endif
     grid->addWidget(new QLabel{"Programming voltage [mV]"}, row, 0);
     grid->addWidget(_mm_dcc.programming_voltage_label, row, 1);
     grid->addWidget(_mm_dcc.programming_voltage_slider, row++, 2);
@@ -200,7 +208,7 @@ z21::MmDccSettings Settings::mmDccSettings() {
           .program_package_count =
             static_cast<uint8_t>(_mm_dcc.program_package_count_slider->value()),
           .bit_verify_to_one =
-            static_cast<uint8_t>(_mm_dcc.bit_verify_to_one_slider->value()),
+            static_cast<bool>(_mm_dcc.bit_verify_to_one_slider->value()),
           .programming_ack_current = static_cast<uint8_t>(
             _mm_dcc.programming_ack_current_slider->value()),
           .flags = mmDccFlags(),
@@ -261,13 +269,16 @@ void Settings::initCommonWidgets() {
   _common.ext_flags.disable_turnout_timeout_checkbox->setStatusTip(
     "Disable automatic timeout of turnout outputs");
   _common.ext_flags.disable_turnout_auto_deact_checkbox->setStatusTip(
-    "Automatic turnoff of turnout output A, if output B gets activated");
+    "Automatic turnoff of turnout output A, if output B gets activated "
+    "(workaround for incompatible clients which only send output A on followed "
+    "by output B on)");
   _common.ext_flags.accessory_start_group1_checkbox->setStatusTip(
-    "Accessory decoder addressing starts with group 1 (according to RCN-213)");
+    "Fixes a turnout-address incompatibility between different DCC systems");
   _common.ext_flags.rbus_as_xbus2_checkbox->setStatusTip(
-    "R-Bus is used as X-Bus 2");
+    "Use R-Bus as additional X-Bus interface for throttles and other XpressNet "
+    "devices");
   _common.ext_flags.invert_accessory_red_green_checkbox->setStatusTip(
-    "Invert \"red\" and \"green\" for accessories");
+    "Invert meaning of straight/branch or green/red for accessory decoder");
 
   _common.purging_time_combobox->addItem("Off");
   _common.purging_time_combobox->addItem("1min");
@@ -278,17 +289,17 @@ void Settings::initCommonWidgets() {
   _common.purging_time_combobox->addItem("30min");
   _common.purging_time_combobox->addItem("60min");
 
-  _common.bus_flags.emulate_rm_checkbox->setStatusTip(
+  _common.bus_flags.disable_emulate_rm_checkbox->setStatusTip(
     "CAN occupancy messages emulate R-Bus messages");
-  _common.bus_flags.emulate_ln_checkbox->setStatusTip(
+  _common.bus_flags.disable_emulate_ln_checkbox->setStatusTip(
     "CAN occupancy messages emulate LocoNet messages");
-  _common.bus_flags.emulate_lissy_checkbox->setStatusTip(
+  _common.bus_flags.enable_emulate_lissy_checkbox->setStatusTip(
     "CAN occupancy messages emulate Lissy messages");
   _common.bus_flags.xbus_use_fallback_version_checkbox->setStatusTip(
     "Use X-Bus protocol version V3.6 instead of V4.0");
   _common.bus_flags.xbus_forwarding_rbus_checkbox->setStatusTip(
-    "R-Bus occupancy messages are forwarded on the X-Bus as XpressNet feedback "
-    "broadcast");
+    "Forward R-Bus messages as XpressNet feedback broadcasts to X-Bus devices "
+    "(overrides turnout numbers from 257-336 on X-Bus)");
   _common.bus_flags.bus_only_accessories_checkbox->setStatusTip(
     "Only pass accessory commands on the bus and lan, but do not output them "
     "on the track");
@@ -328,11 +339,11 @@ void Settings::initCommonWidgets() {
     _common.loconet_mode_combobox->setCurrentIndex(value.toInt());
   else _common.loconet_mode_combobox->setCurrentIndex(3);
   if (auto const value{config.value("settings_ext_flags")}; value.isValid())
-    commonExtFlags(value.toUInt());
+    commonExtFlags(static_cast<uint8_t>(value.toUInt()));
   if (auto const value{config.value("settings_purging_time")}; value.isValid())
     _common.purging_time_combobox->setCurrentIndex(value.toInt());
   if (auto const value{config.value("settings_bus_flags")}; value.isValid())
-    commonBusFlags(value.toUInt());
+    commonBusFlags(static_cast<uint8_t>(value.toUInt()));
 }
 
 //
@@ -457,7 +468,7 @@ void Settings::initMmDccWidgets() {
     _mm_dcc.programming_ack_current_slider->setValue(value.toInt());
   else _mm_dcc.programming_ack_current_slider->setValue(50);
   if (auto const value{config.value("settings_mm_dcc_flags")}; value.isValid())
-    mmDccFlags(value.toUInt());
+    mmDccFlags(static_cast<uint8_t>(value.toUInt()));
   if (auto const value{config.value("settings_output_voltage")};
       value.isValid())
     _mm_dcc.output_voltage_slider->setValue(value.toInt());
@@ -515,11 +526,36 @@ uint8_t Settings::commonExtFlags() const {
 }
 
 //
-void Settings::commonBusFlags(uint8_t flags) {}
+void Settings::commonBusFlags(uint8_t flags) {
+  _common.bus_flags.disable_emulate_rm_checkbox->setChecked(
+    static_cast<bool>(flags & 0x01u));
+  _common.bus_flags.disable_emulate_ln_checkbox->setChecked(
+    static_cast<bool>(flags & 0x02u));
+  _common.bus_flags.enable_emulate_lissy_checkbox->setChecked(
+    static_cast<bool>(flags & 0x04u));
+  _common.bus_flags.xbus_use_fallback_version_checkbox->setChecked(
+    static_cast<bool>(flags & 0x10u));
+  _common.bus_flags.xbus_forwarding_rbus_checkbox->setChecked(
+    static_cast<bool>(flags & 0x20u));
+  _common.bus_flags.bus_only_accessories_checkbox->setChecked(
+    static_cast<bool>(flags & 0x80u));
+}
 
 //
 uint8_t Settings::commonBusFlags() const {
   uint8_t retval{};
+  if (_common.bus_flags.disable_emulate_rm_checkbox->isChecked())
+    retval |= 0x01u;
+  if (_common.bus_flags.disable_emulate_ln_checkbox->isChecked())
+    retval |= 0x02u;
+  if (_common.bus_flags.enable_emulate_lissy_checkbox->isChecked())
+    retval |= 0x04u;
+  if (_common.bus_flags.xbus_use_fallback_version_checkbox->isChecked())
+    retval |= 0x10u;
+  if (_common.bus_flags.xbus_forwarding_rbus_checkbox->isChecked())
+    retval |= 0x20u;
+  if (_common.bus_flags.bus_only_accessories_checkbox->isChecked())
+    retval |= 0x80u;
   return retval;
 }
 

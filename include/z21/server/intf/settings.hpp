@@ -19,14 +19,18 @@ namespace z21::server::intf {
 ///
 /// Commands:
 /// - LAN_GET_COMMON_SETTINGS
+/// - LAN_SET_COMMON_SETTINGS
 /// - LAN_GET_MMDCC_SETTINGS
+/// - LAN_SET_MMDCC_SETTINGS
 ///
 /// Replies:
-/// - LAN_SET_COMMON_SETTINGS
-/// - LAN_SET_MMDCC_SETTINGS
+/// - Reply_to_LAN_GET_COMMON_SETTINGS
+/// - Reply_to_LAN_GET_MMDCC_SETTINGS
 struct Settings {
   /// Dtor
   virtual ~Settings() = default;
+
+  // Required
 
   [[nodiscard]] virtual CommonSettings commonSettings() = 0;
   virtual void commonSettings(CommonSettings const&) = 0;

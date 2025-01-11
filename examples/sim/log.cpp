@@ -6,8 +6,9 @@
 #include <QPushButton>
 #include "config.hpp"
 
-//
+// Create layout and load RE filter from config
 Log::Log(QWidget* parent) : QWidget{parent} {
+  // Keep track of which instance this is (client=0 or server=1)
   static int is_log_server_instance{};
   _name = is_log_server_instance++ ? "log_server" : "log_client";
 
@@ -52,27 +53,27 @@ Log::Log(QWidget* parent) : QWidget{parent} {
 
   setLayout(layout);
 
-  //
+  // Create RE filter from line edit
   connect(line_edit, &QLineEdit::textChanged, [this](QString const& text) {
     _re_filter = QRegularExpression{text};
   });
 
-  //
+  // Load RE filter from config
   Config const config;
   if (auto const value{config.value(_name + "_re_filter")}; value.isValid())
     line_edit->setText(value.toString());
 }
 
-//
+// Store RE filter in config
 Log::~Log() {
   Config config;
   config.setValue(_name + "_re_filter", _re_filter.pattern());
 }
 
-//
+// Append to log
 void Log::append(QString const& text) {
   if (_re_filter.match(text).hasMatch()) _text_view->append(text);
 }
 
-//
+// Clear log
 void Log::clear() { _text_view->clear(); }

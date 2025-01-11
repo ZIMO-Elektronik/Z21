@@ -31,10 +31,18 @@ constexpr auto data2uint32(uint8_t const* data) {
                                data[2uz] << 8u | data[3uz] << 0u);
 }
 
+/// Data to accessory address
+///
+/// \param  data  Pointer to data
+/// \return Accessory address
+constexpr auto data2accessory_address(uint8_t const* data) {
+  return static_cast<uint16_t>(data2uint16(data) & 0x07FFu);
+}
+
 /// Data to loco address
 ///
 /// \param  data  Pointer to data
-/// \return loco address
+/// \return Loco address
 constexpr auto data2loco_address(uint8_t const* data) {
   return static_cast<uint16_t>(data2uint16(data) & 0x3FFFu);
 }

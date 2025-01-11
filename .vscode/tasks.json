@@ -17,13 +17,13 @@
       "label": "Run act x86_64-linux-gnu-gcc",
       "type": "shell",
       "isBackground": true,
-      "command": "act --artifact-server-path build -j x86_64-linux-gnu-gcc --input pre-build=\"sudo apt update -y && sudo apt install -y '^libxcb.*-dev' libglu1-mesa-dev libx11-xcb-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev ninja-build\" --input args=-DCMAKE_BUILD_TYPE=Release --input upload-artifact=true"
+      "command": "act --artifact-server-path build -j x86_64-linux-gnu-gcc"
     },
     {
       "label": "Run act x86_64-w64-mingw32-gcc",
       "type": "shell",
       "isBackground": true,
-      "command": "act --artifact-server-path build -j x86_64-w64-mingw32-gcc --input pre-build=\"sudo apt update -y && sudo apt install -y mingw-w64 ninja-build && sudo pip install aqtinstall --break-system-packages\" --input args=\"-DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=CMakeModules/cmake/toolchain-x86_64-w64-mingw32-gcc.cmake\" --input upload-artifact=true"
+      "command": "act --artifact-server-path build -j x86_64-w64-mingw32-gcc"
     },
     {
       "label": "Run Z21Tests",

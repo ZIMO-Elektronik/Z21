@@ -12,3 +12,7 @@ make_lan_set_broadcastflags_dataset(z21::BroadcastFlags flags);
 std::vector<uint8_t> make_lan_set_broadcastflags_dataset(uint32_t flags);
 
 std::vector<uint8_t> make_lan_logoff_dataset();
+
+std::vector<uint8_t> make_lan_x_set_track_power_off_dataset();
+
+std::vector<uint8_t> make_lan_x_set_track_power_on_dataset();

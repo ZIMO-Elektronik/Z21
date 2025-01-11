@@ -18,7 +18,6 @@
 #include "../db0.hpp"
 #include "../exor.hpp"
 #include "../hw_type.hpp"
-#include "../loco_info.hpp"
 #include "../socket.hpp"
 #include "../system_state.hpp"
 #include "../utility.hpp"
@@ -82,6 +81,20 @@ public:
   ///
   Clients const& clients() { return _clients; }
 
+  ///
+  void broadcastTurnoutInfo(uint16_t accy_addr) // final
+    requires(std::derived_from<Base, intf::Driving>)
+  {
+    lanXTurnoutInfo(accy_addr);
+  }
+
+  ///
+  void broadcastExtAccessoryInfo(uint16_t accy_addr) // final
+    requires(std::derived_from<Base, intf::Driving>)
+  {
+    lanXExtAccessoryInfo(accy_addr);
+  }
+
   /// Implicitly sets the following CentralState flags
   /// - TrackVoltageOff
   void broadcastTrackPowerOff() final { lanXBcTrackPowerOff(); }
@@ -106,10 +119,10 @@ public:
   void broadcastStopped() final { lanXBcStopped(); }
 
   ///
-  void broadcastLocoInfo(uint16_t addr) // final
+  void broadcastLocoInfo(uint16_t loco_addr) // final
     requires(std::derived_from<Base, intf::Driving>)
   {
-    lanXLocoInfo(addr);
+    lanXLocoInfo(loco_addr);
   }
 
   ///
@@ -160,7 +173,7 @@ private:
   }
 
   ///
-  void lanSetCommonSettings(Socket const& sock,
+  void lanSetCommonSettings(Socket const&,
                             CommonSettings const& common_settings)
     requires(std::derived_from<Base, intf::Settings>)
   {
@@ -175,8 +188,7 @@ private:
   }
 
   ///
-  void lanSetMmDccSettings(Socket const& sock,
-                           MmDccSettings const& mm_dcc_settings)
+  void lanSetMmDccSettings(Socket const&, MmDccSettings const& mm_dcc_settings)
     requires(std::derived_from<Base, intf::Settings>)
   {
     this->mmDccSettings(mm_dcc_settings);
@@ -217,7 +229,7 @@ private:
   void lanXDccReadRegister(Socket const&)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
@@ -234,7 +246,7 @@ private:
   void lanXDccWriteRegister(Socket const&)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
@@ -251,35 +263,37 @@ private:
   void lanXMmWriteByte(Socket const&)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
-  void lanXGetTurnoutInfo(Socket const&)
+  void lanXGetTurnoutInfo(Socket const& sock, uint16_t accy_addr)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    lanXTurnoutInfo(accy_addr, sock);
   }
 
   ///
-  void lanXGetExtAccessoryInfo(Socket const&)
+  void lanXGetExtAccessoryInfo(Socket const& sock, uint16_t accy_addr)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    lanXExtAccessoryInfo(accy_addr, sock);
   }
 
   ///
-  void lanXSetTurnout(Socket const&)
+  void
+  lanXSetTurnout(Socket const& sock, uint16_t accy_addr, bool p, bool a, bool q)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    this->turnout(accy_addr, p, a, q);
   }
 
   ///
-  void lanXSetExtAccessory(Socket const&)
+  void
+  lanXSetExtAccessory(Socket const& sock, uint16_t accy_addr, uint8_t dddddddd)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    this->accessory(accy_addr, dddddddd);
   }
 
   ///
@@ -288,83 +302,85 @@ private:
   }
 
   ///
-  void lanXSetLocoEStop(Socket const&, uint16_t addr)
+  void lanXSetLocoEStop(Socket const&, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    auto const loco_info{this->locoInfo(addr)};
-    this->drive(
-      addr, loco_info.speed_steps, (loco_info.rvvvvvvv & 0b1000'0000u) | 0b1u);
+    auto const loco_info{this->locoInfo(loco_addr)};
+    this->locoDrive(loco_addr,
+                    loco_info.speed_steps,
+                    (loco_info.rvvvvvvv & 0b1000'0000u) | 0b1u);
   }
 
   ///
   void lanXPurgeLoco(Socket const&, uint16_t)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
-  void lanXGetLocoInfo(Socket const& sock, uint16_t addr)
+  void lanXGetLocoInfo(Socket const& sock, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
     // Subscribe if broadcast flag is set and not already done so
-    if (auto& addrs{_clients[sock].sub_loco_addrs};
+    if (auto& loco_addrs{_clients[sock].sub_loco_addrs};
         std::to_underlying(_clients[sock].bc_flags &
                            BroadcastFlags::DrivingSwitching) &&
-        !std::ranges::contains(addrs, addr)) {
-      if (full(addrs)) addrs.pop_front(); // FIFO full, replace first
-      addrs.push_back(addr);
+        !std::ranges::contains(loco_addrs, loco_addr)) {
+      if (full(loco_addrs)) loco_addrs.pop_front(); // FIFO full, replace first
+      loco_addrs.push_back(loco_addr);
     }
 
-    lanXLocoInfo(addr, sock);
+    lanXLocoInfo(loco_addr, sock);
   }
 
   ///
   void lanXSetLocoDrive(Socket const&,
-                        uint16_t addr,
+                        uint16_t loco_addr,
                         LocoInfo::SpeedSteps speed_steps,
                         uint8_t rvvvvvvv)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    this->drive(addr, speed_steps, rvvvvvvv);
+    this->locoDrive(loco_addr, speed_steps, rvvvvvvv);
   }
 
   ///
   void lanXSetLocoFunction(Socket const&,
-                           uint16_t addr,
+                           uint16_t loco_addr,
                            uint8_t state,
                            uint8_t index)
     requires(std::derived_from<Base, intf::Driving>)
   {
     assert(state < 0b10u);
-    this->function(addr, 1u << index, static_cast<uint32_t>(state << index));
+    this->locoFunction(
+      loco_addr, 1u << index, static_cast<uint32_t>(state << index));
   }
 
   ///
   void lanXSetLocoFunctionGroup(Socket const&,
-                                [[maybe_unused]] uint16_t addr,
+                                [[maybe_unused]] uint16_t loco_addr,
                                 [[maybe_unused]] uint8_t group,
                                 [[maybe_unused]] uint8_t state)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanXSetLocoBinaryState(Socket const&)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanXCvPomWriteByte(Socket const&,
-                          uint16_t addr,
+                          uint16_t loco_addr,
                           uint16_t cv_addr,
                           uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    this->cvPomWrite(addr, cv_addr, byte);
+    this->cvPomWrite(loco_addr, cv_addr, byte);
   }
 
   ///
@@ -375,22 +391,23 @@ private:
   }
 
   ///
-  void lanXCvPomReadByte(Socket const& sock, uint16_t addr, uint16_t cv_addr)
+  void
+  lanXCvPomReadByte(Socket const& sock, uint16_t loco_addr, uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (full(_cv_request_deque)) return;
     _cv_request_deque.push_back(&sock);
-    this->cvPomRead(addr, cv_addr);
+    this->cvPomRead(loco_addr, cv_addr);
   }
 
   ///
   void lanXCvPomAccessoryWriteByte([[maybe_unused]] Socket const& sock,
-                                   [[maybe_unused]] uint16_t addr,
+                                   [[maybe_unused]] uint16_t accy_addr,
                                    [[maybe_unused]] uint16_t cv_addr,
                                    [[maybe_unused]] uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
@@ -402,11 +419,11 @@ private:
 
   ///
   void lanXCvPomAccessoryReadByte([[maybe_unused]] Socket const& sock,
-                                  [[maybe_unused]] uint16_t addr,
+                                  [[maybe_unused]] uint16_t accy_addr,
                                   [[maybe_unused]] uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    // TODO
+    /// \todo
   }
 
   /// https://www.z21.eu/en/products/z21-maintenance-tool
@@ -426,45 +443,47 @@ private:
   }
 
   ///
-  void lanGetLocoMode(Socket const& sock, uint16_t addr)
+  void lanGetLocoMode(Socket const& sock, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    replyToLanGetLocoMode(sock, addr);
+    replyToLanGetLocoMode(sock, loco_addr);
   }
 
   ///
-  void lanSetLocoMode(Socket const&, uint16_t addr, LocoInfo::Mode mode)
+  void lanSetLocoMode(Socket const&, uint16_t loco_addr, LocoInfo::Mode mode)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    this->locoMode(addr, mode);
+    this->locoMode(loco_addr, mode);
   }
 
   ///
-  void lanGetTurnoutMode(Socket const&)
+  void lanGetTurnoutMode(Socket const& sock, uint16_t accy_addr)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    replyToLanGetTurnoutMode(sock, accy_addr);
   }
 
   ///
-  void lanSetTurnoutMode(Socket const&)
+  void lanSetTurnoutMode(Socket const& sock,
+                         uint16_t accy_addr,
+                         TurnoutInfo::Mode mode)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    this->turnoutMode(accy_addr, mode);
   }
 
   ///
   void lanRmBusGetData(Socket const&)
     requires(std::derived_from<Base, intf::RBus>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanRmBusProgramModule(Socket const&)
     requires(std::derived_from<Base, intf::RBus>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
@@ -476,113 +495,113 @@ private:
   void lanRailComGetData(Socket const&)
     requires(std::derived_from<Base, intf::RailCom>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetFromLan(Socket const&)
     requires(std::derived_from<Base, intf::LocoNet>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetDispatchAddr(Socket const&)
     requires(std::derived_from<Base, intf::LocoNet>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetDetector(Socket const&)
     requires(std::derived_from<Base, intf::LocoNet>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanCanDetector(Socket const&)
     requires(std::derived_from<Base, intf::Can>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanCanDeviceGetDescription(Socket const&)
     requires(std::derived_from<Base, intf::Can>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanCanDeviceSetDescription(Socket const&)
     requires(std::derived_from<Base, intf::Can>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanCanBoosterSetTrackPower(Socket const&)
     requires(std::derived_from<Base, intf::Can>)
   {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanFastClockControl(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanFastClockSettingsGet(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanFastClockSettingsSet(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanBoosterSetPower(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanBoosterGetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanBoosterSetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanBoosterSystemStateGetData(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanDecoderGetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanDecoderSetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanDecoderSystemStateGetData(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanZLinkGetHwInfo(Socket const&)
     requires(std::derived_from<Base, intf::ZLink>)
   {
-    // TODO
+    /// \todo
   }
 
   /// <<< REPLIES START HERE >>>
@@ -689,14 +708,67 @@ private:
     logf('S', sock, "Reply_to_LAN_GET_HWINFO", reply);
   }
 
-  ///
-  void lanXTurnoutInfo(Socket const&) {
-    // TODO
+  /// \todo
+  void lanXTurnoutInfo(uint16_t accy_addr, Socket const& sock = {})
+    requires(std::derived_from<Base, intf::Switching>)
+  {
+    auto const turnout_info{this->turnoutInfo(accy_addr)};
+
+    std::array<uint8_t, 0x09uz> reply{
+      0x09u,                                           // Length
+      0x00u,                                           //
+      std::to_underlying(Header::LAN_X_TURNOUT_INFO),  // Header
+      0x00u,                                           //
+      std::to_underlying(XHeader::LAN_X_TURNOUT_INFO), // X-Header
+      static_cast<uint8_t>((accy_addr >> 8u) & 0x07u), // DB0
+      static_cast<uint8_t>(accy_addr),                 // DB1
+      static_cast<uint8_t>(turnout_info.state),        // DB2
+      0x00u};                                          // XOR
+    reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
+
+    //
+    if (sock) {
+      this->transmit(sock, reply);
+      logf('S', sock, "LAN_X_TURNOUT_INFO", reply);
+    }
+    //
+    else
+      for (auto const& [s, c] : _clients) {
+        this->transmit(s, reply);
+        logf('S', s, "LAN_X_TURNOUT_INFO", reply);
+      }
   }
 
-  ///
-  void lanXExtAccessoryInfo(Socket const&) {
-    // TODO
+  /// \todo
+  void lanXExtAccessoryInfo(uint16_t accy_addr, Socket const& sock = {})
+    requires(std::derived_from<Base, intf::Switching>)
+  {
+    auto const accessory_info{this->accessoryInfo(accy_addr)};
+
+    std::array<uint8_t, 0x0Auz> reply{
+      0x0Auz,                                                // Length
+      0x00u,                                                 //
+      std::to_underlying(Header::LAN_X_EXT_ACCESSORY_INFO),  // Header
+      0x00u,                                                 //
+      std::to_underlying(XHeader::LAN_X_EXT_ACCESSORY_INFO), // X-Header
+      static_cast<uint8_t>((accy_addr >> 8u) & 0x07u),       // DB0
+      static_cast<uint8_t>(accy_addr),                       // DB1
+      static_cast<uint8_t>(accessory_info.dddddddd),         // DB2
+      static_cast<uint8_t>(accessory_info.status),           // DB3
+      0x00u};                                                // XOR
+    reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
+
+    //
+    if (sock) {
+      this->transmit(sock, reply);
+      logf('S', sock, "LAN_X_EXT_ACCESSORY_INFO", reply);
+    }
+    //
+    else
+      for (auto const& [s, c] : _clients) {
+        this->transmit(s, reply);
+        logf('S', s, "LAN_X_EXT_ACCESSORY_INFO", reply);
+      }
   }
 
   ///
@@ -952,9 +1024,8 @@ private:
   /// - and the associated client has activated the corresponding broadcast
   /// - and the associated client has subscribed to the locomotive address with
   ///   LAN_X_GET_LOCO_INFO
-  void lanXLocoInfo(uint16_t addr, Socket const& sock = {}) {
-    // get loco info
-    auto const loco_info{this->locoInfo(addr)};
+  void lanXLocoInfo(uint16_t loco_addr, Socket const& sock = {}) {
+    auto const loco_info{this->locoInfo(loco_addr)};
 
     auto const db2{
       static_cast<uint8_t>(loco_info.mode << 4u | loco_info.busy << 3u |
@@ -967,21 +1038,21 @@ private:
                            (loco_info.f31_0 & 0b0'0001u) << 4u)}; // F0
 
     std::array<uint8_t, 0x0Fuz> reply{
-      0x0Fu,                                        // Length
-      0x00u,                                        //
-      std::to_underlying(Header::LAN_X_LOCO_INFO),  // Header
-      0x00u,                                        //
-      std::to_underlying(XHeader::LAN_X_LOCO_INFO), // X-Header
-      static_cast<uint8_t>((addr >> 8u) & 0x3Fu),   // DB0
-      static_cast<uint8_t>(addr),                   // DB1
-      db2,                                          // DB2
-      db3,                                          // DB3
-      db4,                                          // DB4
-      static_cast<uint8_t>(loco_info.f31_0 >> 5u),  // DB5
-      static_cast<uint8_t>(loco_info.f31_0 >> 13u), // DB6
-      static_cast<uint8_t>(loco_info.f31_0 >> 21u), // DB7
-      static_cast<uint8_t>(loco_info.f31_0 >> 29u), // DB8
-      0x00u};                                       // XOR
+      0x0Fu,                                           // Length
+      0x00u,                                           //
+      std::to_underlying(Header::LAN_X_LOCO_INFO),     // Header
+      0x00u,                                           //
+      std::to_underlying(XHeader::LAN_X_LOCO_INFO),    // X-Header
+      static_cast<uint8_t>((loco_addr >> 8u) & 0x3Fu), // DB0
+      static_cast<uint8_t>(loco_addr),                 // DB1
+      db2,                                             // DB2
+      db3,                                             // DB3
+      db4,                                             // DB4
+      static_cast<uint8_t>(loco_info.f31_0 >> 5u),     // DB5
+      static_cast<uint8_t>(loco_info.f31_0 >> 13u),    // DB6
+      static_cast<uint8_t>(loco_info.f31_0 >> 21u),    // DB7
+      static_cast<uint8_t>(loco_info.f31_0 >> 29u),    // DB8
+      0x00u};                                          // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
 
     //
@@ -993,7 +1064,7 @@ private:
     else
       for (auto const& [s, c] : _clients)
         if (std::to_underlying(c.bc_flags & BroadcastFlags::DrivingSwitching) &&
-            std::ranges::contains(c.sub_loco_addrs, addr)) {
+            std::ranges::contains(c.sub_loco_addrs, loco_addr)) {
           this->transmit(s, reply);
           logf('S', s, "LAN_X_LOCO_INFO", reply);
         }
@@ -1030,32 +1101,42 @@ private:
   }
 
   ///
-  void replyToLanGetLocoMode(Socket const& sock, uint16_t addr)
+  void replyToLanGetLocoMode(Socket const& sock, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    auto const mode{this->locoMode(addr)};
+    auto const mode{this->locoMode(loco_addr)};
     std::array<uint8_t, 0x07uz> const reply{
       0x07u,                                                 // Length
       0x00u,                                                 //
       std::to_underlying(Header::Reply_to_LAN_GET_LOCOMODE), // Header
       0x00u,                                                 //
-      static_cast<uint8_t>(addr >> 8u),                      // Address
-      static_cast<uint8_t>(addr >> 0u),                      //
+      static_cast<uint8_t>(loco_addr >> 8u),                 // Address
+      static_cast<uint8_t>(loco_addr >> 0u),                 //
       std::to_underlying(mode)};                             // Mode
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_LOCOMODE", reply);
   }
 
   ///
-  void replyToLanGetTurnoutMode(Socket const&)
+  void replyToLanGetTurnoutMode(Socket const& sock, uint16_t accy_addr)
     requires(std::derived_from<Base, intf::Switching>)
   {
-    // TODO
+    auto const mode{this->turnoutMode(accy_addr)};
+    std::array<uint8_t, 0x07uz> const reply{
+      0x07u,                                                    // Length
+      0x00u,                                                    //
+      std::to_underlying(Header::Reply_to_LAN_GET_TURNOUTMODE), // Header
+      0x00u,                                                    //
+      static_cast<uint8_t>(accy_addr >> 8u),                    // Address
+      static_cast<uint8_t>(accy_addr >> 0u),                    //
+      std::to_underlying(mode)};                                // Mode
+    this->transmit(sock, reply);
+    logf('S', sock, "Reply_to_LAN_GET_TURNOUTMODE", reply);
   }
 
   ///
   void lanRmbusDataChanged(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
@@ -1100,82 +1181,82 @@ private:
 
   ///
   void lanRailComDataChanged(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetZ21Rx(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetZ21Tx(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetFromLan(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetDispatchAddr(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanLocoNetDetector(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanCanDetector(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void replyToLanCanDeviceGetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanCanBoosterSystemStateDataChanged(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanFastClockData(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void replyTolanFastClockSettingsGet(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void replyToLanBoosterGetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanBoosterSystemStateDataChanged(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void replyToLanDecoderGetDescription(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void lanDecoderSystemStateDataChanged(Socket const&) {
-    // TODO
+    /// \todo
   }
 
   ///
   void replyToLanZLinkGetHwInfo(Socket const&) {
-    // TODO
+    /// \todo
   }
 
 private:
@@ -1322,25 +1403,32 @@ private:
             case XHeader::LAN_X_GET_TURNOUT_INFO:
               logf('C', sock, "LAN_X_GET_TURNOUT_INFO", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
-                lanXGetTurnoutInfo(sock);
+                lanXGetTurnoutInfo(sock,
+                                   data2accessory_address(data(chunk) + 1));
               break;
 
             case XHeader::LAN_X_GET_EXT_ACCESSORY_INFO:
               logf('C', sock, "LAN_X_GET_EXT_ACCESSORY_INFO", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
-                lanXGetExtAccessoryInfo(sock);
+                lanXGetExtAccessoryInfo(
+                  sock, data2accessory_address(data(chunk) + 1));
               break;
 
             case XHeader::LAN_X_SET_TURNOUT:
               logf('C', sock, "LAN_X_SET_TURNOUT", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
-                lanXSetTurnout(sock);
+                lanXSetTurnout(sock,
+                               data2accessory_address(data(chunk) + 1),
+                               chunk[3uz] & 0b0000'0001u,  // P
+                               chunk[3uz] & 0b0000'1000u,  // A
+                               chunk[3uz] & 0b0010'0000u); // Q
               break;
 
             case XHeader::LAN_X_SET_EXT_ACCESSORY:
               logf('C', sock, "LAN_X_SET_EXT_ACCESSORY", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
-                lanXSetExtAccessory(sock);
+                lanXSetExtAccessory(
+                  sock, data2accessory_address(data(chunk) + 1), chunk[3uz]);
               break;
 
             case XHeader::LAN_X_SET_STOP:
@@ -1529,13 +1617,15 @@ private:
         case Header::LAN_GET_TURNOUTMODE:
           logf('C', sock, "LAN_GET_TURNOUTMODE", chunk);
           if constexpr (std::derived_from<Base, intf::Switching>)
-            lanGetTurnoutMode(sock);
+            lanGetTurnoutMode(sock, data2accessory_address(data(chunk)));
           break;
 
         case Header::LAN_SET_TURNOUTMODE:
           logf('C', sock, "LAN_SET_TURNOUTMODE", chunk);
           if constexpr (std::derived_from<Base, intf::Switching>)
-            lanSetTurnoutMode(sock);
+            lanSetTurnoutMode(sock,
+                              data2accessory_address(data(chunk)),
+                              static_cast<TurnoutInfo::Mode>(chunk[2uz]));
           break;
 
         case Header::LAN_RMBUS_GETDATA:

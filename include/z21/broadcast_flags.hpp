@@ -42,7 +42,7 @@ enum class BroadcastFlags : uint32_t {
 
 ZTL_MAKE_ENUM_CLASS_FLAGS(BroadcastFlags)
 
-// TODO REMOVE
+/// \todo remove
 inline void print_broadcast_flags(BroadcastFlags flags,
                                   decltype(printf) fp = printf) {
   fp("broadcast flags: ");

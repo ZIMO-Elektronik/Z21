@@ -4,7 +4,7 @@
 #include <QSlider>
 #include "config.hpp"
 
-//
+// Load locos from config and add them to the list
 LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
   // Always focus on the last addressed loco, disable user interaction
   // https://stackoverflow.com/questions/2203698/ignore-mouse-and-keyboard-events-in-qt
@@ -13,15 +13,12 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
   setIconSize(QSize{30, 30});
 
   Config config;
-
   auto const size{config.beginReadArray("loco_list")};
   for (auto i{0}; i < size; ++i) {
     config.setArrayIndex(i);
-
     auto const addr{config.value("address")};
     auto const loco_info{config.value("loco_info")};
     if (!addr.isValid() || !loco_info.isValid()) continue;
-
     auto list_widget{
       new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr.toString()}};
     auto loco{new Loco};
@@ -29,11 +26,10 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
     addItem(list_widget);
     setItemWidget(list_widget, loco);
   }
-
   config.endArray();
 }
 
-//
+// Store locos in config
 LocoList::~LocoList() {
   Config config;
   config.beginWriteArray("loco_list");
@@ -47,78 +43,78 @@ LocoList::~LocoList() {
   config.endArray();
 }
 
-//
-z21::LocoInfo::Mode LocoList::locoMode(uint16_t addr) {
-  return (*this)[addr]->locoMode();
+// LAN_X_GET_LOCO_INFO
+z21::LocoInfo LocoList::locoInfo(uint16_t loco_addr) {
+  return (*this)[loco_addr]->locoInfo();
 }
 
-//
-void LocoList::locoMode(uint16_t addr, z21::LocoInfo::Mode mode) {
-  (*this)[addr]->locoMode(mode);
+// LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP
+void LocoList::locoDrive(uint16_t loco_addr,
+                         z21::LocoInfo::SpeedSteps speed_steps,
+                         uint8_t rvvvvvvv) {
+  auto const before{(*this)[loco_addr]->locoInfo()};
+  (*this)[loco_addr]->locoDrive(speed_steps, rvvvvvvv);
+  auto const after{(*this)[loco_addr]->locoInfo()};
+  if (before != after) emit broadcastLocoInfo(loco_addr);
 }
 
-//
-void LocoList::function(uint16_t addr, uint32_t mask, uint32_t state) {
-  auto const before{(*this)[addr]->locoInfo()};
-  (*this)[addr]->function(mask, state);
-  auto const after{(*this)[addr]->locoInfo()};
-  if (before != after) emit broadcastLocoInfo(addr);
+// LAN_X_SET_LOCO_FUNCTION | LAN_X_SET_LOCO_FUNCTION_GROUP
+void LocoList::locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state) {
+  auto const before{(*this)[loco_addr]->locoInfo()};
+  (*this)[loco_addr]->locoFunction(mask, state);
+  auto const after{(*this)[loco_addr]->locoInfo()};
+  if (before != after) emit broadcastLocoInfo(loco_addr);
 }
 
-//
-void LocoList::drive(uint16_t addr,
-                     z21::LocoInfo::SpeedSteps speed_steps,
-                     uint8_t rvvvvvvv) {
-  auto const before{(*this)[addr]->locoInfo()};
-  (*this)[addr]->drive(speed_steps, rvvvvvvv);
-  auto const after{(*this)[addr]->locoInfo()};
-  if (before != after) emit broadcastLocoInfo(addr);
+// LAN_GET_LOCOMODE
+z21::LocoInfo::Mode LocoList::locoMode(uint16_t loco_addr) {
+  return (*this)[loco_addr]->locoMode();
 }
 
-//
-z21::LocoInfo LocoList::locoInfo(uint16_t addr) {
-  return (*this)[addr]->locoInfo();
+// LAN_SET_LOCOMODE
+void LocoList::locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) {
+  auto const before{(*this)[loco_addr]->locoMode()};
+  (*this)[loco_addr]->locoMode(mode);
+  auto const after{(*this)[loco_addr]->locoMode()};
+  if (before != after) emit broadcastLocoInfo(loco_addr);
 }
 
-//
+// LAN_X_CV_READ
 void LocoList::cvRead(uint16_t cv_addr) {
   emit cvAck(cv_addr, _service_loco->cvRead(cv_addr));
 }
 
-//
+// LAN_X_CV_WRITE
 void LocoList::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit cvAck(cv_addr, _service_loco->cvWrite(cv_addr, byte));
 }
 
-//
-void LocoList::cvPomRead(uint16_t addr, uint16_t cv_addr) {
-  emit cvAck(cv_addr, (*this)[addr]->cvRead(cv_addr));
+// LAN_X_CV_POM_READ_BYTE
+void LocoList::cvPomRead(uint16_t loco_addr, uint16_t cv_addr) {
+  emit cvAck(cv_addr, (*this)[loco_addr]->cvRead(cv_addr));
 }
 
-//
-void LocoList::cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) {
-  (*this)[addr]->cvWrite(cv_addr, byte);
+// LAN_X_CV_POM_WRITE_BYTE
+void LocoList::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
+  (*this)[loco_addr]->cvWrite(cv_addr, byte);
 }
 
-//
-Loco* LocoList::operator[](uint16_t addr) {
-  auto const addr_str{QString::number(addr)};
+// Access stored locos by subscript operator
+Loco* LocoList::operator[](uint16_t loco_addr) {
+  // Find loco by address string
+  auto const addr_str{QString::number(loco_addr)};
   auto list{findItems(addr_str, Qt::MatchFixedString)};
 
-  //
+  // Loco found
   if (std::size(list) == 1uz) {
     auto list_widget{list.first()};
     list_widget->setSelected(true);
-    auto loco{static_cast<Loco*>(itemWidget(list_widget))};
-    return loco;
+    return static_cast<Loco*>(itemWidget(list_widget));
   }
-  //
+  // Loco not found
   else if (std::empty(list)) {
-    // delete one if size... above... 256?
-    if (count() == 256) {
-      asm volatile("nop");
-      asm volatile("nop");
-    }
+    // \todo Eventually delete one if size >=256?
+    if (count() == 256) assert(false);
 
     auto list_widget{
       new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr_str}};
