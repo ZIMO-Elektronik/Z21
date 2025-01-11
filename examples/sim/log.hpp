@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "text_view.hpp"
 
-//
+// Log window for client and server messages
 class Log : public QWidget {
   Q_OBJECT
 

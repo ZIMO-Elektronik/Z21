@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationName("Z21Sim");
-  QCoreApplication::setApplicationVersion(Z21SIM_VERSION);
+  QCoreApplication::setApplicationVersion(Z21_SIM_VERSION);
 
   // Create an application instance
   QApplication app{argc, argv};

@@ -12,7 +12,7 @@
 #include "led.hpp"
 #include "server.hpp"
 
-// Add menu and toolbar
+// Create layout with menus, toolbars and tabs
 MainWindow::MainWindow() {
   // Initial size
   setMinimumSize(1600, 900);
@@ -24,11 +24,11 @@ MainWindow::MainWindow() {
   toolbar->setFloatable(false);
   toolbar->setMovable(false);
 
-  //
+  // Menus
   QMenu* file_menu{menuBar()->addMenu("&File")};
   QMenu* about_menu{menuBar()->addMenu("&About")};
 
-  //
+  // Exit action
   QIcon const exit_icon{":/dark-green/window_close.svg"};
   auto exit_act{new QAction{exit_icon, "&Exit", this}};
   exit_act->setShortcuts(QKeySequence::Quit);
@@ -37,7 +37,7 @@ MainWindow::MainWindow() {
   file_menu->addAction(exit_act);
   toolbar->addAction(exit_act);
 
-  //
+  // About action
   QIcon const about_icon{":/dark-green/dialog_help.svg"};
   auto about_act{new QAction{about_icon, "&About", this}};
   about_act->setStatusTip("Show the application's About box");
@@ -45,7 +45,7 @@ MainWindow::MainWindow() {
   about_menu->addAction(about_act);
   toolbar->addAction(about_act);
 
-  //
+  // Clear data actions
   QIcon const clear_icon{":/dark-green/trash.svg"};
   auto clear_act{new QAction{clear_icon, "&Clear data", this}};
   clear_act->setStatusTip("Clear stored data");
@@ -60,14 +60,14 @@ MainWindow::MainWindow() {
   // Set central widget
   setCentralWidget(_server);
 
-  //
+  // Connect LED in status bar to server
   connect(_server, &Server::ledStatus, led, &Led::setStatus);
 
-  //
+  // Restore geometry and state
   restoreGeometryState();
 }
 
-//
+// Store geometry and state in config
 MainWindow::~MainWindow() {
   Config config;
   config.setValue("main_window_geometry", saveGeometry());
@@ -97,7 +97,7 @@ void MainWindow::about() {
   about.exec();
 }
 
-//
+// Restore geometry and state
 void MainWindow::restoreGeometryState() {
   Config const config;
   if (auto const geometry{config.value("main_window_geometry")};

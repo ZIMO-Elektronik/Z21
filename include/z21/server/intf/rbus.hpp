@@ -12,7 +12,7 @@
 
 namespace z21::server::intf {
 
-/// TODO
+/// \todo
 struct RBus {
   RBus() { assert(false); }
 

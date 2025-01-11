@@ -35,88 +35,51 @@ private:
   uint8_t mmDccFlags() const;
 
   struct {
-    QCheckBox* enable_railcom_checkbox;
-    QCheckBox* enable_bit_modify_on_long_address_checkbox;
-    QComboBox* key_stop_mode_combobox;
-    QComboBox* programming_type_combobox;
-    QCheckBox* enable_loconet_current_source_checkbox;
-    QLabel* loconet_fast_clock_rate_label;
-    QSlider* loconet_fast_clock_rate_slider;
-    QComboBox* loconet_mode_combobox;
+    QCheckBox* enable_railcom_checkbox{new QCheckBox};
+    QCheckBox* enable_bit_modify_on_long_address_checkbox{new QCheckBox};
+    QComboBox* key_stop_mode_combobox{new QComboBox};
+    QComboBox* programming_type_combobox{new QComboBox};
+    QCheckBox* enable_loconet_current_source_checkbox{new QCheckBox};
+    QLabel* loconet_fast_clock_rate_label{new QLabel};
+    QSlider* loconet_fast_clock_rate_slider{new QSlider{Qt::Horizontal}};
+    QComboBox* loconet_mode_combobox{new QComboBox};
     struct {
-      QCheckBox* disable_turnout_timeout_checkbox;
-      QCheckBox* disable_turnout_auto_deact_checkbox;
-      QCheckBox* accessory_start_group1_checkbox;
-      QCheckBox* rbus_as_xbus2_checkbox;
-      QCheckBox* invert_accessory_red_green_checkbox;
+      QCheckBox* disable_turnout_timeout_checkbox{new QCheckBox};
+      QCheckBox* disable_turnout_auto_deact_checkbox{new QCheckBox};
+      QCheckBox* accessory_start_group1_checkbox{new QCheckBox};
+      QCheckBox* rbus_as_xbus2_checkbox{new QCheckBox};
+      QCheckBox* invert_accessory_red_green_checkbox{new QCheckBox};
     } ext_flags;
-    QComboBox* purging_time_combobox;
+    QComboBox* purging_time_combobox{new QComboBox};
     struct {
-      QCheckBox* emulate_rm_checkbox;
-      QCheckBox* emulate_ln_checkbox;
-      QCheckBox* emulate_lissy_checkbox;
-      QCheckBox* xbus_use_fallback_version_checkbox;
-      QCheckBox* xbus_forwarding_rbus_checkbox;
-      QCheckBox* bus_only_accessories_checkbox;
+      QCheckBox* disable_emulate_rm_checkbox{new QCheckBox};
+      QCheckBox* disable_emulate_ln_checkbox{new QCheckBox};
+      QCheckBox* enable_emulate_lissy_checkbox{new QCheckBox};
+      QCheckBox* xbus_use_fallback_version_checkbox{new QCheckBox};
+      QCheckBox* xbus_forwarding_rbus_checkbox{new QCheckBox};
+      QCheckBox* bus_only_accessories_checkbox{new QCheckBox};
     } bus_flags;
-  } _common{new QCheckBox{this},
-            new QCheckBox{this},
-            new QComboBox{this},
-            new QComboBox{this},
-            new QCheckBox{this},
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            new QComboBox{this},
-            {new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this}},
-            new QComboBox{this},
-            {new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this},
-             new QCheckBox{this}}};
+  } _common;
 
   struct {
-    QLabel* startup_reset_package_count_label;
-    QSlider* startup_reset_package_count_slider;
-    QLabel* continue_reset_package_count_label;
-    QSlider* continue_reset_package_count_slider;
-    QLabel* program_package_count_label;
-    QSlider* program_package_count_slider;
-    QLabel* bit_verify_to_one_label;
-    QSlider* bit_verify_to_one_slider;
-    QLabel* programming_ack_current_label;
-    QSlider* programming_ack_current_slider;
+    QLabel* startup_reset_package_count_label{new QLabel};
+    QSlider* startup_reset_package_count_slider{new QSlider{Qt::Horizontal}};
+    QLabel* continue_reset_package_count_label{new QLabel};
+    QSlider* continue_reset_package_count_slider{new QSlider{Qt::Horizontal}};
+    QLabel* program_package_count_label{new QLabel};
+    QSlider* program_package_count_slider{new QSlider{Qt::Horizontal}};
+    QLabel* bit_verify_to_one_label{new QLabel};
+    QSlider* bit_verify_to_one_slider{new QSlider{Qt::Horizontal}};
+    QLabel* programming_ack_current_label{new QLabel};
+    QSlider* programming_ack_current_slider{new QSlider{Qt::Horizontal}};
     struct {
-      QComboBox* fmt_combobox;
-      QCheckBox* repeat_hfx_checkbox;
-      QComboBox* short_combobox;
+      QComboBox* fmt_combobox{new QComboBox};
+      QCheckBox* repeat_hfx_checkbox{new QCheckBox};
+      QComboBox* short_combobox{new QComboBox};
     } flags;
-    QLabel* output_voltage_label;
-    QSlider* output_voltage_slider;
-    QLabel* programming_voltage_label;
-    QSlider* programming_voltage_slider;
-  } _mm_dcc{new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            {
-              new QComboBox{this},
-              new QCheckBox{this},
-              new QComboBox{this},
-            },
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this},
-            new QLabel{this},
-            new QSlider{Qt::Horizontal, this}};
+    QLabel* output_voltage_label{new QLabel};
+    QSlider* output_voltage_slider{new QSlider{Qt::Horizontal}};
+    QLabel* programming_voltage_label{new QLabel};
+    QSlider* programming_voltage_slider{new QSlider{Qt::Horizontal}};
+  } _mm_dcc;
 };

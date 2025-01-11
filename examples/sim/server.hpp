@@ -3,16 +3,19 @@
 #include <QTabWidget>
 #include <QWidget>
 #include <z21/z21.hpp>
+#include "accessory_list.hpp"
 #include "get_socket.hpp"
 #include "led.hpp"
 #include "loco_list.hpp"
 #include "log.hpp"
 #include "settings.hpp"
 #include "system.hpp"
+#include "turnout_list.hpp"
 
 using ServerBase = z21::server::Base<z21::server::intf::System,
                                      z21::server::intf::Driving,
                                      z21::server::intf::Programming,
+                                     z21::server::intf::Switching,
                                      z21::server::intf::Settings,
                                      z21::server::intf::Logging>;
 
@@ -29,9 +32,6 @@ public slots:
 signals:
   void ledStatus(Led::Status status);
 
-private slots:
-  void receive();
-
 private:
   void transmit(z21::Socket const& sock,
                 std::span<uint8_t const> datasets) final;
@@ -43,19 +43,27 @@ private:
   [[nodiscard]] z21::SystemState& systemState() final;
 
   // Driving interface
-  z21::LocoInfo::Mode locoMode(uint16_t addr) final;
-  void locoMode(uint16_t addr, z21::LocoInfo::Mode mode) final;
-  void function(uint16_t addr, uint32_t mask, uint32_t state) final;
-  void drive(uint16_t addr,
-             z21::LocoInfo::SpeedSteps speed_steps,
-             uint8_t rvvvvvvv) final;
-  z21::LocoInfo locoInfo(uint16_t addr) final;
+  [[nodiscard]] z21::LocoInfo locoInfo(uint16_t loco_addr) final;
+  void locoDrive(uint16_t loco_addr,
+                 z21::LocoInfo::SpeedSteps speed_steps,
+                 uint8_t rvvvvvvv) final;
+  void locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state) final;
+  [[nodiscard]] z21::LocoInfo::Mode locoMode(uint16_t loco_addr) final;
+  void locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) final;
 
   // Programming interface
   [[nodiscard]] bool cvRead(uint16_t cv_addr) final;
   [[nodiscard]] bool cvWrite(uint16_t cv_addr, uint8_t byte) final;
-  void cvPomRead(uint16_t addr, uint16_t cv_addr) final;
-  void cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) final;
+  void cvPomRead(uint16_t loco_addr, uint16_t cv_addr) final;
+  void cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) final;
+
+  // Switching interface
+  [[nodiscard]] z21::TurnoutInfo turnoutInfo(uint16_t accy_addr) final;
+  [[nodiscard]] z21::AccessoryInfo accessoryInfo(uint16_t accy_addr) final;
+  virtual void turnout(uint16_t accy_addr, bool p, bool a, bool q) final;
+  virtual void accessory(uint16_t accy_addr, uint8_t dddddddd) final;
+  [[nodiscard]] z21::TurnoutInfo::Mode turnoutMode(uint16_t accy_addr) final;
+  void turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) final;
 
   // Settings interface
   [[nodiscard]] z21::CommonSettings commonSettings() final;
@@ -66,6 +74,8 @@ private:
   // Log interface
   void log(char const* str) final;
 
+  void receive();
+  void updateLedStatus();
   bool programmingFailure();
   void connected();
   void disconnected();
@@ -78,6 +88,8 @@ private:
   ::Log* _client_log{new ::Log{this}};
   ::Log* _server_log{new ::Log{this}};
   ::LocoList* _loco_list{new ::LocoList{this}};
+  ::AccessoryList* _accessory_list{new AccessoryList{this}};
+  ::TurnoutList* _turnout_list{new TurnoutList{this}};
   ::System* _system{new ::System{this}};
   ::Settings* _settings{new ::Settings{this}};
 

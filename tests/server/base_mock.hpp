@@ -11,8 +11,10 @@ struct BaseMock : ServerBase {
               transmit,
               (z21::Socket const&, std::span<uint8_t const> payload),
               (final));
+
+  // System interface
   MOCK_METHOD(bool, trackPower, (bool), (final));
   MOCK_METHOD(bool, stop, (), (final));
-  MOCK_METHOD(z21::SystemState&, systemState, (), (final));
   MOCK_METHOD(void, logoff, (z21::Socket const&), (final));
+  MOCK_METHOD(z21::SystemState&, systemState, (), (final));
 };

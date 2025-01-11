@@ -18,7 +18,9 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
   _decoders_tabs->addTab(_loco_list, QPixmap{":/icons/loco.svg"}, "Locos");
   _decoders_tabs->addTab(
-    new QLabel{"TODO"}, QPixmap{":/icons/turnout.svg"}, "Accessories");
+    _turnout_list, QPixmap{":/icons/turnout.svg"}, "Turnouts");
+  _decoders_tabs->addTab(
+    _accessory_list, QPixmap{":/icons/accessory.svg"}, "Accessories");
   layout->addWidget(_decoders_tabs, 0, 1, -1, 1);
 
   _client_log_tabs->addTab(
@@ -35,11 +37,15 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
   setLayout(layout);
 
+  // Read from socket and update LED every 10ms
   auto timer{new QTimer{this}};
-  connect(timer, &QTimer::timeout, this, &Server::receive);
+  connect(timer, &QTimer::timeout, [this] {
+    receive();
+    updateLedStatus();
+  });
   timer->start(10);
 
-  //
+  // Connect system broadcasts
   connect(_system, &::System::broadcastTrackPowerOff, [this] {
     if (trackPower(false)) broadcastTrackPowerOff();
   });
@@ -55,12 +61,19 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   connect(_system, &::System::broadcastStopped, [this] {
     if (stop()) broadcastStopped();
   });
-  connect(_loco_list, &::LocoList::broadcastLocoInfo, [this](uint16_t addr) {
-    broadcastLocoInfo(addr);
-  });
   connect(_system, &::System::broadcastSystemStateData, [this] {
     broadcastSystemStateData();
   });
+
+  // Connect accessory broadcasts
+  connect(_accessory_list,
+          &::AccessoryList::broadcastExtAccessoryInfo,
+          [this](uint16_t accy_addr) { broadcastExtAccessoryInfo(accy_addr); });
+
+  // Connect loco broadcasts
+  connect(_loco_list,
+          &::LocoList::broadcastLocoInfo,
+          [this](uint16_t loco_addr) { broadcastLocoInfo(loco_addr); });
   connect(_loco_list, &::LocoList::cvNackShortCircuit, [this] {
     cvNackShortCircuit();
   });
@@ -69,11 +82,164 @@ Server::Server(QWidget* parent) : QWidget{parent} {
           &::LocoList::cvAck,
           [this](uint16_t cv_addr, uint8_t byte) { cvAck(cv_addr, byte); });
 
-  //
+  // Connect turnout broadcasts
+  connect(_turnout_list,
+          &::TurnoutList::broadcastTurnoutInfo,
+          [this](uint16_t accy_addr) { broadcastTurnoutInfo(accy_addr); });
+
+  // Always start disconnected
   disconnected();
 }
 
-//
+// Clear any stored data
+void Server::clearData() {
+  _accessory_list->clear();
+  _loco_list->clear();
+  _turnout_list->clear();
+}
+
+// Transmit to socket
+void Server::transmit(z21::Socket const& sock,
+                      std::span<uint8_t const> datasets) {
+  if (sendto(sock.fd,
+             std::bit_cast<char*>(std::data(datasets)),
+             std::size(datasets),
+             0,
+             std::bit_cast<sockaddr*>(&sock.addr),
+             sock.len) < 0) {
+    printf("sendto failed %s\n", strerror(errno));
+    std::exit(-1);
+  }
+
+  // Change connection status if not yet done so
+  if (!_connected) connected();
+}
+
+// LAN_X_SET_TRACK_POWER_OFF | LAN_X_SET_TRACK_POWER_ON
+bool Server::trackPower(bool) { return true; }
+
+// LAN_X_SET_STOP
+bool Server::stop() { return true; }
+
+// LAN_LOGOFF
+void Server::logoff(z21::Socket const&) {
+  if (empty(this->clients())) disconnected();
+}
+
+// Modify system state
+z21::SystemState& Server::systemState() {
+  auto& sys_state{ServerBase::systemState()};
+  sys_state.main_current = _system->mainCurrent();
+  sys_state.prog_current = _system->progCurrent();
+  sys_state.filtered_main_current = _system->filteredMainCurrent();
+  sys_state.temperature = _system->temperature();
+  sys_state.supply_voltage = _system->supplyVoltage();
+  sys_state.vcc_voltage = _system->vccVoltage();
+  return ServerBase::systemState();
+}
+
+// LAN_X_GET_LOCO_INFO
+z21::LocoInfo Server::locoInfo(uint16_t loco_addr) {
+  return _loco_list->locoInfo(loco_addr);
+}
+
+// LAN_X_SET_LOCO_FUNCTION | LAN_X_SET_LOCO_FUNCTION_GROUP
+void Server::locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state) {
+  _loco_list->locoFunction(loco_addr, mask, state);
+}
+
+// LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP
+void Server::locoDrive(uint16_t loco_addr,
+                       z21::LocoInfo::SpeedSteps speed_steps,
+                       uint8_t rvvvvvvv) {
+  _loco_list->locoDrive(loco_addr, speed_steps, rvvvvvvv);
+}
+
+// LAN_GET_LOCOMODE
+z21::LocoInfo::Mode Server::locoMode(uint16_t loco_addr) {
+  return _loco_list->locoMode(loco_addr);
+}
+
+// LAN_SET_LOCOMODE
+void Server::locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) {
+  _loco_list->locoMode(loco_addr, mode);
+}
+
+// LAN_X_CV_READ
+bool Server::cvRead(uint16_t cv_addr) {
+  emit ledStatus(Led::ProgrammingMode);
+  if (!programmingFailure()) _loco_list->cvRead(cv_addr);
+  return true;
+}
+
+// LAN_X_CV_WRITE
+bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
+  emit ledStatus(Led::ProgrammingMode);
+  if (!programmingFailure()) _loco_list->cvWrite(cv_addr, byte);
+  return true;
+}
+
+// LAN_X_CV_POM_READ_BYTE
+void Server::cvPomRead(uint16_t loco_addr, uint16_t cv_addr) {
+  if (!programmingFailure()) _loco_list->cvPomRead(loco_addr, cv_addr);
+}
+
+// LAN_X_CV_POM_WRITE_BYTE
+void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
+  if (!programmingFailure()) _loco_list->cvPomWrite(loco_addr, cv_addr, byte);
+}
+
+/// LAN_X_GET_TURNOUT_INFO
+z21::TurnoutInfo Server::turnoutInfo(uint16_t accy_addr) {
+  return _turnout_list->turnoutInfo(accy_addr);
+}
+
+/// LAN_X_GET_EXT_ACCESSORY_INFO
+z21::AccessoryInfo Server::accessoryInfo(uint16_t accy_addr) {
+  return _accessory_list->accessoryInfo(accy_addr);
+}
+
+/// LAN_X_SET_TURNOUT
+void Server::turnout(uint16_t accy_addr, bool p, bool a, bool q) {
+  _turnout_list->turnout(accy_addr, p, a, q);
+}
+
+/// LAN_X_SET_EXT_ACCESSORY
+void Server::accessory(uint16_t accy_addr, uint8_t dddddddd) {
+  _accessory_list->accessory(accy_addr, dddddddd);
+}
+
+// LAN_X_GET_TURNOUTMODE
+z21::TurnoutInfo::Mode Server::turnoutMode(uint16_t accy_addr) {
+  return _turnout_list->turnoutMode(accy_addr);
+}
+
+// LAN_X_SET_TURNOUTMODE
+void Server::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
+  _turnout_list->turnoutMode(accy_addr, mode);
+}
+
+// LAN_GET_COMMON_SETTINGS
+z21::CommonSettings Server::commonSettings() {
+  return _settings->commonSettings();
+}
+
+// LAN_SET_COMMON_SETTINGS
+void Server::commonSettings(z21::CommonSettings const& common_settings) {
+  _settings->commonSettings(common_settings);
+}
+
+// LAN_GET_MMDCC_SETTINGS
+z21::MmDccSettings Server::mmDccSettings() {
+  return _settings->mmDccSettings();
+}
+
+// LAN_SET_MMDCC_SETTINGS
+void Server::mmDccSettings(z21::MmDccSettings const& mm_dcc_settings) {
+  _settings->mmDccSettings(mm_dcc_settings);
+}
+
+// Receive from socket (periodically called)
 void Server::receive() {
   sockaddr_in dest_addr_ip4;
   socklen_t socklen{sizeof(dest_addr_ip4)};
@@ -92,7 +258,10 @@ void Server::receive() {
       {std::data(rx), static_cast<size_t>(len)});
     execute();
   }
+}
 
+// Update LED status
+void Server::updateLedStatus() {
   // Priorities are copied from the app
   if (!_connected) emit ledStatus(Led::Disconnected);
   else if (auto const central_state{systemState().central_state};
@@ -108,121 +277,7 @@ void Server::receive() {
   else emit ledStatus(Led::NormalOperation);
 }
 
-//
-void Server::clearData() { _loco_list->clear(); }
-
-//
-void Server::transmit(z21::Socket const& sock,
-                      std::span<uint8_t const> datasets) {
-  if (sendto(sock.fd,
-             std::bit_cast<char*>(std::data(datasets)),
-             std::size(datasets),
-             0,
-             std::bit_cast<sockaddr*>(&sock.addr),
-             sock.len) < 0) {
-    printf("sendto failed %s\n", strerror(errno));
-    std::exit(-1);
-  }
-
-  //
-  if (!_connected) connected();
-}
-
-//
-bool Server::trackPower(bool) { return true; }
-
-//
-bool Server::stop() { return true; }
-
-//
-void Server::logoff(z21::Socket const&) {
-  if (empty(this->clients())) disconnected();
-}
-
-//
-z21::SystemState& Server::systemState() {
-  auto& sys_state{ServerBase::systemState()};
-  sys_state.main_current = _system->mainCurrent();
-  sys_state.prog_current = _system->progCurrent();
-  sys_state.filtered_main_current = _system->filteredMainCurrent();
-  sys_state.temperature = _system->temperature();
-  sys_state.supply_voltage = _system->supplyVoltage();
-  sys_state.vcc_voltage = _system->vccVoltage();
-  return ServerBase::systemState();
-}
-
-//
-void Server::drive(uint16_t addr,
-                   z21::LocoInfo::SpeedSteps speed_steps,
-                   uint8_t rvvvvvvv) {
-  _loco_list->drive(addr, speed_steps, rvvvvvvv);
-}
-
-//
-z21::LocoInfo::Mode Server::locoMode(uint16_t addr) {
-  return _loco_list->locoMode(addr);
-}
-
-//
-void Server::locoMode(uint16_t addr, z21::LocoInfo::Mode mode) {
-  _loco_list->locoMode(addr, mode);
-}
-
-//
-void Server::function(uint16_t addr, uint32_t mask, uint32_t state) {
-  _loco_list->function(addr, mask, state);
-}
-
-//
-z21::LocoInfo Server::locoInfo(uint16_t addr) {
-  return _loco_list->locoInfo(addr);
-}
-
-//
-bool Server::cvRead(uint16_t cv_addr) {
-  emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure()) _loco_list->cvRead(cv_addr);
-  return true;
-}
-
-//
-bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
-  emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure()) _loco_list->cvWrite(cv_addr, byte);
-  return true;
-}
-
-//
-void Server::cvPomRead(uint16_t addr, uint16_t cv_addr) {
-  if (!programmingFailure()) _loco_list->cvPomRead(addr, cv_addr);
-}
-
-//
-void Server::cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) {
-  if (!programmingFailure()) _loco_list->cvPomWrite(addr, cv_addr, byte);
-}
-
-//
-z21::CommonSettings Server::commonSettings() {
-  return _settings->commonSettings();
-}
-
-//
-void Server::commonSettings(z21::CommonSettings const& common_settings) {
-  _settings->commonSettings(common_settings);
-}
-
-//
-z21::MmDccSettings Server::mmDccSettings() {
-  return _settings->mmDccSettings();
-}
-
-//
-void Server::mmDccSettings(z21::MmDccSettings const& mm_dcc_settings) {
-  _settings->mmDccSettings(mm_dcc_settings);
-}
-
-//
+// Append string to client or server log
 void Server::log(char const* str) {
   QString tmp{str};
   tmp.remove(0, 2);
@@ -231,7 +286,7 @@ void Server::log(char const* str) {
   else assert(false);
 }
 
-//
+// Get programming failure rate from system
 bool Server::programmingFailure() {
   if (_system->programmingShortCircuitFailure()) {
     _loco_list->cvNackShortCircuit();
@@ -242,7 +297,7 @@ bool Server::programmingFailure() {
   } else return false;
 }
 
-//
+// Connected, enable UI and update LED status
 void Server::connected() {
   _connected = true;
   _system_settings_tabs->setDisabled(false);
@@ -252,7 +307,7 @@ void Server::connected() {
   emit ledStatus(Led::Stop);
 }
 
-//
+// Disconnected, disable UI and update LED status
 void Server::disconnected() {
   _connected = false;
   _system_settings_tabs->setDisabled(true);

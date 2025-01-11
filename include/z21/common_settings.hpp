@@ -17,6 +17,9 @@ namespace z21 {
 
 ///
 struct CommonSettings {
+  friend constexpr bool operator==(CommonSettings const&,
+                                   CommonSettings const&) = default;
+
   bool enable_railcom{};
   bool enable_bit_modify_on_long_address{};
   uint8_t key_stop_mode{};

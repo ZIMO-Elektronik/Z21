@@ -32,27 +32,28 @@ struct Programming {
 
   // Required
 
-  /// TODO
+  /// \todo
   [[nodiscard]] virtual bool cvRead(uint16_t cv_addr) = 0;
 
-  /// TODO
+  /// \todo
   [[nodiscard]] virtual bool cvWrite(uint16_t cv_addr, uint8_t byte) = 0;
 
-  /// TODO
-  virtual void cvPomRead(uint16_t addr, uint16_t cv_addr) = 0;
+  /// \todo
+  virtual void cvPomRead(uint16_t loco_addr, uint16_t cv_addr) = 0;
 
-  /// TODO
-  virtual void cvPomWrite(uint16_t addr, uint16_t cv_addr, uint8_t byte) = 0;
+  /// \todo
+  virtual void
+  cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) = 0;
 
   // Implemented by Base
 
-  /// TODO
+  /// \todo
   virtual void cvNackShortCircuit() = 0;
 
-  /// TODO
+  /// \todo
   virtual void cvNack() = 0;
 
-  /// TODO
+  /// \todo
   virtual void cvAck(uint16_t cv_addr, uint8_t byte) = 0;
 };
 

@@ -18,6 +18,9 @@ namespace z21 {
 
 ///
 struct SystemState {
+  friend constexpr bool operator==(SystemState const&,
+                                   SystemState const&) = default;
+
   int16_t main_current{};
   int16_t prog_current{};
   int16_t filtered_main_current{};

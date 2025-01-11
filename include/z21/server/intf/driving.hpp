@@ -35,24 +35,28 @@ struct Driving {
 
   // Required
 
-  /// TODO
-  virtual LocoInfo::Mode locoMode(uint16_t addr) = 0;
+  /// \todo
+  [[nodiscard]] virtual LocoInfo locoInfo(uint16_t loco_addr) = 0;
 
-  /// TODO
-  virtual void locoMode(uint16_t addr, LocoInfo::Mode mode) = 0;
+  /// \todo
+  virtual void locoDrive(uint16_t loco_addr,
+                         LocoInfo::SpeedSteps speed_steps,
+                         uint8_t rvvvvvvv) = 0;
 
-  /// TODO
+  /// \todo
   virtual void
-  drive(uint16_t addr, LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv) = 0;
+  locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state) = 0;
 
-  /// TODO
-  virtual void function(uint16_t addr, uint32_t mask, uint32_t state) = 0;
-  [[nodiscard]] virtual LocoInfo locoInfo(uint16_t addr) = 0;
+  /// \todo
+  [[nodiscard]] virtual LocoInfo::Mode locoMode(uint16_t loco_addr) = 0;
+
+  /// \todo
+  virtual void locoMode(uint16_t loco_addr, LocoInfo::Mode mode) = 0;
 
   // Implemented by Base
 
-  /// TODO
-  virtual void broadcastLocoInfo(uint16_t addr) = 0;
+  /// \todo
+  virtual void broadcastLocoInfo(uint16_t loco_addr) = 0;
 };
 
 } // namespace z21::server::intf

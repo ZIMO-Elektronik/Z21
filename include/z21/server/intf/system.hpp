@@ -59,41 +59,41 @@ struct System {
 
   // Required
 
-  /// TODO
+  /// \todo
   [[nodiscard]] virtual bool trackPower(bool on) = 0;
 
-  /// TODO
+  /// \todo
   [[nodiscard]] virtual bool stop() = 0;
 
   // Optional
 
-  /// TODO
+  /// \todo
   [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
 
-  /// TODO
+  /// \todo
   virtual void logoff(Socket const&) {}
 
-  /// TODO
+  /// \todo
   [[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
 
   // Implemented by Base
 
-  /// TODO
+  /// \todo
   virtual void broadcastTrackPowerOff() = 0;
 
-  /// TODO
+  /// \todo
   virtual void broadcastTrackPowerOn() = 0;
 
-  /// TODO
+  /// \todo
   virtual void broadcastProgrammingMode() = 0;
 
-  /// TODO
+  /// \todo
   virtual void broadcastTrackShortCircuit() = 0;
 
-  /// TODO
+  /// \todo
   virtual void broadcastStopped() = 0;
 
-  /// TODO
+  /// \todo
   virtual void broadcastSystemStateData() = 0;
 
 private:

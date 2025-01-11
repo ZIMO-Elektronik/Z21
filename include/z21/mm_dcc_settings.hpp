@@ -17,6 +17,9 @@ namespace z21 {
 
 ///
 struct MmDccSettings {
+  friend constexpr bool operator==(MmDccSettings const&,
+                                   MmDccSettings const&) = default;
+
   uint8_t startup_reset_package_count{};
   uint8_t continue_reset_packet_count{};
   uint8_t program_package_count{};
