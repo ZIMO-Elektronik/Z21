@@ -15,7 +15,7 @@
 // Create layout with menus, toolbars and tabs
 MainWindow::MainWindow() {
   // Initial size
-  setMinimumSize(1600, 900);
+  setMinimumSize(1920, 900);
 
   QToolBar* toolbar{addToolBar("")};
 
