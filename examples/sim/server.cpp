@@ -189,6 +189,19 @@ void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
   if (!programmingFailure()) _loco_list->cvPomWrite(loco_addr, cv_addr, byte);
 }
 
+// ACCESSORY_READ_BYTE
+void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
+  printf("POM ACCY READ %d %d\n", accy_addr, cv_addr);
+  cvNack();
+}
+
+// LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+void Server::cvPomAccessoryWrite(uint16_t accy_addr,
+                                 uint16_t cv_addr,
+                                 uint8_t byte) {
+  printf("POM ACCY WRITE %d %d=%d\n", accy_addr, cv_addr, byte);
+}
+
 /// LAN_X_GET_TURNOUT_INFO
 z21::TurnoutInfo Server::turnoutInfo(uint16_t accy_addr) {
   return _turnout_list->turnoutInfo(accy_addr);

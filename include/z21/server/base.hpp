@@ -401,13 +401,13 @@ private:
   }
 
   ///
-  void lanXCvPomAccessoryWriteByte([[maybe_unused]] Socket const& sock,
-                                   [[maybe_unused]] uint16_t accy_addr,
-                                   [[maybe_unused]] uint16_t cv_addr,
-                                   [[maybe_unused]] uint8_t byte)
+  void lanXCvPomAccessoryWriteByte(Socket const&,
+                                   uint16_t accy_addr,
+                                   uint16_t cv_addr,
+                                   uint8_t byte)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    /// \todo
+    this->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
   }
 
   ///
@@ -418,12 +418,14 @@ private:
   }
 
   ///
-  void lanXCvPomAccessoryReadByte([[maybe_unused]] Socket const& sock,
-                                  [[maybe_unused]] uint16_t accy_addr,
-                                  [[maybe_unused]] uint16_t cv_addr)
+  void lanXCvPomAccessoryReadByte(Socket const& sock,
+                                  uint16_t accy_addr,
+                                  uint16_t cv_addr)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    /// \todo
+    if (full(_cv_request_deque)) return;
+    _cv_request_deque.push_back(&sock);
+    this->cvPomAccessoryRead(accy_addr, cv_addr);
   }
 
   /// https://www.z21.eu/en/products/z21-maintenance-tool
@@ -1554,7 +1556,7 @@ private:
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvPomAccessoryWriteByte(
                           sock,
-                          data2loco_address(data(chunk) + 2),
+                          data2accessory_address(data(chunk) + 2),
                           data2cv_address(data(chunk) + 4),
                           chunk[6uz]);
                       break;
@@ -1570,7 +1572,7 @@ private:
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvPomAccessoryReadByte(
                           sock,
-                          data2loco_address(data(chunk) + 2),
+                          data2accessory_address(data(chunk) + 2),
                           data2cv_address(data(chunk) + 4));
                       break;
                   }

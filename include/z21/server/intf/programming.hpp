@@ -14,11 +14,11 @@ namespace z21::server::intf {
 
 ///
 /// Commands:
-/// - LAN_X_DCC_READ_REGISTER
+/// - LAN_X_DCC_READ_REGISTER (n.a.)
 /// - LAN_X_CV_READ
-/// - LAN_X_DCC_WRITE_REGISTER
+/// - LAN_X_DCC_WRITE_REGISTER (n.a.)
 /// - LAN_X_CV_WRITE
-/// - LAN_X_MM_WRITE_BYTE (well...)
+/// - LAN_X_MM_WRITE_BYTE (n.a.)
 /// - LAN_X_CV_POM (WRITE_BYTE, WRITE_BIT, READ_BYTE)
 /// - LAN_X_CV_POM_ACCESSORY (WRITE_BYTE, WRITE_BIT, READ_BYTE)
 ///
@@ -44,6 +44,13 @@ struct Programming {
   /// \todo
   virtual void
   cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) = 0;
+
+  /// \todo
+  virtual void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) = 0;
+
+  /// \todo
+  virtual void
+  cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte) = 0;
 
   // Implemented by Base
 
