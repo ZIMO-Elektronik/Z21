@@ -139,7 +139,7 @@ qt_add_resources(
   ${CMAKE_SOURCE_DIR}/data/images/logo.png)
 
 if(NOT TARGET Microsoft.GSL::GSL)
-  cpmaddpackage("gh:microsoft/GSL@4.0.0")
+  cpmaddpackage("gh:microsoft/GSL@4.1.0")
 endif()
 
 if(NOT TARGET Qt::BreezeIcons)
