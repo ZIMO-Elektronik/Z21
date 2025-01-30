@@ -48,18 +48,18 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
       _common.ext_flags.accessory_start_group1_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Ext R-Bus as second X-Bus"}, row, 0);
     grid->addWidget(_common.ext_flags.rbus_as_xbus2_checkbox, row++, 2);
-    grid->addWidget(new QLabel{"Ext invert accessory red/green"}, row, 0);
+    grid->addWidget(new QLabel{"Ext invert accessory green/red"}, row, 0);
     grid->addWidget(
       _common.ext_flags.invert_accessory_red_green_checkbox, row++, 2);
 #if !defined(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS)
     grid->addWidget(new QLabel{"Purging time"}, row, 0);
     grid->addWidget(_common.purging_time_combobox, row++, 2);
     grid->addWidget(new QLabel{"Bus disable CAN emulates R-Bus"}, row, 0);
-    grid->addWidget(_common.bus_flags.emulate_rm_checkbox, row++, 2);
+    grid->addWidget(_common.bus_flags.disable_emulate_rm_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Bus disable CAN emulates LocoNet"}, row, 0);
-    grid->addWidget(_common.bus_flags.emulate_ln_checkbox, row++, 2);
+    grid->addWidget(_common.bus_flags.disable_emulate_ln_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Bus enable CAN emulates Lissy"}, row, 0);
-    grid->addWidget(_common.bus_flags.emulate_lissy_checkbox, row++, 2);
+    grid->addWidget(_common.bus_flags.enable_emulate_lissy_checkbox, row++, 2);
 #endif
     grid->addWidget(new QLabel{"Bus X-Bus uses fallback version"}, row, 0);
     grid->addWidget(
@@ -278,7 +278,7 @@ void Settings::initCommonWidgets() {
     "Use R-Bus as additional X-Bus interface for throttles and other XpressNet "
     "devices");
   _common.ext_flags.invert_accessory_red_green_checkbox->setStatusTip(
-    "Invert meaning of straight/branch or green/red for accessory decoder");
+    "Invert meaning of straight/branch or green/red for accessory decoders");
 
   _common.purging_time_combobox->addItem("Off");
   _common.purging_time_combobox->addItem("1min");
