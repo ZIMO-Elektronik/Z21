@@ -11,11 +11,12 @@
 #pragma once
 
 #include <cstdint>
+#include "turnout_info.hpp"
 
 namespace z21 {
 
 ///
-struct AccessoryInfo {
+struct AccessoryInfo : TurnoutInfo {
   friend constexpr bool operator==(AccessoryInfo const&,
                                    AccessoryInfo const&) = default;
 

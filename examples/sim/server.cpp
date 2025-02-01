@@ -18,9 +18,7 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
   _decoders_tabs->addTab(_loco_list, QPixmap{":/icons/loco.svg"}, "Locos");
   _decoders_tabs->addTab(
-    _turnout_list, QPixmap{":/icons/turnout.svg"}, "Turnouts");
-  _decoders_tabs->addTab(
-    _accessory_list, QPixmap{":/icons/accessory.svg"}, "Accessories");
+    _accessory_list, QPixmap{":/icons/turnout.svg"}, "Accessories");
   layout->addWidget(_decoders_tabs, 0, 1, -1, 1);
 
   _client_log_tabs->addTab(
@@ -67,6 +65,9 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
   // Connect accessory broadcasts
   connect(_accessory_list,
+          &::AccessoryList::broadcastTurnoutInfo,
+          [this](uint16_t accy_addr) { broadcastTurnoutInfo(accy_addr); });
+  connect(_accessory_list,
           &::AccessoryList::broadcastExtAccessoryInfo,
           [this](uint16_t accy_addr) { broadcastExtAccessoryInfo(accy_addr); });
 
@@ -82,20 +83,14 @@ Server::Server(QWidget* parent) : QWidget{parent} {
           &::LocoList::cvAck,
           [this](uint16_t cv_addr, uint8_t byte) { cvAck(cv_addr, byte); });
 
-  // Connect turnout broadcasts
-  connect(_turnout_list,
-          &::TurnoutList::broadcastTurnoutInfo,
-          [this](uint16_t accy_addr) { broadcastTurnoutInfo(accy_addr); });
-
   // Always start disconnected
   disconnected();
 }
 
 // Clear any stored data
 void Server::clearData() {
-  _accessory_list->clear();
   _loco_list->clear();
-  _turnout_list->clear();
+  _accessory_list->clear();
 }
 
 // Transmit to socket
@@ -212,7 +207,7 @@ void Server::cvPomAccessoryWrite(uint16_t accy_addr,
 
 /// LAN_X_GET_TURNOUT_INFO
 z21::TurnoutInfo Server::turnoutInfo(uint16_t accy_addr) {
-  return _turnout_list->turnoutInfo(accy_addr);
+  return _accessory_list->turnoutInfo(accy_addr);
 }
 
 /// LAN_X_GET_EXT_ACCESSORY_INFO
@@ -222,7 +217,7 @@ z21::AccessoryInfo Server::accessoryInfo(uint16_t accy_addr) {
 
 /// LAN_X_SET_TURNOUT
 void Server::turnout(uint16_t accy_addr, bool p, bool a, bool q) {
-  _turnout_list->turnout(accy_addr, p, a, q);
+  _accessory_list->turnout(accy_addr, p, a, q);
 }
 
 /// LAN_X_SET_EXT_ACCESSORY
@@ -232,12 +227,12 @@ void Server::accessory(uint16_t accy_addr, uint8_t dddddddd) {
 
 // LAN_X_GET_TURNOUTMODE
 z21::TurnoutInfo::Mode Server::turnoutMode(uint16_t accy_addr) {
-  return _turnout_list->turnoutMode(accy_addr);
+  return _accessory_list->turnoutMode(accy_addr);
 }
 
 // LAN_X_SET_TURNOUTMODE
 void Server::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
-  _turnout_list->turnoutMode(accy_addr, mode);
+  _accessory_list->turnoutMode(accy_addr, mode);
 }
 
 // LAN_GET_COMMON_SETTINGS

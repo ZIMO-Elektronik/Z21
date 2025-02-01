@@ -41,9 +41,22 @@ AccessoryList::~AccessoryList() {
   config.endArray();
 }
 
+// LAN_X_GET_TURNOUT_INFO
+z21::TurnoutInfo AccessoryList::turnoutInfo(uint16_t accy_addr) {
+  return (*this)[accy_addr]->turnoutInfo();
+}
+
 // LAN_X_GET_EXT_ACCESSORY_INFO
 z21::AccessoryInfo AccessoryList::accessoryInfo(uint16_t accy_addr) {
   return (*this)[accy_addr]->accessoryInfo();
+}
+
+// LAN_X_SET_TURNOUT
+void AccessoryList::turnout(uint16_t accy_addr, bool p, bool a, bool q) {
+  auto const before{(*this)[accy_addr]->turnoutInfo()};
+  (*this)[accy_addr]->turnout(p, a, q);
+  auto const after{(*this)[accy_addr]->turnoutInfo()};
+  if (before != after) emit broadcastTurnoutInfo(accy_addr);
 }
 
 //
@@ -52,6 +65,20 @@ void AccessoryList::accessory(uint16_t accy_addr, uint8_t dddddddd) {
   (*this)[accy_addr]->accessory(dddddddd);
   auto const after{(*this)[accy_addr]->accessoryInfo()};
   if (before != after) emit broadcastExtAccessoryInfo(accy_addr);
+}
+
+// LAN_GET_TURNOUTMODE
+z21::TurnoutInfo::Mode AccessoryList::turnoutMode(uint16_t accy_addr) {
+  return (*this)[accy_addr]->turnoutMode();
+}
+
+// LAN_SET_TURNOUTMODE
+void AccessoryList::turnoutMode(uint16_t accy_addr,
+                                z21::TurnoutInfo::Mode mode) {
+  auto const before{(*this)[accy_addr]->turnoutMode()};
+  (*this)[accy_addr]->turnoutMode(mode);
+  auto const after{(*this)[accy_addr]->turnoutMode()};
+  if (before != after) emit broadcastTurnoutInfo(accy_addr);
 }
 
 // Access stored accessories by subscript operator

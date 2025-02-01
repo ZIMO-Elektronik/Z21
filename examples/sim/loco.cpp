@@ -22,8 +22,6 @@ z21::LocoInfo Loco::locoInfo() { return *this; }
 
 //
 void Loco::locoInfo(z21::LocoInfo loco_info) {
-  // Standard layout allows slicing assignment
-  static_assert(std::is_standard_layout_v<z21::LocoInfo>);
   static_cast<z21::LocoInfo&>(*this) = loco_info;
   updateLabel();
 }
