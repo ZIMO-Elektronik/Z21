@@ -31,6 +31,7 @@ void Accessory::accessoryInfo(z21::AccessoryInfo accessory_info) {
 // LAN_X_SET_EXT_ACCESSORY
 void Accessory::accessory(uint8_t dddddddd) {
   this->dddddddd = dddddddd;
+  this->status = Valid;
   updateLabel();
 }
 

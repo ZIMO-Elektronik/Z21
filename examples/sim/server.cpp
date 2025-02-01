@@ -121,6 +121,14 @@ bool Server::trackPower(bool) { return true; }
 // LAN_X_SET_STOP
 bool Server::stop() { return true; }
 
+// LAN_GET_SERIAL_NUMBER
+int32_t Server::serialNumber() const {
+  auto const id{QSysInfo::machineUniqueId()};
+  return std::size(id) >= 4uz
+           ? id[3uz] << 24u | id[2uz] << 16u | id[1uz] << 8u | id[0uz] << 0u
+           : rand();
+}
+
 // LAN_LOGOFF
 void Server::logoff(z21::Socket const&) {
   if (empty(this->clients())) disconnected();

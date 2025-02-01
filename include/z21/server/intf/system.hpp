@@ -20,7 +20,6 @@ namespace z21::server::intf {
 /// \todo
 ///
 /// Commands:
-/// - LAN_GET_SERIAL
 /// - LAN_GET_SERIAL_NUMBER
 /// - LAN_GET_CODE
 /// - LAN_GET_HWINFO

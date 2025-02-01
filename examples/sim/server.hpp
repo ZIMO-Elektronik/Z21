@@ -39,6 +39,7 @@ private:
   // System interface
   [[nodiscard]] bool trackPower(bool) final;
   [[nodiscard]] bool stop() final;
+  [[nodiscard]] int32_t serialNumber() const final;
   void logoff(z21::Socket const&) final;
   [[nodiscard]] z21::SystemState& systemState() final;
 
