@@ -702,8 +702,8 @@ private:
       static_cast<uint8_t>(std::to_underlying(_hw_type) >> 8u),  //
       static_cast<uint8_t>(std::to_underlying(_hw_type) >> 16u), //
       static_cast<uint8_t>(std::to_underlying(_hw_type) >> 24u), //
-      Z21_VERSION_MINOR,                                         // FW version
-      Z21_VERSION_MAJOR,                                         //
+      Z21_FIRMWARE_VERSION_MINOR,                                // FW version
+      Z21_FIRMWARE_VERSION_MAJOR,                                //
       0x00u,                                                     //
       0x00u};                                                    //
     this->transmit(sock, reply);
@@ -962,9 +962,9 @@ private:
       0x00u,                                                   //
       std::to_underlying(XHeader::Reply_to_LAN_X_GET_VERSION), // X-Header
       std::to_underlying(DB0::Reply_to_LAN_X_GET_VERSION),     // DB0
-      Z21_XBUS_VERSION,       // X-Bus protocol version
-      Z21_COMMAND_STATION_ID, // Command station ID
-      0x00u};                 // XOR
+      Z21_XBUS_PROTOCOL_VERSION, // X-Bus protocol version
+      Z21_COMMAND_STATION_ID,    // Command station ID
+      0x00u};                    // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_X_GET_VERSION", reply);
@@ -1082,9 +1082,9 @@ private:
       std::to_underlying(
         XHeader::Reply_to_LAN_X_GET_FIRMWARE_VERSION),              // X-Header
       std::to_underlying(DB0::Reply_to_LAN_X_GET_FIRMWARE_VERSION), // DB0
-      Z21_VERSION_MAJOR,                                            // Major
-      Z21_VERSION_MINOR,                                            // Minor
-      0x00u};                                                       // XOR
+      Z21_FIRMWARE_VERSION_MAJOR, // FW version
+      Z21_FIRMWARE_VERSION_MINOR, //
+      0x00u};                     // XOR
     reply.back() = exor({cbegin(reply), size(reply) - 1uz});
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_X_GET_FIRMWARE_VERSION", reply);
