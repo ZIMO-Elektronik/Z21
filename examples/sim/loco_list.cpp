@@ -19,10 +19,10 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
     auto const addr{config.value("address")};
     auto const loco_info{config.value("loco_info")};
     if (!addr.isValid() || !loco_info.isValid()) continue;
-    auto list_widget{
-      new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr.toString()}};
     auto loco{new Loco};
     loco->locoInfo(loco_info.value<z21::LocoInfo>());
+    auto list_widget{
+      new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr.toString()}};
     addItem(list_widget);
     setItemWidget(list_widget, loco);
   }
@@ -116,11 +116,11 @@ Loco* LocoList::operator[](uint16_t loco_addr) {
     // \todo Eventually delete one if size >=256?
     if (count() == 256) assert(false);
 
+    auto loco{new Loco};
     auto list_widget{
       new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr_str}};
     list_widget->setSelected(true);
     addItem(list_widget);
-    auto loco{new Loco};
     setItemWidget(list_widget, loco);
     return loco;
   }

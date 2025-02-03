@@ -13,7 +13,6 @@ public:
 
 public slots:
   z21::TurnoutInfo turnoutInfo();
-  void turnoutInfo(z21::TurnoutInfo turnout_info);
   z21::AccessoryInfo accessoryInfo();
   void accessoryInfo(z21::AccessoryInfo accessory_info);
   virtual void turnout(bool p, bool a, bool);

@@ -24,5 +24,7 @@ signals:
   void broadcastExtAccessoryInfo(uint16_t accy_addr);
 
 private:
-  Accessory* operator[](uint16_t accy_addr);
+  Accessory* accessory(uint16_t accy_addr);
+  Accessory* turnout(uint16_t accy_addr);
+  Accessory* operator[](uint16_t accy_addr, bool is_ext_accy);
 };

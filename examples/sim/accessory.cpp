@@ -20,12 +20,6 @@ Accessory::Accessory(QWidget* parent) : QWidget{parent} {
 // LAN_X_TURNOUT_INFO
 z21::TurnoutInfo Accessory::turnoutInfo() { return *this; }
 
-//
-void Accessory::turnoutInfo(z21::TurnoutInfo turnout_info) {
-  static_cast<z21::TurnoutInfo&>(*this) = turnout_info;
-  updateLabel();
-}
-
 // LAN_X_SET_EXT_ACCESSORY
 z21::AccessoryInfo Accessory::accessoryInfo() { return *this; }
 
@@ -49,7 +43,7 @@ void Accessory::turnout(bool p, bool a, bool) {
 // LAN_X_SET_EXT_ACCESSORY
 void Accessory::accessory(uint8_t dddddddd) {
   this->dddddddd = dddddddd;
-  this->status = Valid;
+  this->status = z21::AccessoryInfo::Status::Valid;
   updateLabel();
 }
 
@@ -66,7 +60,18 @@ void Accessory::turnoutMode(z21::TurnoutInfo::Mode mode) {
 void Accessory::updateLabel() {
   QString text;
 
-  text += "D" + QString{"%1"}.arg(dddddddd, 2, 16, QLatin1Char('0'));
+  // Accessory
+  if (status == z21::AccessoryInfo::Status::Valid) {
+    text += "D" + QString{"%1"}.arg(dddddddd, 2, 16, QLatin1Char('0'));
+  }
+  // Turnout
+  else {
+    text += (mode == TurnoutInfo::Mode::DCC ? "DCC" : "MM ") + QString{" "};
+    text += state == TurnoutInfo::State::Unknown ? "Unknown"
+            : state == TurnoutInfo::State::P0    ? "P0"
+            : state == TurnoutInfo::State::P1    ? "P1"
+                                                 : "Invalid";
+  }
 
   _label->setText(text);
 }
