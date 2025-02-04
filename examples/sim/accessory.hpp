@@ -12,13 +12,18 @@ public:
   explicit Accessory(QWidget* parent = nullptr);
 
 public slots:
+  // Switching interface
   z21::TurnoutInfo turnoutInfo();
   z21::AccessoryInfo accessoryInfo();
   void accessoryInfo(z21::AccessoryInfo accessory_info);
-  virtual void turnout(bool p, bool a, bool);
+  void turnout(bool p, bool a, bool);
   void accessory(uint8_t dddddddd);
   z21::TurnoutInfo::Mode turnoutMode();
   void turnoutMode(z21::TurnoutInfo::Mode mode);
+
+  // Programming interface
+  void cvRead(uint16_t cv_addr);
+  void cvWrite(uint16_t cv_addr, uint8_t byte);
 
 private:
   void updateLabel();

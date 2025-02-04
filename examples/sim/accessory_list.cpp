@@ -84,6 +84,14 @@ void AccessoryList::turnoutMode(uint16_t accy_addr,
   if (before != after) emit broadcastTurnoutInfo(accy_addr);
 }
 
+// LAN_X_CV_POM_ACCESSORY_READ_BYTE
+void AccessoryList::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {}
+
+// LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+void AccessoryList::cvPomAccessoryWrite(uint16_t accy_addr,
+                                        uint16_t cv_addr,
+                                        uint8_t byte) {}
+
 // Access stored accessory (and clear turnout state)
 Accessory* AccessoryList::accessory(uint16_t accy_addr) {
   auto accessory{(*this)[accy_addr, true]};

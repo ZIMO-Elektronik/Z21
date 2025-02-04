@@ -19,6 +19,10 @@ public:
   z21::TurnoutInfo::Mode turnoutMode(uint16_t accy_addr);
   void turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode);
 
+  // Programming interface
+  void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr);
+  void cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte);
+
 signals:
   void broadcastTurnoutInfo(uint16_t accy_addr);
   void broadcastExtAccessoryInfo(uint16_t accy_addr);

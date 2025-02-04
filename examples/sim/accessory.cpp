@@ -56,6 +56,12 @@ void Accessory::turnoutMode(z21::TurnoutInfo::Mode mode) {
   updateLabel();
 }
 
+// LAN_X_CV_POM_ACCESSORY_READ_BYTE
+void Accessory::cvRead(uint16_t cv_addr) { assert(false); }
+
+// LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+void Accessory::cvWrite(uint16_t cv_addr, uint8_t byte) { assert(false); }
+
 // Update label based on current accessory info
 void Accessory::updateLabel() {
   QString text;

@@ -194,15 +194,16 @@ void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
 
 // ACCESSORY_READ_BYTE
 void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
-  printf("POM ACCY READ %d %d\n", accy_addr, cv_addr);
-  cvNack();
+  if (!programmingFailure())
+    _accessory_list->cvPomAccessoryRead(accy_addr, cv_addr);
 }
 
 // LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
 void Server::cvPomAccessoryWrite(uint16_t accy_addr,
                                  uint16_t cv_addr,
                                  uint8_t byte) {
-  printf("POM ACCY WRITE %d %d=%d\n", accy_addr, cv_addr, byte);
+  if (!programmingFailure())
+    _accessory_list->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
 }
 
 /// LAN_X_GET_TURNOUT_INFO
