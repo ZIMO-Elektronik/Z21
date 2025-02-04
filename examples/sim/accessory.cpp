@@ -57,10 +57,16 @@ void Accessory::turnoutMode(z21::TurnoutInfo::Mode mode) {
 }
 
 // LAN_X_CV_POM_ACCESSORY_READ_BYTE
-void Accessory::cvRead(uint16_t cv_addr) { assert(false); }
+uint8_t Accessory::cvRead(uint16_t cv_addr) {
+  /// \todo
+  return 42u;
+}
 
 // LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
-void Accessory::cvWrite(uint16_t cv_addr, uint8_t byte) { assert(false); }
+uint8_t Accessory::cvWrite(uint16_t cv_addr, uint8_t byte) {
+  /// \todo
+  return 42u;
+}
 
 // Update label based on current accessory info
 void Accessory::updateLabel() {

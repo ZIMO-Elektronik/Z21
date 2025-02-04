@@ -22,8 +22,8 @@ public slots:
   void turnoutMode(z21::TurnoutInfo::Mode mode);
 
   // Programming interface
-  void cvRead(uint16_t cv_addr);
-  void cvWrite(uint16_t cv_addr, uint8_t byte);
+  uint8_t cvRead(uint16_t cv_addr);
+  uint8_t cvWrite(uint16_t cv_addr, uint8_t byte);
 
 private:
   void updateLabel();

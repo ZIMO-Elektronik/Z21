@@ -18,11 +18,10 @@ AccessoryList::AccessoryList(QWidget* parent) : QListWidget{parent} {
     if (!addr.isValid() || !accessory_info.isValid()) continue;
     auto accessory{new Accessory};
     accessory->accessoryInfo(accessory_info.value<z21::AccessoryInfo>());
-    auto list_widget{new QListWidgetItem{
-      QPixmap{accessory->status == z21::AccessoryInfo::Status::Valid
-                ? ":/icons/accessory.svg"
-                : ":/icons/turnout.svg"},
-      addr.toString()}};
+    QPixmap icon{accessory->status == z21::AccessoryInfo::Status::Valid
+                   ? ":/icons/accessory.svg"
+                   : ":/icons/turnout.svg"};
+    auto list_widget{new QListWidgetItem{icon, addr.toString()}};
     addItem(list_widget);
     setItemWidget(list_widget, accessory);
   }
@@ -85,39 +84,46 @@ void AccessoryList::turnoutMode(uint16_t accy_addr,
 }
 
 // LAN_X_CV_POM_ACCESSORY_READ_BYTE
-void AccessoryList::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {}
+void AccessoryList::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
+  emit cvAck(cv_addr, this->operator[]<>(accy_addr, false)->cvRead(cv_addr));
+}
 
 // LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
 void AccessoryList::cvPomAccessoryWrite(uint16_t accy_addr,
                                         uint16_t cv_addr,
-                                        uint8_t byte) {}
+                                        uint8_t byte) {
+  this->operator[]<>(accy_addr, false)->cvWrite(cv_addr, byte);
+}
 
 // Access stored accessory (and clear turnout state)
 Accessory* AccessoryList::accessory(uint16_t accy_addr) {
-  auto accessory{(*this)[accy_addr, true]};
-  accessory->state = z21::TurnoutInfo::State::Unknown;
+  auto accessory{this->operator[]<z21::AccessoryInfo>(accy_addr)};
+  accessory->state = z21::TurnoutInfo::State::Invalid;
   return accessory;
 }
 
 // Access stored turnout (and clear accessory state)
 Accessory* AccessoryList::turnout(uint16_t accy_addr) {
-  auto turnout{(*this)[accy_addr, false]};
+  auto turnout{this->operator[]<z21::TurnoutInfo>(accy_addr)};
   turnout->dddddddd = 0u;
   turnout->status = z21::AccessoryInfo::Status::Unknown;
   return turnout;
 }
 
 // Access stored accessories by subscript operator
-Accessory* AccessoryList::operator[](uint16_t accy_addr, bool is_ext_accy) {
+template<typename T>
+Accessory* AccessoryList::operator[](uint16_t accy_addr, bool change_icon) {
   // Find accessory by address string
   auto const addr_str{QString::number(accy_addr)};
   auto list{findItems(addr_str, Qt::MatchFixedString)};
 
+  QPixmap icon{std::same_as<T, z21::AccessoryInfo> ? ":/icons/accessory.svg"
+                                                   : ":/icons/turnout.svg"};
+
   // Accessory found
   if (std::size(list) == 1uz) {
     auto list_widget{list.first()};
-    list_widget->setIcon(
-      QPixmap{is_ext_accy ? ":/icons/accessory.svg" : ":/icons/turnout.svg"});
+    if (change_icon) list_widget->setIcon(icon);
     list_widget->setSelected(true);
     return static_cast<Accessory*>(itemWidget(list_widget));
   }
@@ -127,9 +133,7 @@ Accessory* AccessoryList::operator[](uint16_t accy_addr, bool is_ext_accy) {
     if (count() == 256) assert(false);
 
     auto accessory{new Accessory};
-    auto list_widget{new QListWidgetItem{
-      QPixmap{is_ext_accy ? ":/icons/accessory.svg" : ":/icons/turnout.svg"},
-      addr_str}};
+    auto list_widget{new QListWidgetItem{icon, addr_str}};
     list_widget->setSelected(true);
     addItem(list_widget);
     setItemWidget(list_widget, accessory);

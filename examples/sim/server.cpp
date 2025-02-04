@@ -70,6 +70,13 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   connect(_accessory_list,
           &::AccessoryList::broadcastExtAccessoryInfo,
           [this](uint16_t accy_addr) { broadcastExtAccessoryInfo(accy_addr); });
+  connect(_accessory_list, &::AccessoryList::cvNackShortCircuit, [this] {
+    cvNackShortCircuit();
+  });
+  connect(_accessory_list, &::AccessoryList::cvNack, [this] { cvNack(); });
+  connect(_accessory_list,
+          &::AccessoryList::cvAck,
+          [this](uint16_t cv_addr, uint8_t byte) { cvAck(cv_addr, byte); });
 
   // Connect loco broadcasts
   connect(_loco_list,

@@ -27,8 +27,14 @@ signals:
   void broadcastTurnoutInfo(uint16_t accy_addr);
   void broadcastExtAccessoryInfo(uint16_t accy_addr);
 
+  void cvNackShortCircuit();
+  void cvNack();
+  void cvAck(uint16_t cv_addr, uint8_t byte);
+
 private:
   Accessory* accessory(uint16_t accy_addr);
   Accessory* turnout(uint16_t accy_addr);
-  Accessory* operator[](uint16_t accy_addr, bool is_ext_accy);
+
+  template<typename T = z21::TurnoutInfo>
+  Accessory* operator[](uint16_t accy_addr, bool change_icon = true);
 };
