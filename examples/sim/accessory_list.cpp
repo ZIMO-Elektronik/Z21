@@ -18,7 +18,7 @@ AccessoryList::AccessoryList(QWidget* parent) : QListWidget{parent} {
     if (!addr.isValid() || !accessory_info.isValid()) continue;
     auto accessory{new Accessory};
     accessory->accessoryInfo(accessory_info.value<z21::AccessoryInfo>());
-    QPixmap icon{accessory->status == z21::AccessoryInfo::Status::Valid
+    QPixmap icon{is_ext_accessory(accessory->accessoryInfo())
                    ? ":/icons/accessory.svg"
                    : ":/icons/turnout.svg"};
     auto list_widget{new QListWidgetItem{icon, addr.toString()}};
@@ -83,6 +83,16 @@ void AccessoryList::turnoutMode(uint16_t accy_addr,
   if (before != after) emit broadcastTurnoutInfo(accy_addr);
 }
 
+// LAN_X_CV_READ
+void AccessoryList::cvRead(uint16_t cv_addr) {
+  emit cvAck(cv_addr, _service_accessory->cvRead(cv_addr));
+}
+
+// LAN_X_CV_WRITE
+void AccessoryList::cvWrite(uint16_t cv_addr, uint8_t byte) {
+  emit cvAck(cv_addr, _service_accessory->cvWrite(cv_addr, byte));
+}
+
 // LAN_X_CV_POM_ACCESSORY_READ_BYTE
 void AccessoryList::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
   emit cvAck(cv_addr, this->operator[]<>(accy_addr, false)->cvRead(cv_addr));
@@ -98,7 +108,7 @@ void AccessoryList::cvPomAccessoryWrite(uint16_t accy_addr,
 // Access stored accessory (and clear turnout state)
 Accessory* AccessoryList::accessory(uint16_t accy_addr) {
   auto accessory{this->operator[]<z21::AccessoryInfo>(accy_addr)};
-  accessory->state = z21::TurnoutInfo::State::Invalid;
+  accessory->position = z21::TurnoutInfo::Position::Invalid;
   return accessory;
 }
 
@@ -129,7 +139,7 @@ Accessory* AccessoryList::operator[](uint16_t accy_addr, bool change_icon) {
   }
   // Accessory not found
   else if (std::empty(list)) {
-    // \todo Eventually delete one if size >=256?
+    /// \todo Eventually delete one if size >=256?
     if (count() == 256) assert(false);
 
     auto accessory{new Accessory};

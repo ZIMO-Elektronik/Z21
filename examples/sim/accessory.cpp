@@ -36,7 +36,7 @@ void Accessory::turnout(bool p, bool a, bool) {
   // depth explanation (in German) see:
   // https://www.kleinbahnsammler.at/wbb2/index.php?thread/28650-zu-z21-app-und-signale/
   if (!a) return;
-  state = static_cast<z21::TurnoutInfo::State>(1u << p);
+  position = static_cast<z21::TurnoutInfo::Position>(1u << p);
   updateLabel();
 }
 
@@ -56,13 +56,13 @@ void Accessory::turnoutMode(z21::TurnoutInfo::Mode mode) {
   updateLabel();
 }
 
-// LAN_X_CV_POM_ACCESSORY_READ_BYTE
+// LAN_X_CV_READ | LAN_X_CV_POM_ACCESSORY_READ_BYTE
 uint8_t Accessory::cvRead(uint16_t cv_addr) {
   /// \todo
   return 42u;
 }
 
-// LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+// LAN_X_CV_WRITE | LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
 uint8_t Accessory::cvWrite(uint16_t cv_addr, uint8_t byte) {
   /// \todo
   return 42u;
@@ -79,10 +79,10 @@ void Accessory::updateLabel() {
   // Turnout
   else {
     text += (mode == TurnoutInfo::Mode::DCC ? "DCC" : "MM ") + QString{" "};
-    text += state == TurnoutInfo::State::Unknown ? "Unknown"
-            : state == TurnoutInfo::State::P0    ? "P0"
-            : state == TurnoutInfo::State::P1    ? "P1"
-                                                 : "Invalid";
+    text += position == TurnoutInfo::Position::Unknown ? "Unknown"
+            : position == TurnoutInfo::Position::P0    ? "P0"
+            : position == TurnoutInfo::Position::P1    ? "P1"
+                                                       : "Invalid";
   }
 
   _label->setText(text);

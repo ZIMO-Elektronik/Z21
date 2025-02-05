@@ -724,7 +724,7 @@ private:
       std::to_underlying(XHeader::LAN_X_TURNOUT_INFO), // X-Header
       static_cast<uint8_t>((accy_addr >> 8u) & 0x07u), // DB0
       static_cast<uint8_t>(accy_addr),                 // DB1
-      static_cast<uint8_t>(turnout_info.state),        // DB2
+      static_cast<uint8_t>(turnout_info.position),     // DB2
       0x00u};                                          // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
 
