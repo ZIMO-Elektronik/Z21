@@ -178,14 +178,20 @@ void Server::locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) {
 // LAN_X_CV_READ
 bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure()) _loco_list->cvRead(cv_addr);
+  if (!programmingFailure())
+    _system->decoderOnProgrammingTrack() == 0
+      ? _loco_list->cvRead(cv_addr)
+      : _accessory_list->cvRead(cv_addr);
   return true;
 }
 
 // LAN_X_CV_WRITE
 bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure()) _loco_list->cvWrite(cv_addr, byte);
+  if (!programmingFailure())
+    _system->decoderOnProgrammingTrack() == 0
+      ? _loco_list->cvWrite(cv_addr, byte)
+      : _accessory_list->cvWrite(cv_addr, byte);
   return true;
 }
 

@@ -34,7 +34,7 @@ private:
 // Overload operator<< for serialization of z21::AccessoryInfo
 inline QDataStream& operator<<(QDataStream& stream,
                                z21::AccessoryInfo const& accessory_info) {
-  stream << accessory_info.mode << accessory_info.state
+  stream << accessory_info.mode << accessory_info.position
          << accessory_info.dddddddd << accessory_info.status;
   return stream;
 }
@@ -46,9 +46,9 @@ inline QDataStream& operator>>(QDataStream& stream,
   stream >> mode;
   accessory_info.mode = mode;
 
-  z21::AccessoryInfo::State state;
-  stream >> state;
-  accessory_info.state = state;
+  z21::AccessoryInfo::Position position;
+  stream >> position;
+  accessory_info.position = position;
 
   uint8_t dddddddd;
   stream >> dddddddd;

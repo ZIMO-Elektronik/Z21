@@ -113,7 +113,7 @@ Loco* LocoList::operator[](uint16_t loco_addr) {
   }
   // Loco not found
   else if (std::empty(list)) {
-    // \todo Eventually delete one if size >=256?
+    /// \todo Eventually delete one if size >=256?
     if (count() == 256) assert(false);
 
     auto loco{new Loco};

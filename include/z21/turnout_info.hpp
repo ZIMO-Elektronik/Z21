@@ -24,12 +24,12 @@ struct TurnoutInfo {
     MM = 1u,
   } mode : 1 {DCC};
 
-  enum State : uint8_t {
+  enum Position : uint8_t {
     Unknown = 0b00u,
     P0 = 0b01u,
     P1 = 0b10u,
     Invalid = 0b11u,
-  } state : 2 {Unknown};
+  } position : 2 {Unknown};
 };
 
 } // namespace z21

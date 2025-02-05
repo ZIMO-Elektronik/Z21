@@ -28,4 +28,17 @@ struct AccessoryInfo : TurnoutInfo {
   } status{Unknown};
 };
 
+///
+template<typename Accessory>
+constexpr bool is_ext_accessory(Accessory&& accessory)
+  requires(std::same_as<std::remove_cvref_t<Accessory>, TurnoutInfo> ||
+           std::same_as<std::remove_cvref_t<Accessory>, AccessoryInfo>)
+{
+  if constexpr (std::same_as<std::remove_cvref_t<Accessory>, TurnoutInfo>)
+    return false;
+  else if constexpr (std::same_as<std::remove_cvref_t<Accessory>,
+                                  AccessoryInfo>)
+    return accessory.status == z21::AccessoryInfo::Status::Valid;
+}
+
 } // namespace z21

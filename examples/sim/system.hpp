@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QComboBox>
 #include <QLabel>
 #include <QSlider>
 #include <tuple>
@@ -14,6 +15,7 @@ public:
 
   bool programmingShortCircuitFailure() const;
   bool programmingFailure() const;
+  int decoderOnProgrammingTrack() const;
   int16_t mainCurrent() const;
   int16_t progCurrent() const;
   int16_t filteredMainCurrent() const;
@@ -34,8 +36,10 @@ private:
     tuple<std::vector<QLabel*>, std::vector<QLabel*>, std::vector<QSlider*>>;
 
   void initFailureRatesWidgets();
+  void initProgrammingTrack();
   void initCurrentsVoltagesTemperatureWidgets();
 
+  QComboBox* _programming_track_combobox{new QComboBox{this}};
   WidgetTriplet _failure_rates_widgets;
   WidgetTriplet _system_state_widgets;
 };

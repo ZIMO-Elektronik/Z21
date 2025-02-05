@@ -20,6 +20,8 @@ public:
   void turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode);
 
   // Programming interface
+  void cvRead(uint16_t cv_addr);
+  void cvWrite(uint16_t cv_addr, uint8_t byte);
   void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr);
   void cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte);
 
@@ -37,4 +39,8 @@ private:
 
   template<typename T = z21::TurnoutInfo>
   Accessory* operator[](uint16_t accy_addr, bool change_icon = true);
+
+  // Create a separate accessory for service mode. This leaks intentionally, we
+  // don't want this accessory to be part of the actual list.
+  Accessory* _service_accessory{new Accessory};
 };
