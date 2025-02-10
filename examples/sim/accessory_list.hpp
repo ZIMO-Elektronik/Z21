@@ -12,35 +12,12 @@ public:
   ~AccessoryList();
 
   // Switching interface
-  z21::TurnoutInfo turnoutInfo(uint16_t accy_addr);
   z21::AccessoryInfo accessoryInfo(uint16_t accy_addr);
-  void turnout(uint16_t accy_addr, bool p, bool a, bool q);
   void accessory(uint16_t accy_addr, uint8_t dddddddd);
-  z21::TurnoutInfo::Mode turnoutMode(uint16_t accy_addr);
-  void turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode);
-
-  // Programming interface
-  void cvRead(uint16_t cv_addr);
-  void cvWrite(uint16_t cv_addr, uint8_t byte);
-  void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr);
-  void cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte);
 
 signals:
-  void broadcastTurnoutInfo(uint16_t accy_addr);
   void broadcastExtAccessoryInfo(uint16_t accy_addr);
 
-  void cvNackShortCircuit();
-  void cvNack();
-  void cvAck(uint16_t cv_addr, uint8_t byte);
-
 private:
-  Accessory* accessory(uint16_t accy_addr);
-  Accessory* turnout(uint16_t accy_addr);
-
-  template<typename T = z21::TurnoutInfo>
-  Accessory* operator[](uint16_t accy_addr, bool change_icon = true);
-
-  // Create a separate accessory for service mode. This leaks intentionally, we
-  // don't want this accessory to be part of the actual list.
-  Accessory* _service_accessory{new Accessory};
+  Accessory* operator[](uint16_t accy_addr);
 };

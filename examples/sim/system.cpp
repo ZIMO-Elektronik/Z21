@@ -65,11 +65,11 @@ System::System(QWidget* parent) : QWidget{parent} {
   }
 
   {
-    initProgrammingTrack();
-    auto groupbox{new QGroupBox{"Programming track"}};
+    initProgramTrack();
+    auto groupbox{new QGroupBox{"Program track"}};
     auto grid{new QGridLayout};
-    grid->addWidget(new QLabel{"Decoder on programming track"}, 0, 0);
-    grid->addWidget(_programming_track_combobox, 0, 1);
+    grid->addWidget(new QLabel{"Decoder on program track"}, 0, 0);
+    grid->addWidget(_program_track_combobox, 0, 1);
     groupbox->setLayout(grid);
     layout->addWidget(groupbox, 1, 0, 1, 1);
   }
@@ -118,8 +118,8 @@ System::~System() {
   }
 
   {
-    config.setValue("system_programming_track",
-                    _programming_track_combobox->currentIndex());
+    config.setValue("system_program_track",
+                    _program_track_combobox->currentIndex());
   }
 
   {
@@ -151,7 +151,7 @@ bool System::programmingFailure() const {
 
 //
 int System::decoderOnProgrammingTrack() const {
-  return _programming_track_combobox->currentIndex();
+  return _program_track_combobox->currentIndex();
 }
 
 //
@@ -223,15 +223,14 @@ void System::initFailureRatesWidgets() {
 }
 
 //
-void System::initProgrammingTrack() {
-  _programming_track_combobox->addItem("Loco");
-  _programming_track_combobox->addItem("Accessory");
+void System::initProgramTrack() {
+  _program_track_combobox->addItem("Loco");
+  _program_track_combobox->addItem("Accessory");
 
   //
   Config const config;
-  if (auto const value{config.value("system_programming_track")};
-      value.isValid())
-    _programming_track_combobox->setCurrentIndex(value.toInt());
+  if (auto const value{config.value("system_program_track")}; value.isValid())
+    _program_track_combobox->setCurrentIndex(value.toInt());
 }
 
 //

@@ -36,10 +36,10 @@ private:
     tuple<std::vector<QLabel*>, std::vector<QLabel*>, std::vector<QSlider*>>;
 
   void initFailureRatesWidgets();
-  void initProgrammingTrack();
+  void initProgramTrack();
   void initCurrentsVoltagesTemperatureWidgets();
 
-  QComboBox* _programming_track_combobox{new QComboBox{this}};
+  QComboBox* _program_track_combobox{new QComboBox{this}};
   WidgetTriplet _failure_rates_widgets;
   WidgetTriplet _system_state_widgets;
 };

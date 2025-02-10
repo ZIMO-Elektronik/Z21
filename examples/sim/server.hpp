@@ -10,6 +10,7 @@
 #include "log.hpp"
 #include "settings.hpp"
 #include "system.hpp"
+#include "turnout_list.hpp"
 
 using ServerBase = z21::server::Base<z21::server::intf::System,
                                      z21::server::intf::Driving,
@@ -92,6 +93,7 @@ private:
   ::Log* _server_log{new ::Log{this}};
   ::LocoList* _loco_list{new ::LocoList{this}};
   ::AccessoryList* _accessory_list{new AccessoryList{this}};
+  ::TurnoutList* _turnout_list{new TurnoutList{this}};
   ::System* _system{new ::System{this}};
   ::Settings* _settings{new ::Settings{this}};
 
