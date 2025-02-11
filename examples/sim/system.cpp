@@ -17,9 +17,8 @@ double random_failure() {
 
 } // namespace
 
-//
+// Load system state from config and create layout
 System::System(QWidget* parent) : QWidget{parent} {
-  // Layout
   auto layout{new QGridLayout};
   layout->setContentsMargins(11, 0, 11, 11);
 
@@ -107,7 +106,7 @@ System::System(QWidget* parent) : QWidget{parent} {
   setLayout(layout);
 }
 
-//
+// Store system state in config
 System::~System() {
   Config config;
 
@@ -226,6 +225,8 @@ void System::initFailureRatesWidgets() {
 void System::initProgramTrack() {
   _program_track_combobox->addItem("Loco");
   _program_track_combobox->addItem("Accessory");
+  _program_track_combobox->setStatusTip(
+    "Select the decoder type on the program track");
 
   //
   Config const config;

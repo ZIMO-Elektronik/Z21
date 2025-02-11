@@ -5,7 +5,7 @@
 #include <QSlider>
 #include <tuple>
 
-//
+// Set, manipulate or simulate system state
 class System : public QWidget {
   Q_OBJECT
 

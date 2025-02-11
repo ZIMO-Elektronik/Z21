@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <z21/z21.hpp>
 
-//
+// List of turnouts based on QListWidget
 class Turnout : public QWidget, public z21::TurnoutInfo {
   Q_OBJECT
 

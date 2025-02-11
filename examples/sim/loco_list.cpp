@@ -124,7 +124,7 @@ Loco* LocoList::operator[](uint16_t loco_addr) {
     setItemWidget(list_widget, loco);
     return loco;
   }
-  //
+  // Loco found multiple times, shouldn't happen
   else
     assert(false);
 

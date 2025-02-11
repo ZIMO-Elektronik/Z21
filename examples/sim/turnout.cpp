@@ -2,25 +2,20 @@
 #include <QGridLayout>
 #include <QSpacerItem>
 
-//
 Turnout::Turnout(QWidget* parent) : QWidget{parent} {
   auto layout{new QGridLayout};
-
   layout->addItem(new QSpacerItem{0, 0}, 0, 0);
   layout->addWidget(_label, 0, 1);
-
   layout->setColumnStretch(0, 1);
   layout->setColumnStretch(1, 2);
-
   setLayout(layout);
-
   updateLabel();
 }
 
 // LAN_X_TURNOUT_INFO
 z21::TurnoutInfo Turnout::turnoutInfo() { return *this; }
 
-//
+// LAN_X_SET_TURNOUT_INFO (not part of the actual protocol)
 void Turnout::turnoutInfo(z21::TurnoutInfo turnout_info) {
   // Standard layout allows slicing assignment
   static_assert(std::is_standard_layout_v<z21::TurnoutInfo>);

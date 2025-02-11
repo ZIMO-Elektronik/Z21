@@ -1,7 +1,7 @@
 #include "turnout_list.hpp"
 #include "config.hpp"
 
-//
+// Load turnouts from config and add them to the list
 TurnoutList::TurnoutList(QWidget* parent) : QListWidget{parent} {
   // Always focus on the last addressed loco, disable user interaction
   // https://stackoverflow.com/questions/2203698/ignore-mouse-and-keyboard-events-in-qt
@@ -114,7 +114,7 @@ Turnout* TurnoutList::operator[](uint16_t accy_addr) {
     setItemWidget(list_widget, turnout);
     return turnout;
   }
-  //
+  // Turnout found multiple times, shouldn't happen
   else
     assert(false);
 

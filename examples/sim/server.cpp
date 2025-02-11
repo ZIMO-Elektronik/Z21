@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QTimer>
 
-//
+// Create central layout
 Server::Server(QWidget* parent) : QWidget{parent} {
   auto layout{new QGridLayout};
   layout->setContentsMargins(0, 0, 0, 0);
@@ -101,6 +101,7 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 // Clear any stored data
 void Server::clearData() {
   _loco_list->clear();
+  _turnout_list->clear();
   _accessory_list->clear();
 }
 
@@ -140,7 +141,7 @@ void Server::logoff(z21::Socket const&) {
   if (empty(this->clients())) disconnected();
 }
 
-// Modify system state
+// LAN_X_GET_STATUS | LAN_SYSTEMSTATE_GETDATA
 z21::SystemState& Server::systemState() {
   auto& sys_state{ServerBase::systemState()};
   sys_state.main_current = _system->mainCurrent();

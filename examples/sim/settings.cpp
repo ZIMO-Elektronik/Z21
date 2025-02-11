@@ -5,9 +5,8 @@
 #include <random>
 #include "config.hpp"
 
-//
+// Load settings from config and create layout
 Settings::Settings(QWidget* parent) : QWidget{parent} {
-  // Layout
   auto layout{new QGridLayout};
   layout->setContentsMargins(11, 0, 11, 11);
 
@@ -114,7 +113,7 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
   setLayout(layout);
 }
 
-//
+// Store settings in config
 Settings::~Settings() {
   Config config;
 
