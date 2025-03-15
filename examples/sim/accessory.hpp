@@ -12,6 +12,7 @@ public:
   explicit Accessory(QWidget* parent = nullptr);
 
 public slots:
+  // Switching interface
   z21::AccessoryInfo accessoryInfo();
   void accessoryInfo(z21::AccessoryInfo accessory_info);
   void accessory(uint8_t dddddddd);

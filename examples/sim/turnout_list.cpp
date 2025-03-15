@@ -1,7 +1,7 @@
 #include "turnout_list.hpp"
 #include "config.hpp"
 
-//
+// Load turnouts from config and add them to the list
 TurnoutList::TurnoutList(QWidget* parent) : QListWidget{parent} {
   // Always focus on the last addressed loco, disable user interaction
   // https://stackoverflow.com/questions/2203698/ignore-mouse-and-keyboard-events-in-qt
@@ -67,6 +67,28 @@ void TurnoutList::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
   if (before != after) emit broadcastTurnoutInfo(accy_addr);
 }
 
+// LAN_X_CV_READ
+void TurnoutList::cvRead(uint16_t cv_addr) {
+  emit cvAck(cv_addr, _service_turnout->cvRead(cv_addr));
+}
+
+// LAN_X_CV_WRITE
+void TurnoutList::cvWrite(uint16_t cv_addr, uint8_t byte) {
+  emit cvAck(cv_addr, _service_turnout->cvWrite(cv_addr, byte));
+}
+
+// LAN_X_CV_POM_ACCESSORY_READ_BYTE
+void TurnoutList::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
+  emit cvAck(cv_addr, (*this)[accy_addr]->cvRead(cv_addr));
+}
+
+// LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+void TurnoutList::cvPomAccessoryWrite(uint16_t accy_addr,
+                                      uint16_t cv_addr,
+                                      uint8_t byte) {
+  (*this)[accy_addr]->cvWrite(cv_addr, byte);
+}
+
 // Access stored turnouts by subscript operator
 Turnout* TurnoutList::operator[](uint16_t accy_addr) {
   // Find turnout by address string
@@ -81,7 +103,7 @@ Turnout* TurnoutList::operator[](uint16_t accy_addr) {
   }
   // Turnout not found
   else if (std::empty(list)) {
-    // \todo Eventually delete one if size >=256?
+    /// \todo Eventually delete one if size >=256?
     if (count() == 256) assert(false);
 
     auto list_widget{
@@ -92,7 +114,7 @@ Turnout* TurnoutList::operator[](uint16_t accy_addr) {
     setItemWidget(list_widget, turnout);
     return turnout;
   }
-  //
+  // Turnout found multiple times, shouldn't happen
   else
     assert(false);
 

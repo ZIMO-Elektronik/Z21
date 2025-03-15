@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QTimer>
 
-//
+// Create central layout
 Server::Server(QWidget* parent) : QWidget{parent} {
   auto layout{new QGridLayout};
   layout->setContentsMargins(0, 0, 0, 0);
@@ -65,11 +65,6 @@ Server::Server(QWidget* parent) : QWidget{parent} {
     broadcastSystemStateData();
   });
 
-  // Connect accessory broadcasts
-  connect(_accessory_list,
-          &::AccessoryList::broadcastExtAccessoryInfo,
-          [this](uint16_t accy_addr) { broadcastExtAccessoryInfo(accy_addr); });
-
   // Connect loco broadcasts
   connect(_loco_list,
           &::LocoList::broadcastLocoInfo,
@@ -86,6 +81,18 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   connect(_turnout_list,
           &::TurnoutList::broadcastTurnoutInfo,
           [this](uint16_t accy_addr) { broadcastTurnoutInfo(accy_addr); });
+  connect(_turnout_list, &::TurnoutList::cvNackShortCircuit, [this] {
+    cvNackShortCircuit();
+  });
+  connect(_turnout_list, &::TurnoutList::cvNack, [this] { cvNack(); });
+  connect(_turnout_list,
+          &::TurnoutList::cvAck,
+          [this](uint16_t cv_addr, uint8_t byte) { cvAck(cv_addr, byte); });
+
+  // Connect accessory broadcasts
+  connect(_accessory_list,
+          &::AccessoryList::broadcastExtAccessoryInfo,
+          [this](uint16_t accy_addr) { broadcastExtAccessoryInfo(accy_addr); });
 
   // Always start disconnected
   disconnected();
@@ -93,9 +100,9 @@ Server::Server(QWidget* parent) : QWidget{parent} {
 
 // Clear any stored data
 void Server::clearData() {
-  _accessory_list->clear();
   _loco_list->clear();
   _turnout_list->clear();
+  _accessory_list->clear();
 }
 
 // Transmit to socket
@@ -121,12 +128,20 @@ bool Server::trackPower(bool) { return true; }
 // LAN_X_SET_STOP
 bool Server::stop() { return true; }
 
+// LAN_GET_SERIAL_NUMBER
+int32_t Server::serialNumber() const {
+  auto const id{QSysInfo::machineUniqueId()};
+  return std::size(id) >= 4uz
+           ? id[3uz] << 24u | id[2uz] << 16u | id[1uz] << 8u | id[0uz] << 0u
+           : rand();
+}
+
 // LAN_LOGOFF
 void Server::logoff(z21::Socket const&) {
   if (empty(this->clients())) disconnected();
 }
 
-// Modify system state
+// LAN_X_GET_STATUS | LAN_SYSTEMSTATE_GETDATA
 z21::SystemState& Server::systemState() {
   auto& sys_state{ServerBase::systemState()};
   sys_state.main_current = _system->mainCurrent();
@@ -168,14 +183,19 @@ void Server::locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) {
 // LAN_X_CV_READ
 bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure()) _loco_list->cvRead(cv_addr);
+  if (!programmingFailure())
+    _system->decoderOnProgrammingTrack() == 0 ? _loco_list->cvRead(cv_addr)
+                                              : _turnout_list->cvRead(cv_addr);
   return true;
 }
 
 // LAN_X_CV_WRITE
 bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure()) _loco_list->cvWrite(cv_addr, byte);
+  if (!programmingFailure())
+    _system->decoderOnProgrammingTrack() == 0
+      ? _loco_list->cvWrite(cv_addr, byte)
+      : _turnout_list->cvWrite(cv_addr, byte);
   return true;
 }
 
@@ -187,6 +207,20 @@ void Server::cvPomRead(uint16_t loco_addr, uint16_t cv_addr) {
 // LAN_X_CV_POM_WRITE_BYTE
 void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
   if (!programmingFailure()) _loco_list->cvPomWrite(loco_addr, cv_addr, byte);
+}
+
+// ACCESSORY_READ_BYTE
+void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
+  if (!programmingFailure())
+    _turnout_list->cvPomAccessoryRead(accy_addr, cv_addr);
+}
+
+// LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+void Server::cvPomAccessoryWrite(uint16_t accy_addr,
+                                 uint16_t cv_addr,
+                                 uint8_t byte) {
+  if (!programmingFailure())
+    _turnout_list->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
 }
 
 /// LAN_X_GET_TURNOUT_INFO

@@ -13,13 +13,11 @@
 #include "turnout_list.hpp"
 
 using ServerBase = z21::server::Base<z21::server::intf::System,
-                                     z21::server::intf::Driving,
-                                     z21::server::intf::Programming,
-                                     z21::server::intf::Switching,
+                                     z21::server::intf::Dcc,
                                      z21::server::intf::Settings,
                                      z21::server::intf::Logging>;
 
-//
+// Implementation of Z21 server
 class Server : public QWidget, public ServerBase {
   Q_OBJECT
 
@@ -39,6 +37,7 @@ private:
   // System interface
   [[nodiscard]] bool trackPower(bool) final;
   [[nodiscard]] bool stop() final;
+  [[nodiscard]] int32_t serialNumber() const final;
   void logoff(z21::Socket const&) final;
   [[nodiscard]] z21::SystemState& systemState() final;
 
@@ -56,6 +55,9 @@ private:
   [[nodiscard]] bool cvWrite(uint16_t cv_addr, uint8_t byte) final;
   void cvPomRead(uint16_t loco_addr, uint16_t cv_addr) final;
   void cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) final;
+  void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) final;
+  void
+  cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte) final;
 
   // Switching interface
   [[nodiscard]] z21::TurnoutInfo turnoutInfo(uint16_t accy_addr) final;
@@ -74,22 +76,26 @@ private:
   // Log interface
   void log(char const* str) final;
 
+  // Utilities
   void receive();
   void updateLedStatus();
   bool programmingFailure();
   void connected();
   void disconnected();
 
+  // Layout
   QTabWidget* _system_settings_tabs{new QTabWidget{this}};
   QTabWidget* _decoders_tabs{new QTabWidget{this}};
   QTabWidget* _client_log_tabs{new QTabWidget{this}};
   QTabWidget* _server_log_tabs{new QTabWidget{this}};
 
+  // Logs
   ::Log* _client_log{new ::Log{this}};
   ::Log* _server_log{new ::Log{this}};
+
   ::LocoList* _loco_list{new ::LocoList{this}};
-  ::AccessoryList* _accessory_list{new AccessoryList{this}};
   ::TurnoutList* _turnout_list{new TurnoutList{this}};
+  ::AccessoryList* _accessory_list{new AccessoryList{this}};
   ::System* _system{new ::System{this}};
   ::Settings* _settings{new ::Settings{this}};
 

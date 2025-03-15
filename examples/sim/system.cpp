@@ -17,9 +17,8 @@ double random_failure() {
 
 } // namespace
 
-//
+// Load system state from config and create layout
 System::System(QWidget* parent) : QWidget{parent} {
-  // Layout
   auto layout{new QGridLayout};
   layout->setContentsMargins(11, 0, 11, 11);
 
@@ -65,6 +64,16 @@ System::System(QWidget* parent) : QWidget{parent} {
   }
 
   {
+    initProgramTrack();
+    auto groupbox{new QGroupBox{"Program track"}};
+    auto grid{new QGridLayout};
+    grid->addWidget(new QLabel{"Decoder on program track"}, 0, 0);
+    grid->addWidget(_program_track_combobox, 0, 1);
+    groupbox->setLayout(grid);
+    layout->addWidget(groupbox, 1, 0, 1, 1);
+  }
+
+  {
     initFailureRatesWidgets();
     auto groupbox{new QGroupBox{"Failure rates"}};
     auto grid{new QGridLayout};
@@ -76,7 +85,7 @@ System::System(QWidget* parent) : QWidget{parent} {
       grid->addWidget(sliders[i], static_cast<int>(i), 2);
     }
     groupbox->setLayout(grid);
-    layout->addWidget(groupbox, 1, 0, 1, 1);
+    layout->addWidget(groupbox, 2, 0, 1, 1);
   }
 
   {
@@ -91,13 +100,13 @@ System::System(QWidget* parent) : QWidget{parent} {
       grid->addWidget(sliders[i], static_cast<int>(i), 2);
     }
     groupbox->setLayout(grid);
-    layout->addWidget(groupbox, 2, 0, 4, 1);
+    layout->addWidget(groupbox, 3, 0, 4, 1);
   }
 
   setLayout(layout);
 }
 
-//
+// Store system state in config
 System::~System() {
   Config config;
 
@@ -105,6 +114,11 @@ System::~System() {
     auto& sliders{get<2uz>(_failure_rates_widgets)};
     config.setValue("system_prog_short_failure_rate", sliders[0uz]->value());
     config.setValue("system_prog_failure_rate", sliders[1uz]->value());
+  }
+
+  {
+    config.setValue("system_program_track",
+                    _program_track_combobox->currentIndex());
   }
 
   {
@@ -132,6 +146,11 @@ bool System::programmingFailure() const {
   return slider->value() &&
          random_failure() <=
            (static_cast<double>(slider->value()) / slider->maximum());
+}
+
+//
+int System::decoderOnProgrammingTrack() const {
+  return _program_track_combobox->currentIndex();
 }
 
 //
@@ -200,6 +219,19 @@ void System::initFailureRatesWidgets() {
   if (auto const value{config.value("system_prog_failure_rate")};
       value.isValid())
     sliders[1uz]->setValue(value.toInt());
+}
+
+//
+void System::initProgramTrack() {
+  _program_track_combobox->addItem("Loco");
+  _program_track_combobox->addItem("Turnout");
+  _program_track_combobox->setStatusTip(
+    "Select the decoder type on the program track");
+
+  //
+  Config const config;
+  if (auto const value{config.value("system_program_track")}; value.isValid())
+    _program_track_combobox->setCurrentIndex(value.toInt());
 }
 
 //

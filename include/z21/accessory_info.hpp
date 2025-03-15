@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cstdint>
+#include "turnout_info.hpp"
 
 namespace z21 {
 

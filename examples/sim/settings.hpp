@@ -7,7 +7,7 @@
 #include <tuple>
 #include <z21/z21.hpp>
 
-//
+// Adjustable Z21 settings
 class Settings : public QWidget {
   Q_OBJECT
 

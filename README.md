@@ -20,6 +20,7 @@ The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command s
     <li><a href="#usage">Usage</a></li>
       <ul>
         <li><a href="#server">Server</a></li>
+        <li><a href="#interfaces">Interfaces</a></li>
       </ul>
   </ol>
 </details>
@@ -35,6 +36,19 @@ The official documentation of the protocol can be downloaded from the ROCO homep
 - Platform-independent
 - Fine grained interfaces (implement only what you need)
 - Examples for Linux, Windows and ESP32
+- Currently implemented [interfaces](#interfaces)
+  - Can :negative_squared_cross_mark:
+  - Driving :ballot_box_with_check:
+  - FastClock :negative_squared_cross_mark:
+  - LocoNet :negative_squared_cross_mark:
+  - Programming :ballot_box_with_check:
+  - RailCom :negative_squared_cross_mark:
+  - RBus :negative_squared_cross_mark:
+  - Settings :ballot_box_with_check:
+  - Switching :ballot_box_with_check:
+  - System :ballot_box_with_check:
+  - ZLink :negative_squared_cross_mark:
+  - Logging :ballot_box_with_check:
 
 ## Getting Started
 
@@ -50,13 +64,13 @@ This library is meant to be consumed with CMake,
 
 ```cmake
 # Either by including it with CPM
-cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.1.0")
+cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.1.1")
 
 # or the FetchContent module
 FetchContent_Declare(
   DCC
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/Z21"
-  GIT_TAG v0.1.0)
+  GIT_TAG v0.1.1)
 
 target_link_libraries(YourTarget PRIVATE Z21::Z21)
 ```
@@ -65,7 +79,7 @@ or, on [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32), with
 ```yaml
 dependencies:
   zimo-elektronik/z21:
-    version: "0.1.0"
+    version: "0.1.1"
 ```
 
 ### Build
@@ -85,12 +99,15 @@ The simulator allows you to try out the library directly in a simple GUI. The ap
 On [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32) examples from the [examples](https://github.com/ZIMO-Elektronik/DCC/raw/master/examples) subfolder can be built directly using the [IDF Frontend](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-py.html).
 
 ```sh
-idf.py create-project-from-example "zimo-elektronik/z21^0.1.0:esp32"
+idf.py create-project-from-example "zimo-elektronik/z21^0.1.1:esp32"
 ```
 
 ## Usage
 
 ### Server
+:construction:
+
+### Interfaces
 
 | Interface             | Responsibility                                                         |
 | --------------------- | ---------------------------------------------------------------------- |
@@ -102,16 +119,56 @@ idf.py create-project-from-example "zimo-elektronik/z21^0.1.0:esp32"
 | RailCom               | Reading RailCom data of mobile decoders                                |
 | RBus                  | Send and receive messages from R-Bus feedback modules                  |
 | Settings              | Change persistently stored settings                                    |
-| Switching             | Control accessory decoders                                             |
+| Switching             | Control stationary decoders                                            |
 | System (**required**) | System features (e.g. track power, get hardware information, ...)      |
 | ZLink                 | Send and receive messages from zLink devices                           |
 |                       |                                                                        |
 | Logging               | Print received and transmitted UDP datasets (not part of Z21 protocol) |
 
+#### Can
+:construction:
+
+#### Driving
+:construction:
+
+#### FastClock
+:construction:
+
+#### LocoNet
+:construction:
+
+#### Programming
+:construction:
+
+#### RailCom
+:construction:
+
+#### RBus
+:construction:
+
+#### Settings
+:construction:
+
+#### Switching
+:construction:
+
+#### System
+:construction:
+
+#### ZLink
+:construction:
+
+#### Logging
+:construction:
+
 ## All Commands
 | Command                      | Reply                               | Broadcast                    |
 | ---------------------------- | ----------------------------------- | ---------------------------- |
 | lanGetSerialNumber           | replyToLanGetSerialNumber           |                              |
+| lanGetCommonSettings         | replyToLanGetCommonSettings         |                              |
+| lanSetCommonSettings         |                                     |                              |
+| lanGetMmDccSettings          | lanGetMmDccSettings                 |                              |
+| lanSetMmDccSettings          |                                     |                              |
 | lanGetCode                   | replyToLanGetCode                   |                              |
 | lanGetHwInfo                 | replyToLanGetHwInfo                 |                              |
 | lanLogoff                    | -                                   |                              |
@@ -124,10 +181,10 @@ idf.py create-project-from-example "zimo-elektronik/z21^0.1.0:esp32"
 | lanXDccWriteRegister         | lanXCv[NackSc\|Nack\|Result] (n.a.) | lanXBcProgrammingMode (n.a.) |
 | lanXCvWrite                  | lanXCv[NackSc\|Nack\|Result]        | lanXBcProgrammingMode        |
 | lanXMmWriteByte (n.a.)       | lanXCv[NackSc\|Nack\|Result] (n.a.) | lanXBcProgrammingMode (n.a.) |
-| lanXGetTurnoutInfo           |                                     |                              |
-| lanXGetExtAccessoryInfo      |                                     |                              |
-| lanXSetTurnout               |                                     |                              |
-| lanXSetExtAccessory          |                                     |                              |
+| lanXGetTurnoutInfo           |                                     | lanXTurnoutInfo              |
+| lanXGetExtAccessoryInfo      |                                     | lanXExtAccessoryInfo         |
+| lanXSetTurnout               |                                     | lanXTurnoutInfo              |
+| lanXSetExtAccessory          |                                     | lanXExtAccessoryInfo         |
 | lanXSetStop                  | lanXBcStopped                       |                              |
 | lanXSetLocoEStop             |                                     | lanXLocoInfo                 |
 | lanXPurgeLoco                | -                                   |                              |
