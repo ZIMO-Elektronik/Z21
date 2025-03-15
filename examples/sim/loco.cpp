@@ -5,25 +5,19 @@
 //
 Loco::Loco(QWidget* parent) : QWidget{parent} {
   auto layout{new QGridLayout};
-
   layout->addItem(new QSpacerItem{0, 0}, 0, 0);
   layout->addWidget(_label, 0, 1);
-
   layout->setColumnStretch(0, 1);
   layout->setColumnStretch(1, 2);
-
   setLayout(layout);
-
   updateLabel();
 }
 
 // LAN_X_GET_LOCO_INFO
 z21::LocoInfo Loco::locoInfo() { return *this; }
 
-//
+// LAN_X_SET_LOCO_INFO (not part of the actual protocol)
 void Loco::locoInfo(z21::LocoInfo loco_info) {
-  // Standard layout allows slicing assignment
-  static_assert(std::is_standard_layout_v<z21::LocoInfo>);
   static_cast<z21::LocoInfo&>(*this) = loco_info;
   updateLabel();
 }

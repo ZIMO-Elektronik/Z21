@@ -9,7 +9,7 @@ endif()
 FetchContent_Declare(
   CMakeModules
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/CMakeModules"
-  GIT_TAG v0.9.3
+  GIT_TAG v0.9.4
   SOURCE_DIR ${CMAKE_BINARY_DIR}/CMakeModules)
 FetchContent_MakeAvailable(CMakeModules)
 
@@ -19,6 +19,19 @@ project(
   VERSION ${VERSION_FROM_GIT}
   LANGUAGES C CXX)
 
+set(Z21_FIRMWARE_VERSION_MAJOR
+    0x01u
+    CACHE STRING "Firmware major version in BCD format")
+set(Z21_FIRMWARE_VERSION_MINOR
+    0x43u
+    CACHE STRING "Firmware minor version in BCD format")
+set(Z21_XBUS_PROTOCOL_VERSION
+    0x40u
+    CACHE STRING
+          "X-Bus protocol version (0x30 = V3.0, 0x36 = V3.6, 0x40 = V4.0, … )")
+set(Z21_COMMAND_STATION_ID
+    0x12u
+    CACHE STRING "Command station ID (0x12 = Z21 device family)")
 set(Z21_MAX_PAYLOAD_SIZE
     1472uz
     CACHE STRING "Maximum size of a payload in bytes")
@@ -46,10 +59,10 @@ target_compile_features(Z21 INTERFACE cxx_std_23)
 target_compile_definitions(
   Z21
   INTERFACE
-    Z21_VERSION_MAJOR=0x01
-    Z21_VERSION_MINOR=0x43
-    Z21_XBUS_VERSION=0x40
-    Z21_COMMAND_STATION_ID=0x12
+    Z21_FIRMWARE_VERSION_MAJOR=${Z21_FIRMWARE_VERSION_MAJOR}
+    Z21_FIRMWARE_VERSION_MINOR=${Z21_FIRMWARE_VERSION_MINOR}
+    Z21_XBUS_PROTOCOL_VERSION=${Z21_XBUS_PROTOCOL_VERSION}
+    Z21_COMMAND_STATION_ID=${Z21_COMMAND_STATION_ID}
     Z21_MAX_PAYLOAD_SIZE=${Z21_MAX_PAYLOAD_SIZE}
     Z21_MAX_DATASET_SIZE=${Z21_MAX_DATASET_SIZE}
     Z21_SERVER_DEQUE_SIZE=${Z21_SERVER_DEQUE_SIZE}
@@ -67,7 +80,7 @@ endif()
 target_common_warnings(Z21 INTERFACE)
 
 if(NOT TARGET ZTL::ZTL)
-  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.19.1")
+  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.20.0")
 endif()
 
 target_link_libraries(Z21 INTERFACE ZTL::ZTL)

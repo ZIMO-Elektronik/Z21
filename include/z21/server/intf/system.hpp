@@ -20,7 +20,6 @@ namespace z21::server::intf {
 /// \todo
 ///
 /// Commands:
-/// - LAN_GET_SERIAL
 /// - LAN_GET_SERIAL_NUMBER
 /// - LAN_GET_CODE
 /// - LAN_GET_HWINFO
@@ -68,6 +67,9 @@ struct System {
   // Optional
 
   /// \todo
+  ///
+  /// \note
+  /// The serial number is signed because the Z21 app displays it that way.
   [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
 
   /// \todo

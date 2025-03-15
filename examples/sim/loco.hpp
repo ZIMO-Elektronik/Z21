@@ -3,7 +3,7 @@
 #include <QLabel>
 #include <QWidget>
 #include <z21/z21.hpp>
-#include "initial_loco_cvs.hpp"
+#include "initial_cvs.hpp"
 
 // Single loco entry for LocoList
 class Loco : public QWidget, public z21::LocoInfo {
@@ -13,6 +13,7 @@ public:
   explicit Loco(QWidget* parent = nullptr);
 
 public slots:
+  // Driving interface
   z21::LocoInfo locoInfo();
   void locoInfo(z21::LocoInfo loco_info);
   void locoDrive(z21::LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv);
@@ -20,6 +21,7 @@ public slots:
   z21::LocoInfo::Mode locoMode();
   void locoMode(z21::LocoInfo::Mode mode);
 
+  // Programming interface
   uint8_t cvRead(uint16_t cv_addr);
   uint8_t cvWrite(uint16_t cv_addr, uint8_t byte);
 

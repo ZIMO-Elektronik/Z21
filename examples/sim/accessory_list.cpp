@@ -1,7 +1,7 @@
 #include "accessory_list.hpp"
 #include "config.hpp"
 
-//
+// Load accessories from config and add them to the list
 AccessoryList::AccessoryList(QWidget* parent) : QListWidget{parent} {
   // Always focus on the last addressed loco, disable user interaction
   // https://stackoverflow.com/questions/2203698/ignore-mouse-and-keyboard-events-in-qt
@@ -46,7 +46,7 @@ z21::AccessoryInfo AccessoryList::accessoryInfo(uint16_t accy_addr) {
   return (*this)[accy_addr]->accessoryInfo();
 }
 
-//
+// LAN_X_SET_EXT_ACCESSORY
 void AccessoryList::accessory(uint16_t accy_addr, uint8_t dddddddd) {
   auto const before{(*this)[accy_addr]->accessoryInfo()};
   (*this)[accy_addr]->accessory(dddddddd);
@@ -68,7 +68,7 @@ Accessory* AccessoryList::operator[](uint16_t accy_addr) {
   }
   // Accessory not found
   else if (std::empty(list)) {
-    // \todo Eventually delete one if size >=256?
+    /// \todo Eventually delete one if size >=256?
     if (count() == 256) assert(false);
 
     auto list_widget{
@@ -79,7 +79,7 @@ Accessory* AccessoryList::operator[](uint16_t accy_addr) {
     setItemWidget(list_widget, accessory);
     return accessory;
   }
-  //
+  // Accessory found multiple times, shouldn't happen
   else
     assert(false);
 

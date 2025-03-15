@@ -18,7 +18,8 @@ target_compile_definitions(
   Z21Sim
   PRIVATE
     Z21_SIM_VERSION="${PROJECT_VERSION}"
-    Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS=${Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS})
+    "$<$<BOOL:${Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS}>:Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS>"
+)
 
 target_include_directories(Z21Sim PRIVATE ${COMMON_INC})
 
@@ -139,7 +140,7 @@ qt_add_resources(
   ${CMAKE_SOURCE_DIR}/data/images/logo.png)
 
 if(NOT TARGET Microsoft.GSL::GSL)
-  cpmaddpackage("gh:microsoft/GSL@4.0.0")
+  cpmaddpackage("gh:microsoft/GSL@4.2.0")
 endif()
 
 if(NOT TARGET Qt::BreezeIcons)
