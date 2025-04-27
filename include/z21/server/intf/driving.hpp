@@ -14,6 +14,7 @@
 
 namespace z21::server::intf {
 
+/// \todo
 ///
 /// Commands:
 /// - LAN_X_SET_LOCO_E_STOP

@@ -50,6 +50,14 @@ private:
   [[nodiscard]] z21::LocoInfo::Mode locoMode(uint16_t loco_addr) final;
   void locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) final;
 
+  // Switching interface
+  [[nodiscard]] z21::TurnoutInfo turnoutInfo(uint16_t accy_addr) final;
+  [[nodiscard]] z21::AccessoryInfo accessoryInfo(uint16_t accy_addr) final;
+  virtual void turnout(uint16_t accy_addr, bool p, bool a, bool q) final;
+  virtual void accessory(uint16_t accy_addr, uint8_t dddddddd) final;
+  [[nodiscard]] z21::TurnoutInfo::Mode turnoutMode(uint16_t accy_addr) final;
+  void turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) final;
+
   // Programming interface
   [[nodiscard]] bool cvRead(uint16_t cv_addr) final;
   [[nodiscard]] bool cvWrite(uint16_t cv_addr, uint8_t byte) final;
@@ -59,13 +67,8 @@ private:
   void
   cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte) final;
 
-  // Switching interface
-  [[nodiscard]] z21::TurnoutInfo turnoutInfo(uint16_t accy_addr) final;
-  [[nodiscard]] z21::AccessoryInfo accessoryInfo(uint16_t accy_addr) final;
-  virtual void turnout(uint16_t accy_addr, bool p, bool a, bool q) final;
-  virtual void accessory(uint16_t accy_addr, uint8_t dddddddd) final;
-  [[nodiscard]] z21::TurnoutInfo::Mode turnoutMode(uint16_t accy_addr) final;
-  void turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) final;
+  // RailCom interface
+  [[nodiscard]] z21::RailComData railComData(uint16_t loco_addr) final;
 
   // Settings interface
   [[nodiscard]] z21::CommonSettings commonSettings() final;

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.0
+- Add RailCom interface
+
 ## 0.2.0
 - Add `LAN_X_SET_LOCO_FUNCTION_GROUP`
 

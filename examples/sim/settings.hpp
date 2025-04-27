@@ -31,8 +31,8 @@ private:
   void commonBusFlags(uint8_t flags);
   uint8_t commonBusFlags() const;
 
-  void mmDccFlags(uint8_t flags);
-  uint8_t mmDccFlags() const;
+  void mmDccFlags(z21::MmDccSettings::Flags flags);
+  z21::MmDccSettings::Flags mmDccFlags() const;
 
   struct {
     QCheckBox* enable_railcom_checkbox{new QCheckBox};

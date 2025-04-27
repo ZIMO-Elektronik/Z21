@@ -10,14 +10,28 @@
 
 #pragma once
 
+#include "../../railcom_data.hpp"
+
 namespace z21::server::intf {
 
 /// \todo
+///
+/// Commands:
+/// - LAN_RAILCOM_GETDATA
+///
+/// Replies:
+/// - LAN_RAILCOM_DATACHANGED
 struct RailCom {
-  RailCom() { assert(false); }
-
   /// Dtor
   virtual ~RailCom() = default;
+
+  /// \todo
+  [[nodiscard]] virtual RailComData railComData(uint16_t loco_addr) = 0;
+
+  // Implemented by Base
+
+  /// \todo
+  virtual void broadcastRailComData(uint16_t loco_addr) = 0;
 };
 
 } // namespace z21::server::intf

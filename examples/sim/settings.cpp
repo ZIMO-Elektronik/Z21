@@ -161,24 +161,23 @@ Settings::~Settings() {
 
 //
 z21::CommonSettings Settings::commonSettings() {
-  return {
-    .enable_railcom = _common.enable_railcom_checkbox->isChecked(),
-    .enable_bit_modify_on_long_address =
-      _common.enable_bit_modify_on_long_address_checkbox->isChecked(),
-    .key_stop_mode =
-      static_cast<uint8_t>(_common.key_stop_mode_combobox->currentIndex()),
-    .programming_type =
-      static_cast<uint8_t>(_common.programming_type_combobox->currentIndex()),
-    .enable_loconet_current_source =
-      _common.enable_loconet_current_source_checkbox->isChecked(),
-    .loconet_fast_clock_rate =
-      static_cast<uint8_t>(_common.loconet_fast_clock_rate_slider->value()),
-    .loconet_mode =
-      static_cast<uint8_t>(_common.loconet_mode_combobox->currentIndex()),
-    .ext_settings = commonExtFlags(),
-    .purging_time =
-      static_cast<uint8_t>(_common.purging_time_combobox->currentIndex()),
-    .bus_settings = 0u}; // \todo
+  return {.enable_railcom = _common.enable_railcom_checkbox->isChecked(),
+          .enable_bit_modify_on_long_address =
+            _common.enable_bit_modify_on_long_address_checkbox->isChecked(),
+          .key_stop_mode = static_cast<z21::CommonSettings::KeyStopMode>(
+            _common.key_stop_mode_combobox->currentIndex()),
+          .programming_type = static_cast<z21::CommonSettings::ProgrammingType>(
+            _common.programming_type_combobox->currentIndex()),
+          .enable_loconet_current_source =
+            _common.enable_loconet_current_source_checkbox->isChecked(),
+          .loconet_fast_clock_rate = static_cast<uint8_t>(
+            _common.loconet_fast_clock_rate_slider->value()),
+          .loconet_mode =
+            static_cast<uint8_t>(_common.loconet_mode_combobox->currentIndex()),
+          .ext_settings = commonExtFlags(),
+          .purging_time =
+            static_cast<uint8_t>(_common.purging_time_combobox->currentIndex()),
+          .bus_settings = 0u}; // \todo
 }
 
 //
@@ -467,7 +466,7 @@ void Settings::initMmDccWidgets() {
     _mm_dcc.programming_ack_current_slider->setValue(value.toInt());
   else _mm_dcc.programming_ack_current_slider->setValue(50);
   if (auto const value{config.value("settings_mm_dcc_flags")}; value.isValid())
-    mmDccFlags(static_cast<uint8_t>(value.toUInt()));
+    mmDccFlags(static_cast<z21::MmDccSettings::Flags>(value.toUInt()));
   if (auto const value{config.value("settings_output_voltage")};
       value.isValid())
     _mm_dcc.output_voltage_slider->setValue(value.toInt());
@@ -559,35 +558,43 @@ uint8_t Settings::commonBusFlags() const {
 }
 
 //
-void Settings::mmDccFlags(uint8_t flags) {
+void Settings::mmDccFlags(z21::MmDccSettings::Flags flags) {
   //
-  if (auto const fmt{flags & 0x03u}; !fmt)
+  if (auto const fmt{flags & (z21::MmDccSettings::Flags::DccOnly |
+                              z21::MmDccSettings::Flags::MmOnly)};
+      fmt == z21::MmDccSettings::Flags::DccMmMixed)
     _mm_dcc.flags.fmt_combobox->setCurrentIndex(0);
-  else if (fmt == 0x02u) _mm_dcc.flags.fmt_combobox->setCurrentIndex(1);
-  else if (fmt == 0x03u) _mm_dcc.flags.fmt_combobox->setCurrentIndex(2);
+  else if (fmt == z21::MmDccSettings::Flags::DccOnly)
+    _mm_dcc.flags.fmt_combobox->setCurrentIndex(1);
+  else if (fmt == z21::MmDccSettings::Flags::MmOnly)
+    _mm_dcc.flags.fmt_combobox->setCurrentIndex(2);
 
   //
   _mm_dcc.flags.repeat_hfx_checkbox->setChecked(
-    static_cast<bool>(flags & 0x40u));
+    static_cast<bool>(flags & z21::MmDccSettings::Flags::RepeatHfx));
 
   //
   _mm_dcc.flags.short_combobox->setCurrentIndex(
-    static_cast<bool>(flags & 0x80u));
+    static_cast<bool>(flags & z21::MmDccSettings::Flags::DccShort127));
 }
 
 //
-uint8_t Settings::mmDccFlags() const {
+z21::MmDccSettings::Flags Settings::mmDccFlags() const {
   uint8_t retval{};
 
   //
-  if (_mm_dcc.flags.fmt_combobox->currentIndex() == 1) retval |= 0x02u;
-  else if (_mm_dcc.flags.fmt_combobox->currentIndex() == 2) retval |= 0x03u;
+  if (_mm_dcc.flags.fmt_combobox->currentIndex() == 1)
+    retval |= z21::MmDccSettings::Flags::DccOnly;
+  else if (_mm_dcc.flags.fmt_combobox->currentIndex() == 2)
+    retval |= z21::MmDccSettings::Flags::MmOnly;
 
   //
-  if (_mm_dcc.flags.repeat_hfx_checkbox->isChecked()) retval |= 0x40u;
+  if (_mm_dcc.flags.repeat_hfx_checkbox->isChecked())
+    retval |= z21::MmDccSettings::Flags::RepeatHfx;
 
   //
-  if (_mm_dcc.flags.short_combobox->currentIndex() == 1) retval |= 0x80u;
+  if (_mm_dcc.flags.short_combobox->currentIndex() == 1)
+    retval |= z21::MmDccSettings::Flags::DccShort127;
 
-  return retval;
+  return static_cast<z21::MmDccSettings::Flags>(retval);
 }

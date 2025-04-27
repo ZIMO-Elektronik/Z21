@@ -14,21 +14,21 @@
 
 namespace z21 {
 
-/// Data to uint16_t
+/// Data to uint16_t (big endian)
 ///
 /// \param  data  Pointer to data
 /// \return uint16_t from data
-constexpr auto data2uint16(uint8_t const* data) {
+constexpr auto big_endian_data2uint16(uint8_t const* data) {
   return static_cast<uint16_t>(data[0uz] << 8u | data[1uz] << 0u);
 }
 
-/// Data to uint32_t
+/// Data to uint32_t (big endian)
 ///
 /// \param  data  Pointer to data
 /// \return uint32_t from data
-constexpr auto data2uint32(uint8_t const* data) {
-  return static_cast<uint32_t>(data[0uz] << 24u | data[1uz] << 16u |
-                               data[2uz] << 8u | data[3uz] << 0u);
+constexpr auto little_endian_data2uint32(uint8_t const* data) {
+  return static_cast<uint32_t>(data[3uz] << 24u | data[2uz] << 16u |
+                               data[1uz] << 8u | data[0uz] << 0u);
 }
 
 /// Data to accessory address
@@ -36,7 +36,7 @@ constexpr auto data2uint32(uint8_t const* data) {
 /// \param  data  Pointer to data
 /// \return Accessory address
 constexpr auto data2accessory_address(uint8_t const* data) {
-  return static_cast<uint16_t>(data2uint16(data) & 0x07FFu);
+  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x07FFu);
 }
 
 /// Data to loco address
@@ -44,7 +44,7 @@ constexpr auto data2accessory_address(uint8_t const* data) {
 /// \param  data  Pointer to data
 /// \return Loco address
 constexpr auto data2loco_address(uint8_t const* data) {
-  return static_cast<uint16_t>(data2uint16(data) & 0x3FFFu);
+  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x3FFFu);
 }
 
 /// Data to CV address
@@ -52,31 +52,7 @@ constexpr auto data2loco_address(uint8_t const* data) {
 /// \param  data  Pointer to data
 /// \return CV address
 constexpr auto data2cv_address(uint8_t const* data) {
-  return static_cast<uint16_t>(data2uint16(data) & 0x03FFu);
-}
-
-/// uint16_t to data
-///
-/// \param  hword Half-word to convert
-/// \param  data  Pointer to write to
-/// \return Pointer after last element
-constexpr auto uint16_2data(uint16_t hword, uint8_t* data) {
-  *data++ = static_cast<uint8_t>((hword & 0xFF00u) >> 8u);
-  *data++ = static_cast<uint8_t>((hword & 0x00FFu) >> 0u);
-  return data;
-}
-
-/// uint32_t to data
-///
-/// \param  word  Word to convert
-/// \param  data  Pointer to write to
-/// \return Pointer after last element
-constexpr auto uint32_2data(uint32_t word, uint8_t* data) {
-  *data++ = static_cast<uint8_t>((word & 0xFF00'0000u) >> 24u);
-  *data++ = static_cast<uint8_t>((word & 0x00FF'0000u) >> 16u);
-  *data++ = static_cast<uint8_t>((word & 0x0000'FF00u) >> 8u);
-  *data++ = static_cast<uint8_t>((word & 0x0000'00FFu) >> 0u);
-  return data;
+  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x03FFu);
 }
 
 } // namespace z21
