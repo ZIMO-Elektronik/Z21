@@ -20,13 +20,43 @@ struct MmDccSettings {
   friend constexpr bool operator==(MmDccSettings const&,
                                    MmDccSettings const&) = default;
 
+  ///
   uint8_t startup_reset_package_count{};
+
+  ///
   uint8_t continue_reset_packet_count{};
+
+  ///
   uint8_t program_package_count{};
+
+  ///
   bool bit_verify_to_one{};
+
+  ///
   uint8_t programming_ack_current{};
-  uint8_t flags{};
+
+  ///
+  enum Flags : uint8_t {
+    DccMmMixed = 0x00u,
+    DccOnly = 0x02u,
+    MmOnly = 0x03u,
+
+    ///
+    /// \warning
+    /// This does not correspond to the official specification.
+    CV29AutomaticAddress = 0x20u,
+
+    ///
+    RepeatHfx = 0x40u,
+
+    ///
+    DccShort127 = 0x80u,
+  } flags{};
+
+  ///
   uint16_t output_voltage{};
+
+  ///
   uint16_t programming_voltage{};
 };
 

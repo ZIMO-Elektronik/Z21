@@ -20,15 +20,42 @@ struct CommonSettings {
   friend constexpr bool operator==(CommonSettings const&,
                                    CommonSettings const&) = default;
 
+  ///
   bool enable_railcom{};
+
+  ///
   bool enable_bit_modify_on_long_address{};
-  uint8_t key_stop_mode{};
-  uint8_t programming_type{};
+
+  ///
+  enum KeyStopMode : uint8_t {
+    TrackPowerOff = 0x00u,
+    ToggleEmergencyStop = 0x01u,
+  } key_stop_mode{};
+
+  ///
+  enum ProgrammingType : uint8_t {
+    Nothing = 0x00u,
+    BitOnly = 0x01u,
+    ByteOnly = 0x02u,
+    Both = 0x03u,
+  } programming_type{};
+
+  ///
   bool enable_loconet_current_source{};
+
+  ///
   uint8_t loconet_fast_clock_rate{};
+
+  ///
   uint8_t loconet_mode{};
+
+  ///
   uint8_t ext_settings{};
+
+  ///
   uint8_t purging_time{};
+
+  ///
   uint8_t bus_settings{};
 };
 

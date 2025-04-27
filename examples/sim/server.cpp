@@ -180,6 +180,36 @@ void Server::locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) {
   _loco_list->locoMode(loco_addr, mode);
 }
 
+/// LAN_X_GET_TURNOUT_INFO
+z21::TurnoutInfo Server::turnoutInfo(uint16_t accy_addr) {
+  return _turnout_list->turnoutInfo(accy_addr);
+}
+
+/// LAN_X_GET_EXT_ACCESSORY_INFO
+z21::AccessoryInfo Server::accessoryInfo(uint16_t accy_addr) {
+  return _accessory_list->accessoryInfo(accy_addr);
+}
+
+/// LAN_X_SET_TURNOUT
+void Server::turnout(uint16_t accy_addr, bool p, bool a, bool q) {
+  _turnout_list->turnout(accy_addr, p, a, q);
+}
+
+/// LAN_X_SET_EXT_ACCESSORY
+void Server::accessory(uint16_t accy_addr, uint8_t dddddddd) {
+  _accessory_list->accessory(accy_addr, dddddddd);
+}
+
+// LAN_X_GET_TURNOUTMODE
+z21::TurnoutInfo::Mode Server::turnoutMode(uint16_t accy_addr) {
+  return _turnout_list->turnoutMode(accy_addr);
+}
+
+// LAN_X_SET_TURNOUTMODE
+void Server::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
+  _turnout_list->turnoutMode(accy_addr, mode);
+}
+
 // LAN_X_CV_READ
 bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
@@ -223,34 +253,19 @@ void Server::cvPomAccessoryWrite(uint16_t accy_addr,
     _turnout_list->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
 }
 
-/// LAN_X_GET_TURNOUT_INFO
-z21::TurnoutInfo Server::turnoutInfo(uint16_t accy_addr) {
-  return _turnout_list->turnoutInfo(accy_addr);
-}
-
-/// LAN_X_GET_EXT_ACCESSORY_INFO
-z21::AccessoryInfo Server::accessoryInfo(uint16_t accy_addr) {
-  return _accessory_list->accessoryInfo(accy_addr);
-}
-
-/// LAN_X_SET_TURNOUT
-void Server::turnout(uint16_t accy_addr, bool p, bool a, bool q) {
-  _turnout_list->turnout(accy_addr, p, a, q);
-}
-
-/// LAN_X_SET_EXT_ACCESSORY
-void Server::accessory(uint16_t accy_addr, uint8_t dddddddd) {
-  _accessory_list->accessory(accy_addr, dddddddd);
-}
-
-// LAN_X_GET_TURNOUTMODE
-z21::TurnoutInfo::Mode Server::turnoutMode(uint16_t accy_addr) {
-  return _turnout_list->turnoutMode(accy_addr);
-}
-
-// LAN_X_SET_TURNOUTMODE
-void Server::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
-  _turnout_list->turnoutMode(accy_addr, mode);
+/// LAN_RAILCOM_GETDATA
+z21::RailComData Server::railComData(uint16_t loco_addr) {
+  auto const loco_info{_loco_list->locoInfo(loco_addr)};
+  return {
+    .loco_address = loco_addr,
+    .receive_counter = 0u,
+    .error_counter = 0u,
+    .options = static_cast<z21::RailComData::Options>(
+      z21::RailComData::Options::Speed1 | z21::RailComData::Options::QoS),
+    .speed = static_cast<uint8_t>(std::min(
+      z21::decode_rvvvvvvv(loco_info.speed_steps, loco_info.rvvvvvvv), 0)),
+    .qos = 0u,
+  };
 }
 
 // LAN_GET_COMMON_SETTINGS

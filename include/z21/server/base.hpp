@@ -18,6 +18,7 @@
 #include "../db0.hpp"
 #include "../exor.hpp"
 #include "../hw_type.hpp"
+#include "../railcom_data.hpp"
 #include "../socket.hpp"
 #include "../system_state.hpp"
 #include "../utility.hpp"
@@ -127,6 +128,13 @@ public:
 
   /// \todo document
   void broadcastSystemStateData() final { lanSystemStateDataChanged(); }
+
+  /// \todo document
+  void broadcastRailComData(uint16_t loco_addr) // final
+    requires(std::derived_from<Base, intf::RailCom>)
+  {
+    lanRailComDataChanged(loco_addr);
+  }
 
   /// \todo document
   void cvNackShortCircuit() // final
@@ -526,10 +534,11 @@ private:
   }
 
   /// \todo document
-  void lanRailComGetData(Socket const&)
+  void lanRailComGetData(Socket const& sock, uint8_t type, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::RailCom>)
   {
-    /// \todo
+    assert(type == 0x01u);
+    lanRailComDataChanged(loco_addr, sock);
   }
 
   /// \todo document
@@ -743,6 +752,13 @@ private:
   }
 
   /// document \todo
+  ///
+  /// This message is sent from the Z21 to the clients in response to the
+  /// command LAN_X_GET_TURNOUT_INFO. However, it is also sent to an associated
+  /// client unsolicitedly if
+  /// - the function status has been changed by one of the (other) clients or a
+  ///   handset controller
+  /// - and the associated client has activated the corresponding broadcast
   void lanXTurnoutInfo(uint16_t accy_addr, Socket const& sock = {})
     requires(std::derived_from<Base, intf::Switching>)
   {
@@ -767,13 +783,21 @@ private:
     }
     //
     else
-      for (auto const& [s, c] : _clients) {
-        this->transmit(s, reply);
-        logf('S', s, "LAN_X_TURNOUT_INFO", reply);
-      }
+      for (auto const& [s, c] : _clients)
+        if (std::to_underlying(c.bc_flags & BroadcastFlags::DrivingSwitching)) {
+          this->transmit(s, reply);
+          logf('S', s, "LAN_X_TURNOUT_INFO", reply);
+        }
   }
 
   /// \todo document
+  ///
+  /// This message is sent from the Z21 to the clients in response to command
+  /// LAN_X_GET_EXT_ACCESSORY_INFO. However, it is also sent to an associated
+  /// client unsolicitedly if
+  /// - the accessory status has been changed by one of the (other) clients or a
+  ///   handset controller
+  /// - and the associated client has activated the corresponding broadcast
   void lanXExtAccessoryInfo(uint16_t accy_addr, Socket const& sock = {})
     requires(std::derived_from<Base, intf::Switching>)
   {
@@ -799,10 +823,11 @@ private:
     }
     //
     else
-      for (auto const& [s, c] : _clients) {
-        this->transmit(s, reply);
-        logf('S', s, "LAN_X_EXT_ACCESSORY_INFO", reply);
-      }
+      for (auto const& [s, c] : _clients)
+        if (std::to_underlying(c.bc_flags & BroadcastFlags::DrivingSwitching)) {
+          this->transmit(s, reply);
+          logf('S', s, "LAN_X_EXT_ACCESSORY_INFO", reply);
+        }
   }
 
   /// \todo document
@@ -1124,12 +1149,16 @@ private:
 
   /// \todo document
   void replyToLanGetBroadcastFlags(Socket const& sock) {
-    std::array<uint8_t, 0x08uz> reply{
+    auto const bc_flags{std::to_underlying(_clients[sock].bc_flags)};
+    std::array<uint8_t, 0x08uz> const reply{
       0x08u,                                                       // Length
       0x00u,                                                       //
       std::to_underlying(Header::Reply_to_LAN_GET_BROADCASTFLAGS), // Header
-      0x00u};                                                      //
-    uint32_2data(std::to_underlying(_clients[sock].bc_flags), data(reply) + 4);
+      0x00u,                                                       //
+      static_cast<uint8_t>(bc_flags >> 0u),   // Broadcast flags
+      static_cast<uint8_t>(bc_flags >> 8u),   //
+      static_cast<uint8_t>(bc_flags >> 16u),  //
+      static_cast<uint8_t>(bc_flags >> 24u)}; //
     this->transmit(sock, reply);
     logf('S', sock, "Reply_to_LAN_GET_BROADCASTFLAGS", reply);
   }
@@ -1182,26 +1211,26 @@ private:
   void lanSystemStateDataChanged(Socket const& sock = {}) {
     auto const sys_state{this->systemState()};
 
-    std::array<uint8_t, 0x14uz> reply{
-      0x14u,                                                   // Length
-      0x00u,                                                   //
-      std::to_underlying(Header::LAN_SYSTEMSTATE_DATACHANGED), // Header
-      0x00u,                                                   //
-      static_cast<uint8_t>(sys_state.main_current >> 0u),
-      static_cast<uint8_t>(sys_state.main_current >> 8u),
-      static_cast<uint8_t>(sys_state.prog_current >> 0u),
-      static_cast<uint8_t>(sys_state.prog_current >> 8u),
-      static_cast<uint8_t>(sys_state.filtered_main_current >> 0u),
-      static_cast<uint8_t>(sys_state.filtered_main_current >> 8u),
-      static_cast<uint8_t>(sys_state.temperature >> 0u),
-      static_cast<uint8_t>(sys_state.temperature >> 8u),
-      static_cast<uint8_t>(sys_state.supply_voltage >> 0u),
-      static_cast<uint8_t>(sys_state.supply_voltage >> 8u),
-      static_cast<uint8_t>(sys_state.vcc_voltage >> 0u),
-      static_cast<uint8_t>(sys_state.vcc_voltage >> 8u),
+    std::array<uint8_t, 0x14uz> const reply{
+      0x14u,                                                       // Length
+      0x00u,                                                       //
+      std::to_underlying(Header::LAN_SYSTEMSTATE_DATACHANGED),     // Header
+      0x00u,                                                       //
+      static_cast<uint8_t>(sys_state.main_current >> 0u),          //
+      static_cast<uint8_t>(sys_state.main_current >> 8u),          //
+      static_cast<uint8_t>(sys_state.prog_current >> 0u),          //
+      static_cast<uint8_t>(sys_state.prog_current >> 8u),          //
+      static_cast<uint8_t>(sys_state.filtered_main_current >> 0u), //
+      static_cast<uint8_t>(sys_state.filtered_main_current >> 8u), //
+      static_cast<uint8_t>(sys_state.temperature >> 0u),           //
+      static_cast<uint8_t>(sys_state.temperature >> 8u),           //
+      static_cast<uint8_t>(sys_state.supply_voltage >> 0u),        //
+      static_cast<uint8_t>(sys_state.supply_voltage >> 8u),        //
+      static_cast<uint8_t>(sys_state.vcc_voltage >> 0u),           //
+      static_cast<uint8_t>(sys_state.vcc_voltage >> 8u),           //
       std::to_underlying(sys_state.central_state),    // CentralState
       std::to_underlying(sys_state.central_state_ex), // CentralStateEx
-      0x00u,                                          // reserved
+      0x00u,                                          // Reserved
       std::to_underlying(sys_state.capabilities)};    // Capabilities
 
     // Transmit to every client with broadcast flag
@@ -1214,8 +1243,56 @@ private:
   }
 
   /// \todo document
-  void lanRailComDataChanged(Socket const&) {
-    /// \todo
+  ///
+  /// This message is sent to the clients by the Z21 from FW version 1.29 on as
+  /// a response to the command LAN_RAILCOM_GETDATA. However, it is also sent to
+  /// clients unsolicitedly, if
+  /// - the corresponding RailCom data have actually changed
+  /// - and the associated client has activated the corresponding broadcast and
+  ///   the associated client has subscribed to the locomotive address with
+  ///   LAN_X_GET_LOCO_INFO.
+  /// - or the associated client has subscribed to broadcast 0x00040000 (i.e.
+  ///   RailCom data of all locomotives, for PC control SW only).
+  void lanRailComDataChanged(uint16_t loco_addr, Socket const& sock = {})
+    requires(std::derived_from<Base, intf::RailCom>)
+  {
+    auto const railcom_data{this->railComData(loco_addr)};
+
+    std::array<uint8_t, 0x11uz> const reply{
+      0x11u,                                                     // Length
+      0x00u,                                                     //
+      std::to_underlying(Header::LAN_RAILCOM_DATACHANGED),       // Header
+      0x00u,                                                     //
+      static_cast<uint8_t>(railcom_data.loco_address >> 0u),     //
+      static_cast<uint8_t>(railcom_data.loco_address >> 8u),     //
+      static_cast<uint8_t>(railcom_data.receive_counter >> 0u),  //
+      static_cast<uint8_t>(railcom_data.receive_counter >> 8u),  //
+      static_cast<uint8_t>(railcom_data.receive_counter >> 16u), //
+      static_cast<uint8_t>(railcom_data.receive_counter >> 24u), //
+      static_cast<uint8_t>(railcom_data.error_counter >> 0u),    //
+      static_cast<uint8_t>(railcom_data.error_counter >> 8u),    //
+      0x00u,                                                     // Reserved
+      railcom_data.options,                                      //
+      railcom_data.speed,                                        //
+      railcom_data.qos,                                          //
+      0x00u                                                      // Reserved
+    };
+
+    //
+    if (sock) {
+      this->transmit(sock, reply);
+      logf('S', sock, "LAN_RAILCOM_DATACHANGED", reply);
+    }
+    //
+    else
+      for (auto const& [s, c] : _clients)
+        if ((std::to_underlying(c.bc_flags &
+                                BroadcastFlags::RailComSubscribed) &&
+             std::ranges::contains(c.sub_loco_addrs, loco_addr)) ||
+            std::to_underlying(c.bc_flags & BroadcastFlags::RailCom)) {
+          this->transmit(s, reply);
+          logf('S', s, "LAN_RAILCOM_DATACHANGED", reply);
+        }
   }
 
   /// \todo document
@@ -1316,16 +1393,20 @@ private:
           if constexpr (std::derived_from<Base, intf::Settings>)
             lanSetCommonSettings(
               sock,
-              CommonSettings{.enable_railcom = chunk[0uz],
-                             .enable_bit_modify_on_long_address = chunk[1uz],
-                             .key_stop_mode = chunk[2uz],
-                             .programming_type = chunk[3uz],
-                             .enable_loconet_current_source = chunk[4uz],
-                             .loconet_fast_clock_rate = chunk[5uz],
-                             .loconet_mode = chunk[6uz],
-                             .ext_settings = chunk[7uz],
-                             .purging_time = chunk[8uz],
-                             .bus_settings = chunk[9uz]});
+              CommonSettings{
+                .enable_railcom = static_cast<bool>(chunk[0uz]),
+                .enable_bit_modify_on_long_address =
+                  static_cast<bool>(chunk[1uz]),
+                .key_stop_mode =
+                  static_cast<CommonSettings::KeyStopMode>(chunk[2uz]),
+                .programming_type =
+                  static_cast<CommonSettings::ProgrammingType>(chunk[3uz]),
+                .enable_loconet_current_source = static_cast<bool>(chunk[4uz]),
+                .loconet_fast_clock_rate = chunk[5uz],
+                .loconet_mode = chunk[6uz],
+                .ext_settings = chunk[7uz],
+                .purging_time = chunk[8uz],
+                .bus_settings = chunk[9uz]});
           break;
 
         case Header::LAN_GET_MMDCC_SETTINGS:
@@ -1339,16 +1420,17 @@ private:
           if constexpr (std::derived_from<Base, intf::Settings>)
             lanSetMmDccSettings(
               sock,
-              MmDccSettings{.startup_reset_package_count = chunk[0uz],
-                            .continue_reset_packet_count = chunk[1uz],
-                            .program_package_count = chunk[2uz],
-                            .bit_verify_to_one = chunk[3uz],
-                            .programming_ack_current = chunk[10uz],
-                            .flags = chunk[11uz],
-                            .output_voltage = static_cast<uint16_t>(
-                              chunk[13uz] << 8u | chunk[12uz] << 0u),
-                            .programming_voltage = static_cast<uint16_t>(
-                              chunk[15uz] << 8u | chunk[14uz] << 0u)});
+              MmDccSettings{
+                .startup_reset_package_count = chunk[0uz],
+                .continue_reset_packet_count = chunk[1uz],
+                .program_package_count = chunk[2uz],
+                .bit_verify_to_one = static_cast<bool>(chunk[3uz]),
+                .programming_ack_current = chunk[10uz],
+                .flags = static_cast<MmDccSettings::Flags>(chunk[11uz]),
+                .output_voltage =
+                  static_cast<uint16_t>(chunk[13uz] << 8u | chunk[12uz] << 0u),
+                .programming_voltage = static_cast<uint16_t>(
+                  chunk[15uz] << 8u | chunk[14uz] << 0u)});
           break;
 
         case Header::LAN_GET_CODE:
@@ -1424,7 +1506,7 @@ private:
                   logf('C', sock, "LAN_X_CV_WRITE", chunk);
                   if constexpr (std::derived_from<Base, intf::Programming>)
                     lanXCvWrite(
-                      sock, data2loco_address(data(chunk) + 2), chunk[4uz]);
+                      sock, data2cv_address(data(chunk) + 2), chunk[4uz]);
                   break;
                 case DB0::LAN_X_MM_WRITE_BYTE:
                   logf('C', sock, "LAN_X_MM_WRITE_BYTE", chunk);
@@ -1626,7 +1708,7 @@ private:
           logf('C', sock, "LAN_SET_BROADCASTFLAGS", chunk);
           lanSetBroadcastFlags(sock,
                                static_cast<BroadcastFlags>(
-                                 std::byteswap(data2uint32(&chunk[0uz]))));
+                                 little_endian_data2uint32(data(chunk))));
           break;
 
         case Header::LAN_GET_BROADCASTFLAGS:
@@ -1682,7 +1764,8 @@ private:
         case Header::LAN_RAILCOM_GETDATA:
           logf('C', sock, "LAN_RAILCOM_GETDATA", chunk);
           if constexpr (std::derived_from<Base, intf::RailCom>)
-            lanRailComGetData(sock);
+            lanRailComGetData(
+              sock, chunk[0uz], data2loco_address(data(chunk) + 1));
           break;
 
         case Header::LAN_LOCONET_FROM_LAN:

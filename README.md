@@ -42,7 +42,7 @@ The official documentation of the protocol can be downloaded from the ROCO homep
   - FastClock :negative_squared_cross_mark:
   - LocoNet :negative_squared_cross_mark:
   - Programming :ballot_box_with_check:
-  - RailCom :negative_squared_cross_mark:
+  - RailCom :ballot_box_with_check:
   - RBus :negative_squared_cross_mark:
   - Settings :ballot_box_with_check:
   - Switching :ballot_box_with_check:
