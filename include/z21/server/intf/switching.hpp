@@ -15,7 +15,7 @@
 
 namespace z21::server::intf {
 
-/// \todo
+/// \todo document
 ///
 /// Commands:
 /// - LAN_X_GET_TURNOUT_INFO

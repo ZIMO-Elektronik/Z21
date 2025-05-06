@@ -15,7 +15,7 @@
 
 namespace z21::server::intf {
 
-/// \todo
+/// \todo document
 ///
 /// Commands:
 /// - LAN_GET_COMMON_SETTINGS

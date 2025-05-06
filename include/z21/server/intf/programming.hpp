@@ -12,6 +12,7 @@
 
 namespace z21::server::intf {
 
+/// \todo document
 ///
 /// Commands:
 /// - LAN_X_DCC_READ_REGISTER (n.a.)

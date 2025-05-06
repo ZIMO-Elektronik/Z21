@@ -16,7 +16,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct Dataset {
   Header header{};
   ztl::inplace_vector<uint8_t, Z21_MAX_DATASET_SIZE> chunk{};

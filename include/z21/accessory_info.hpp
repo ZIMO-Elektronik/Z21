@@ -15,7 +15,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct AccessoryInfo {
   friend constexpr bool operator==(AccessoryInfo const&,
                                    AccessoryInfo const&) = default;

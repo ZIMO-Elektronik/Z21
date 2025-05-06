@@ -14,7 +14,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 enum class XHeader : uint8_t {
   // clang-format off
   // Client to Z21

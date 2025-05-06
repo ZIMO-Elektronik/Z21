@@ -14,7 +14,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 enum class DB0 : uint8_t {
   // clang-format off
   // Client to Z21

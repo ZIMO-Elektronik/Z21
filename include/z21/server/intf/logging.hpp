@@ -12,7 +12,7 @@
 
 namespace z21::server::intf {
 
-/// \todo
+/// \todo document
 struct Logging {
   /// Dtor
   virtual ~Logging() = default;

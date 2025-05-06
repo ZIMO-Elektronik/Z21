@@ -5,13 +5,17 @@
 // Implementation of transmit using sendto
 void Server::transmit(z21::Socket const& sock,
                       std::span<uint8_t const> datasets) {
-  auto const err{sendto(sock.fd,
-                        std::bit_cast<char*>(data(datasets)),
-                        size(datasets),
-                        0,
-                        std::bit_cast<sockaddr*>(&sock.addr),
-                        sock.len)};
-  if (err < 0) fprintf(stderr, "sendto failed %s", strerror(errno));
+  // Transmit UDP datasets using sendto
+  if (auto const len{sendto(sock.fd,
+                            std::bit_cast<char*>(data(datasets)),
+                            size(datasets),
+                            0,
+                            std::bit_cast<sockaddr*>(&sock.addr),
+                            sock.len)};
+      len < 0) {
+    fprintf(stderr, "sendto failed %s", strerror(errno));
+    std::exit(-1);
+  }
 }
 
 // Enable/disable track power

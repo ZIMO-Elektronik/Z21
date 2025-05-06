@@ -14,7 +14,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct RailComData {
   friend constexpr bool operator==(RailComData const&,
                                    RailComData const&) = default;

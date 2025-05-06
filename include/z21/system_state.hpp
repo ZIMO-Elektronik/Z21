@@ -16,7 +16,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct SystemState {
   friend constexpr bool operator==(SystemState const&,
                                    SystemState const&) = default;

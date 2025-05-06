@@ -17,6 +17,7 @@
 
 namespace z21::server::intf {
 
+/// \todo document
 struct Dcc : Driving, Switching, Programming, RailCom {};
 
 } // namespace z21::server::intf
