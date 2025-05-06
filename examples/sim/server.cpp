@@ -4,6 +4,9 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QTimer>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 // Create central layout
 Server::Server(QWidget* parent) : QWidget{parent} {
@@ -180,22 +183,22 @@ void Server::locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode) {
   _loco_list->locoMode(loco_addr, mode);
 }
 
-/// LAN_X_GET_TURNOUT_INFO
+// LAN_X_GET_TURNOUT_INFO
 z21::TurnoutInfo Server::turnoutInfo(uint16_t accy_addr) {
   return _turnout_list->turnoutInfo(accy_addr);
 }
 
-/// LAN_X_GET_EXT_ACCESSORY_INFO
+// LAN_X_GET_EXT_ACCESSORY_INFO
 z21::AccessoryInfo Server::accessoryInfo(uint16_t accy_addr) {
   return _accessory_list->accessoryInfo(accy_addr);
 }
 
-/// LAN_X_SET_TURNOUT
+// LAN_X_SET_TURNOUT
 void Server::turnout(uint16_t accy_addr, bool p, bool a, bool q) {
   _turnout_list->turnout(accy_addr, p, a, q);
 }
 
-/// LAN_X_SET_EXT_ACCESSORY
+// LAN_X_SET_EXT_ACCESSORY
 void Server::accessory(uint16_t accy_addr, uint8_t dddddddd) {
   _accessory_list->accessory(accy_addr, dddddddd);
 }
@@ -213,47 +216,68 @@ void Server::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
 // LAN_X_CV_READ
 bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure())
-    _system->decoderOnProgrammingTrack() == 0 ? _loco_list->cvRead(cv_addr)
-                                              : _turnout_list->cvRead(cv_addr);
+  QTimer::singleShot(200ms, [=] {
+    if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
+    else if (_system->programmingFailure()) cvNack();
+    else if (_system->decoderOnProgrammingTrack() == 0)
+      _loco_list->cvRead(cv_addr);
+    else _turnout_list->cvRead(cv_addr);
+  });
   return true;
 }
 
 // LAN_X_CV_WRITE
 bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit ledStatus(Led::ProgrammingMode);
-  if (!programmingFailure())
-    _system->decoderOnProgrammingTrack() == 0
-      ? _loco_list->cvWrite(cv_addr, byte)
-      : _turnout_list->cvWrite(cv_addr, byte);
+  QTimer::singleShot(200ms, [=] {
+    if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
+    else if (_system->programmingFailure()) cvNack();
+    else if (_system->decoderOnProgrammingTrack() == 0)
+      _loco_list->cvWrite(cv_addr, byte);
+    else _turnout_list->cvWrite(cv_addr, byte);
+  });
   return true;
 }
 
 // LAN_X_CV_POM_READ_BYTE
 void Server::cvPomRead(uint16_t loco_addr, uint16_t cv_addr) {
-  if (!programmingFailure()) _loco_list->cvPomRead(loco_addr, cv_addr);
+  QTimer::singleShot(200ms, [=] {
+    if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
+    else if (_system->programmingFailure()) cvNack();
+    else _loco_list->cvPomRead(loco_addr, cv_addr);
+  });
 }
 
 // LAN_X_CV_POM_WRITE_BYTE
 void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
-  if (!programmingFailure()) _loco_list->cvPomWrite(loco_addr, cv_addr, byte);
+  QTimer::singleShot(200ms, [=] {
+    if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
+    else if (_system->programmingFailure()) cvNack();
+    else _loco_list->cvPomWrite(loco_addr, cv_addr, byte);
+  });
 }
 
 // ACCESSORY_READ_BYTE
 void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
-  if (!programmingFailure())
-    _turnout_list->cvPomAccessoryRead(accy_addr, cv_addr);
+  QTimer::singleShot(200ms, [=] {
+    if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
+    else if (_system->programmingFailure()) cvNack();
+    else _turnout_list->cvPomAccessoryRead(accy_addr, cv_addr);
+  });
 }
 
 // LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
 void Server::cvPomAccessoryWrite(uint16_t accy_addr,
                                  uint16_t cv_addr,
                                  uint8_t byte) {
-  if (!programmingFailure())
-    _turnout_list->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
+  QTimer::singleShot(200ms, [=] {
+    if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
+    else if (_system->programmingFailure()) cvNack();
+    else _turnout_list->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
+  });
 }
 
-/// LAN_RAILCOM_GETDATA
+// LAN_RAILCOM_GETDATA
 z21::RailComData Server::railComData(uint16_t loco_addr) {
   auto const loco_info{_loco_list->locoInfo(loco_addr)};
   return {
@@ -333,17 +357,6 @@ void Server::log(char const* str) {
   if (str[0uz] == 'C') _client_log->append(tmp);
   else if (str[0uz] == 'S') _server_log->append(tmp);
   else assert(false);
-}
-
-// Get programming failure rate from system
-bool Server::programmingFailure() {
-  if (_system->programmingShortCircuitFailure()) {
-    _loco_list->cvNackShortCircuit();
-    return true;
-  } else if (_system->programmingFailure()) {
-    _loco_list->cvNack();
-    return true;
-  } else return false;
 }
 
 // Connected, enable UI and update LED status

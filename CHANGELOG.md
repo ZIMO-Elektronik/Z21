@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1
+- Bugfix `LAN_X_BC_PROGRAMMING_MODE` comes only after `LAN_X_CV_NACK_SC`, `LAN_X_CV_NACK` or `LAN_X_CV_RESULT` ([#7](https://github.com/ZIMO-Elektronik/Z21/issues/7))
+
 ## 0.3.0
 - Add RailCom interface
 
