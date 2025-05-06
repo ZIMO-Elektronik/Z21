@@ -15,7 +15,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct CommonSettings {
   friend constexpr bool operator==(CommonSettings const&,
                                    CommonSettings const&) = default;

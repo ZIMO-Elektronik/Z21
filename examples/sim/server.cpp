@@ -46,7 +46,7 @@ Server::Server(QWidget* parent) : QWidget{parent} {
     receive();
     updateLedStatus();
   });
-  timer->start(10);
+  timer->start(10ms);
 
   // Connect system broadcasts
   connect(_system, &::System::broadcastTrackPowerOff, [this] {
@@ -111,12 +111,14 @@ void Server::clearData() {
 // Transmit to socket
 void Server::transmit(z21::Socket const& sock,
                       std::span<uint8_t const> datasets) {
-  if (sendto(sock.fd,
-             std::bit_cast<char*>(std::data(datasets)),
-             std::size(datasets),
-             0,
-             std::bit_cast<sockaddr*>(&sock.addr),
-             sock.len) < 0) {
+  // Transmit UDP datasets using sendto
+  if (auto const len{sendto(sock.fd,
+                            std::bit_cast<char*>(std::data(datasets)),
+                            std::size(datasets),
+                            0,
+                            std::bit_cast<sockaddr*>(&sock.addr),
+                            sock.len)};
+      len < 0) {
     printf("sendto failed %s\n", strerror(errno));
     std::exit(-1);
   }
@@ -314,11 +316,14 @@ void Server::mmDccSettings(z21::MmDccSettings const& mm_dcc_settings) {
 
 // Receive from socket (periodically called)
 void Server::receive() {
+  // IPv4 Internet domain socket address
   sockaddr_in dest_addr_ip4;
   socklen_t socklen{sizeof(dest_addr_ip4)};
 
+  // Receive buffer
   std::array<uint8_t, Z21_MAX_PAYLOAD_SIZE> rx;
 
+  // Receive UDP datasets using recvfrom and execute them
   if (auto const len{recvfrom(_sock,
                               std::bit_cast<char*>(std::data(rx)),
                               sizeof(rx) - 1,

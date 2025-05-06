@@ -15,7 +15,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct LocoInfo {
   friend constexpr bool operator==(LocoInfo const&, LocoInfo const&) = default;
 

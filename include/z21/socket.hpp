@@ -15,7 +15,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct Socket {
   constexpr Socket() = default;
   constexpr Socket(int sock_fd, sockaddr* sock_addr, socklen_t sock_len)

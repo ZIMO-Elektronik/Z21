@@ -15,7 +15,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct MmDccSettings {
   friend constexpr bool operator==(MmDccSettings const&,
                                    MmDccSettings const&) = default;

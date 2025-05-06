@@ -14,7 +14,7 @@
 
 namespace z21 {
 
-///
+/// \todo document
 struct TurnoutInfo {
   friend constexpr bool operator==(TurnoutInfo const&,
                                    TurnoutInfo const&) = default;

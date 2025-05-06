@@ -26,7 +26,7 @@ int get_socket([[maybe_unused]] bool blocking) {
 
   // On Windows things are a little more involved...
 #elif defined(__WIN32__)
-  // Apparently there is some WSA stuff one needs to to prior to anything:
+  // Apparently there is some WSA stuff one needs to do prior to anything:
   // https://stackoverflow.com/a/4642169/5840652
   WORD version_wanted{MAKEWORD(1, 1)};
   WSADATA wsa_data;

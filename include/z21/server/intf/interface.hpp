@@ -27,6 +27,7 @@
 
 namespace z21::server::intf {
 
+/// \todo document
 template<typename T>
 concept Interface = ztl::contains_type_v<T,
                                          std::tuple<intf::Can,

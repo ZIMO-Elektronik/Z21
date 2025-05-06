@@ -11,7 +11,7 @@ namespace {
 using namespace std::chrono_literals;
 
 void server_task(int sock) {
-  Server server{};
+  // IPv4 Internet domain socket address
   sockaddr_in dest_addr_ip4;
   socklen_t socklen{sizeof(dest_addr_ip4)};
 
@@ -19,9 +19,7 @@ void server_task(int sock) {
   std::array<uint8_t, Z21_MAX_PAYLOAD_SIZE> rx;
 
   // Receive UDP datasets using recvfrom and execute them in an endless loop
-  for (;;) {
-    std::this_thread::sleep_for(1ms);
-
+  for (Server server;;) {
     if (auto const len{recvfrom(sock,
                                 std::bit_cast<char*>(data(rx)),
                                 sizeof(rx) - 1,
@@ -34,9 +32,10 @@ void server_task(int sock) {
     } else if (len > 0) {
       server.receive({sock, std::bit_cast<sockaddr*>(&dest_addr_ip4), socklen},
                      {data(rx), static_cast<size_t>(len)});
-
       server.execute();
     }
+
+    std::this_thread::sleep_for(10ms);
   }
 }
 

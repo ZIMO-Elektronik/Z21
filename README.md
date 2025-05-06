@@ -34,9 +34,7 @@ The official documentation of the protocol can be downloaded from the ROCO homep
 
 ## Features
 - Platform-independent
-- Fine grained interfaces (implement only what you need)
-- Examples for Linux, Windows and ESP32
-- Currently implemented [interfaces](#interfaces)
+- Fine grained [interfaces](#interfaces) ( :ballot_box_with_check: done / :negative_squared_cross_mark: todo)
   - Can :negative_squared_cross_mark:
   - Driving :ballot_box_with_check:
   - FastClock :negative_squared_cross_mark:
@@ -49,6 +47,7 @@ The official documentation of the protocol can be downloaded from the ROCO homep
   - System :ballot_box_with_check:
   - ZLink :negative_squared_cross_mark:
   - Logging :ballot_box_with_check:
+- Examples for Linux, Windows and ESP32
 
 ## Getting Started
 
@@ -64,13 +63,13 @@ This library is meant to be consumed with CMake,
 
 ```cmake
 # Either by including it with CPM
-cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.1.1")
+cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.3.1")
 
 # or the FetchContent module
 FetchContent_Declare(
   DCC
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/Z21"
-  GIT_TAG v0.1.1)
+  GIT_TAG v0.3.1)
 
 target_link_libraries(YourTarget PRIVATE Z21::Z21)
 ```
@@ -79,7 +78,7 @@ or, on [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32), with
 ```yaml
 dependencies:
   zimo-elektronik/z21:
-    version: "0.1.1"
+    version: "0.3.1"
 ```
 
 ### Build
@@ -99,31 +98,85 @@ The simulator allows you to try out the library directly in a simple GUI. The ap
 On [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32) examples from the [examples](https://github.com/ZIMO-Elektronik/DCC/raw/master/examples) subfolder can be built directly using the [IDF Frontend](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-py.html).
 
 ```sh
-idf.py create-project-from-example "zimo-elektronik/z21^0.1.1:esp32"
+idf.py create-project-from-example "zimo-elektronik/z21^0.3.1:esp32"
 ```
 
 ## Usage
 
 ### Server
-:construction:
+To create a server it is necessary to derive from `z21::server::Base`. The class uses a mixture of static and dynamic polymorphism, where the desired interfaces must be passed as template arguments, but the actual implementations of these interfaces are classic virtual methods. The interfaces have no dependencies on each other and can be freely selected according to requirements. The only exception to this is the [System interface](#system), which is **mandatory** because it covers basic functions of the protocol. An implementation of such an (almost) minimal version can be found in the [POSIX/ESP32 example](https://github.com/ZIMO-Elektronik/Z21/tree/master/examples/posix).
+
+This example is also an excellent way to see what receiving and transmitting data might look like. The Z21 protocol uses [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol) over port 21105 or 21106, although control applications on the client should prefer 21105.
+
+#### Receiving
+The following snippet shows what a task that reads data via [recvfrom](https://pubs.opengroup.org/onlinepubs/000095399/functions/recvfrom.html) and passes it to the server can look like.
+```cpp
+void server_task(int sock) {
+  // IPv4 Internet domain socket address
+  sockaddr_in dest_addr_ip4;
+  socklen_t socklen{sizeof(dest_addr_ip4)};
+
+  // Receive buffer
+  std::array<uint8_t, Z21_MAX_PAYLOAD_SIZE> rx;
+
+  // Receive UDP datasets using recvfrom and execute them in an endless loop
+  for (Server server;;) {
+    if (auto const len{recvfrom(sock,
+                                std::bit_cast<char*>(data(rx)),
+                                sizeof(rx) - 1,
+                                0,
+                                std::bit_cast<sockaddr*>(&dest_addr_ip4),
+                                &socklen)};
+        len < 0) {
+      printf("recvfrom failed %s\n", strerror(errno));
+      std::exit(-1);
+    } else if (len > 0) {
+      server.receive({sock, std::bit_cast<sockaddr*>(&dest_addr_ip4), socklen},
+                     {data(rx), static_cast<size_t>(len)});
+      server.execute();
+    }
+
+    std::this_thread::sleep_for(10ms);
+  }
+}
+```
+
+#### Transmitting
+Analogous to recvfrom, [sendto](https://pubs.opengroup.org/onlinepubs/009604499/functions/sendto.html) can be used to implement the pure virtual method `transmit` of the [System interface](#system).
+```cpp
+void Server::transmit(z21::Socket const& sock,
+                      std::span<uint8_t const> datasets) {
+  // Transmit UDP datasets using sendto
+  if (auto const len{sendto(sock.fd,
+                            std::bit_cast<char*>(data(datasets)),
+                            size(datasets),
+                            0,
+                            std::bit_cast<sockaddr*>(&sock.addr),
+                            sock.len)};
+      len < 0) {
+    fprintf(stderr, "sendto failed %s", strerror(errno));
+    std::exit(-1);
+  }
+}
+```
 
 ### Interfaces
 
-| Interface             | Responsibility                                                         |
-| --------------------- | ---------------------------------------------------------------------- |
-| Can                   | Send and receive messages from CAN occupancy detectors                 |
-| Driving               | Control mobile decoders                                                |
-| FastClock             | Control fast clock                                                     |
-| LocoNet               | Send and receive messages from LocoNet gateway                         |
-| Programming           | Reading and writing decoder CVs in service or POM mode                 |
-| RailCom               | Reading RailCom data of mobile decoders                                |
-| RBus                  | Send and receive messages from R-Bus feedback modules                  |
-| Settings              | Change persistently stored settings                                    |
-| Switching             | Control stationary decoders                                            |
-| System (**required**) | System features (e.g. track power, get hardware information, ...)      |
-| ZLink                 | Send and receive messages from zLink devices                           |
-|                       |                                                                        |
-| Logging               | Print received and transmitted UDP datasets (not part of Z21 protocol) |
+| Interface                        | Responsibility                                                         |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| [Can](#can)                      | Send and receive messages from CAN occupancy detectors                 |
+| [Driving](#driving)              | Control mobile decoders                                                |
+| [FastClock](#fastclock)          | Control fast clock                                                     |
+| [LocoNet](#loconet)              | Send and receive messages from LocoNet gateway                         |
+| [Programming](#programming)      | Reading and writing decoder CVs in service or POM mode                 |
+| [RailCom](#railcom)              | Reading RailCom data of mobile decoders                                |
+| [RBus](#rbus)                    | Send and receive messages from R-Bus feedback modules                  |
+| [Settings](#settings)            | Change persistently stored settings                                    |
+| [Switching](#switching)          | Control stationary decoders                                            |
+| [System](#system) (**required**) | System features (e.g. track power, get hardware information, ...)      |
+| [ZLink](#zlink)                  | Send and receive messages from zLink devices                           |
+|                                  |                                                                        |
+| [Logging](#logging)              | Print received and transmitted UDP datasets (not part of Z21 protocol) |
 
 #### Can
 :construction:
