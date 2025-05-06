@@ -82,7 +82,6 @@ private:
   // Utilities
   void receive();
   void updateLedStatus();
-  bool programmingFailure();
   void connected();
   void disconnected();
 
