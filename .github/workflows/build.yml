@@ -6,7 +6,7 @@ on:
 
 jobs:
   esp-elf-gcc:
-    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/esp-elf-gcc.yml@v0.0.9
+    uses: ZIMO-Elektronik/.github-workflows/.github/workflows/esp-elf-gcc.yml@v0.1.0
     with:
       path: examples/posix
       target: esp32
