@@ -42,7 +42,7 @@ jobs:
         run: |
           sudo apt update -y
           sudo apt install -y libz-mingw-w64 libz-mingw-w64-dev mingw-w64 ninja-build
-          sudo pip install aqtinstall --break-system-packages
+          sudo pip install aqtinstall --break-system-packages --ignore-installed
       - run: cmake --preset "Release x86_64-w64-mingw32-gcc"
       - run: cmake --build build --parallel --target Z21Sim
       - name: Find archive file
