@@ -1086,6 +1086,9 @@ private:
   void lanXLocoInfo(uint16_t loco_addr, Socket const& sock = {}) {
     auto const loco_info{this->locoInfo(loco_addr)};
 
+    auto const db0{static_cast<uint8_t>((loco_addr >= 128u ? 0xC0u : 0x00u) |
+                                        loco_addr >> 8u)};
+    auto const db1{static_cast<uint8_t>(loco_addr >> 0u)};
     auto const db2{
       static_cast<uint8_t>(loco_info.mode << 4u | loco_info.busy << 3u |
                            std::to_underlying(loco_info.speed_steps))};
@@ -1097,21 +1100,21 @@ private:
                            (loco_info.f31_0 & 0b0'0001u) << 4u)}; // F0
 
     std::array<uint8_t, 0x0Fuz> reply{
-      0x0Fu,                                           // Length
-      0x00u,                                           //
-      std::to_underlying(Header::LAN_X_LOCO_INFO),     // Header
-      0x00u,                                           //
-      std::to_underlying(XHeader::LAN_X_LOCO_INFO),    // X-Header
-      static_cast<uint8_t>((loco_addr >> 8u) & 0x3Fu), // DB0
-      static_cast<uint8_t>(loco_addr),                 // DB1
-      db2,                                             // DB2
-      db3,                                             // DB3
-      db4,                                             // DB4
-      static_cast<uint8_t>(loco_info.f31_0 >> 5u),     // DB5
-      static_cast<uint8_t>(loco_info.f31_0 >> 13u),    // DB6
-      static_cast<uint8_t>(loco_info.f31_0 >> 21u),    // DB7
-      static_cast<uint8_t>(loco_info.f31_0 >> 29u),    // DB8
-      0x00u};                                          // XOR
+      0x0Fu,                                        // Length
+      0x00u,                                        //
+      std::to_underlying(Header::LAN_X_LOCO_INFO),  // Header
+      0x00u,                                        //
+      std::to_underlying(XHeader::LAN_X_LOCO_INFO), // X-Header
+      db0,                                          // DB0
+      db1,                                          // DB1
+      db2,                                          // DB2
+      db3,                                          // DB3
+      db4,                                          // DB4
+      static_cast<uint8_t>(loco_info.f31_0 >> 5u),  // DB5
+      static_cast<uint8_t>(loco_info.f31_0 >> 13u), // DB6
+      static_cast<uint8_t>(loco_info.f31_0 >> 21u), // DB7
+      static_cast<uint8_t>(loco_info.f31_0 >> 29u), // DB8
+      0x00u};                                       // XOR
     reply.back() = exor({cbegin(reply) + 4, cend(reply) - 1});
 
     //

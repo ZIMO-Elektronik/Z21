@@ -155,7 +155,7 @@ z21::SystemState& Server::systemState() {
   sys_state.temperature = _system->temperature();
   sys_state.supply_voltage = _system->supplyVoltage();
   sys_state.vcc_voltage = _system->vccVoltage();
-  return ServerBase::systemState();
+  return sys_state;
 }
 
 // LAN_X_GET_LOCO_INFO
