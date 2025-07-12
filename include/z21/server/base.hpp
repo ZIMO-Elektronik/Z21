@@ -1493,7 +1493,8 @@ private:
                 case DB0::LAN_X_CV_READ:
                   logf('C', sock, "LAN_X_CV_READ", chunk);
                   if constexpr (std::derived_from<Base, intf::Programming>)
-                    lanXCvRead(sock, data2cv_address(data(chunk) + 2));
+                    lanXCvRead(sock,
+                               big_endian_data2cv_address(data(chunk) + 2));
                   break;
                 case DB0::LAN_X_DCC_WRITE_REGISTER:
                   logf('C', sock, "LAN_X_DCC_WRITE_REGISTER", chunk);
@@ -1508,8 +1509,9 @@ private:
                 case DB0::LAN_X_CV_WRITE:
                   logf('C', sock, "LAN_X_CV_WRITE", chunk);
                   if constexpr (std::derived_from<Base, intf::Programming>)
-                    lanXCvWrite(
-                      sock, data2cv_address(data(chunk) + 2), chunk[4uz]);
+                    lanXCvWrite(sock,
+                                big_endian_data2cv_address(data(chunk) + 2),
+                                chunk[4uz]);
                   break;
                 case DB0::LAN_X_MM_WRITE_BYTE:
                   logf('C', sock, "LAN_X_MM_WRITE_BYTE", chunk);
@@ -1522,32 +1524,35 @@ private:
             case XHeader::LAN_X_GET_TURNOUT_INFO:
               logf('C', sock, "LAN_X_GET_TURNOUT_INFO", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
-                lanXGetTurnoutInfo(sock,
-                                   data2accessory_address(data(chunk) + 1));
+                lanXGetTurnoutInfo(
+                  sock, big_endian_data2accessory_address(data(chunk) + 1));
               break;
 
             case XHeader::LAN_X_GET_EXT_ACCESSORY_INFO:
               logf('C', sock, "LAN_X_GET_EXT_ACCESSORY_INFO", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
                 lanXGetExtAccessoryInfo(
-                  sock, data2accessory_address(data(chunk) + 1));
+                  sock, big_endian_data2accessory_address(data(chunk) + 1));
               break;
 
             case XHeader::LAN_X_SET_TURNOUT:
               logf('C', sock, "LAN_X_SET_TURNOUT", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
-                lanXSetTurnout(sock,
-                               data2accessory_address(data(chunk) + 1),
-                               chunk[3uz] & 0b0000'0001u,  // P
-                               chunk[3uz] & 0b0000'1000u,  // A
-                               chunk[3uz] & 0b0010'0000u); // Q
+                lanXSetTurnout(
+                  sock,
+                  big_endian_data2accessory_address(data(chunk) + 1),
+                  chunk[3uz] & 0b0000'0001u,  // P
+                  chunk[3uz] & 0b0000'1000u,  // A
+                  chunk[3uz] & 0b0010'0000u); // Q
               break;
 
             case XHeader::LAN_X_SET_EXT_ACCESSORY:
               logf('C', sock, "LAN_X_SET_EXT_ACCESSORY", chunk);
               if constexpr (std::derived_from<Base, intf::Switching>)
                 lanXSetExtAccessory(
-                  sock, data2accessory_address(data(chunk) + 1), chunk[3uz]);
+                  sock,
+                  big_endian_data2accessory_address(data(chunk) + 1),
+                  chunk[3uz]);
               break;
 
             case XHeader::LAN_X_SET_STOP:
@@ -1558,7 +1563,8 @@ private:
             case XHeader::LAN_X_SET_LOCO_E_STOP:
               logf('C', sock, "LAN_X_SET_LOCO_E_STOP", chunk);
               if constexpr (std::derived_from<Base, intf::Driving>)
-                lanXSetLocoEStop(sock, data2loco_address(data(chunk) + 2));
+                lanXSetLocoEStop(sock,
+                                 big_endian_data2loco_address(data(chunk) + 2));
               break;
 
             case XHeader::LAN_X_E3:
@@ -1566,13 +1572,15 @@ private:
                 case DB0::LAN_X_PURGE_LOCO:
                   logf('C', sock, "LAN_X_PURGE_LOCO", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXPurgeLoco(sock, data2loco_address(data(chunk) + 2));
+                    lanXPurgeLoco(
+                      sock, big_endian_data2loco_address(data(chunk) + 2));
                   break;
                 case DB0::LAN_X_GET_LOCO_INFO:
                   assert(size(chunk) >= 4uz);
                   logf('C', sock, "LAN_X_GET_LOCO_INFO", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXGetLocoInfo(sock, data2loco_address(data(chunk) + 2));
+                    lanXGetLocoInfo(
+                      sock, big_endian_data2loco_address(data(chunk) + 2));
                   break;
               }
               break;
@@ -1582,35 +1590,39 @@ private:
                 case DB0::LAN_X_SET_LOCO_DRIVE_14:
                   logf('C', sock, "LAN_X_SET_LOCO_DRIVE", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXSetLocoDrive(sock,
-                                     data2loco_address(data(chunk) + 2),
-                                     LocoInfo::DCC14,
-                                     chunk[4uz]);
+                    lanXSetLocoDrive(
+                      sock,
+                      big_endian_data2loco_address(data(chunk) + 2),
+                      LocoInfo::DCC14,
+                      chunk[4uz]);
                   break;
                 case DB0::LAN_X_SET_LOCO_DRIVE_28:
                   logf('C', sock, "LAN_X_SET_LOCO_DRIVE", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXSetLocoDrive(sock,
-                                     data2loco_address(data(chunk) + 2),
-                                     LocoInfo::DCC28,
-                                     chunk[4uz]);
+                    lanXSetLocoDrive(
+                      sock,
+                      big_endian_data2loco_address(data(chunk) + 2),
+                      LocoInfo::DCC28,
+                      chunk[4uz]);
                   break;
                 case DB0::LAN_X_SET_LOCO_DRIVE_128:
                   logf('C', sock, "LAN_X_SET_LOCO_DRIVE", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXSetLocoDrive(sock,
-                                     data2loco_address(data(chunk) + 2),
-                                     LocoInfo::DCC128,
-                                     chunk[4uz]);
+                    lanXSetLocoDrive(
+                      sock,
+                      big_endian_data2loco_address(data(chunk) + 2),
+                      LocoInfo::DCC128,
+                      chunk[4uz]);
                   break;
 
                 case DB0::LAN_X_SET_LOCO_FUNCTION:
                   logf('C', sock, "LAN_X_SET_LOCO_FUNCTION", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXSetLocoFunction(sock,
-                                        data2loco_address(data(chunk) + 2),
-                                        chunk[4uz] >> 6uz,
-                                        chunk[4uz] & 0x3Fu);
+                    lanXSetLocoFunction(
+                      sock,
+                      big_endian_data2loco_address(data(chunk) + 2),
+                      chunk[4uz] >> 6uz,
+                      chunk[4uz] & 0x3Fu);
                   break;
 
                 case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_1: [[fallthrough]];
@@ -1625,10 +1637,11 @@ private:
                 case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_10:
                   logf('C', sock, "LAN_X_SET_LOCO_FUNCTION_GROUP", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXSetLocoFunctionGroup(sock,
-                                             data2loco_address(data(chunk) + 2),
-                                             chunk[1uz],
-                                             chunk[4uz]);
+                    lanXSetLocoFunctionGroup(
+                      sock,
+                      big_endian_data2loco_address(data(chunk) + 2),
+                      chunk[1uz],
+                      chunk[4uz]);
                   break;
 
                 case DB0::LAN_X_SET_LOCO_BINARY_STATE:
@@ -1646,10 +1659,11 @@ private:
                     case 0xECu:
                       logf('C', sock, "LAN_X_CV_POM_WRITE_BYTE", chunk);
                       if constexpr (std::derived_from<Base, intf::Programming>)
-                        lanXCvPomWriteByte(sock,
-                                           data2loco_address(data(chunk) + 2),
-                                           data2cv_address(data(chunk) + 4),
-                                           chunk[6uz]);
+                        lanXCvPomWriteByte(
+                          sock,
+                          big_endian_data2loco_address(data(chunk) + 2),
+                          big_endian_data2cv_address(data(chunk) + 4),
+                          chunk[6uz]);
                       break;
                     case 0xE8u:
                       logf('C', sock, "LAN_X_CV_POM_WRITE_BIT", chunk);
@@ -1659,9 +1673,10 @@ private:
                     case 0xE4u:
                       logf('C', sock, "LAN_X_CV_POM_READ_BYTE", chunk);
                       if constexpr (std::derived_from<Base, intf::Programming>)
-                        lanXCvPomReadByte(sock,
-                                          data2loco_address(data(chunk) + 2),
-                                          data2cv_address(data(chunk) + 4));
+                        lanXCvPomReadByte(
+                          sock,
+                          big_endian_data2loco_address(data(chunk) + 2),
+                          big_endian_data2cv_address(data(chunk) + 4));
                       break;
                   }
                   break;
@@ -1673,8 +1688,8 @@ private:
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvPomAccessoryWriteByte(
                           sock,
-                          data2accessory_address(data(chunk) + 2),
-                          data2cv_address(data(chunk) + 4),
+                          big_endian_data2accessory_address(data(chunk) + 2),
+                          big_endian_data2cv_address(data(chunk) + 4),
                           chunk[6uz]);
                       break;
                     case 0xE8u:
@@ -1689,8 +1704,8 @@ private:
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvPomAccessoryReadByte(
                           sock,
-                          data2accessory_address(data(chunk) + 2),
-                          data2cv_address(data(chunk) + 4));
+                          big_endian_data2accessory_address(data(chunk) + 2),
+                          big_endian_data2cv_address(data(chunk) + 4));
                       break;
                   }
               }
@@ -1722,28 +1737,29 @@ private:
         case Header::LAN_GET_LOCOMODE:
           logf('C', sock, "LAN_GET_LOCOMODE", chunk);
           if constexpr (std::derived_from<Base, intf::Driving>)
-            lanGetLocoMode(sock, data2loco_address(data(chunk)));
+            lanGetLocoMode(sock, big_endian_data2loco_address(data(chunk)));
           break;
 
         case Header::LAN_SET_LOCOMODE:
           logf('C', sock, "LAN_SET_LOCOMODE", chunk);
           if constexpr (std::derived_from<Base, intf::Driving>)
             lanSetLocoMode(sock,
-                           data2loco_address(data(chunk)),
+                           big_endian_data2loco_address(data(chunk)),
                            static_cast<LocoInfo::Mode>(chunk[2uz]));
           break;
 
         case Header::LAN_GET_TURNOUTMODE:
           logf('C', sock, "LAN_GET_TURNOUTMODE", chunk);
           if constexpr (std::derived_from<Base, intf::Switching>)
-            lanGetTurnoutMode(sock, data2accessory_address(data(chunk)));
+            lanGetTurnoutMode(sock,
+                              big_endian_data2accessory_address(data(chunk)));
           break;
 
         case Header::LAN_SET_TURNOUTMODE:
           logf('C', sock, "LAN_SET_TURNOUTMODE", chunk);
           if constexpr (std::derived_from<Base, intf::Switching>)
             lanSetTurnoutMode(sock,
-                              data2accessory_address(data(chunk)),
+                              big_endian_data2accessory_address(data(chunk)),
                               static_cast<TurnoutInfo::Mode>(chunk[2uz]));
           break;
 
@@ -1767,8 +1783,9 @@ private:
         case Header::LAN_RAILCOM_GETDATA:
           logf('C', sock, "LAN_RAILCOM_GETDATA", chunk);
           if constexpr (std::derived_from<Base, intf::RailCom>)
-            lanRailComGetData(
-              sock, chunk[0uz], data2loco_address(data(chunk) + 1));
+            lanRailComGetData(sock,
+                              chunk[0uz],
+                              little_endian_data2loco_address(data(chunk) + 1));
           break;
 
         case Header::LAN_LOCONET_FROM_LAN:

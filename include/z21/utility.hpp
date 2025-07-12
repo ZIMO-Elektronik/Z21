@@ -14,7 +14,7 @@
 
 namespace z21 {
 
-/// Data to uint16_t (big endian)
+/// Big endian data to uint16_t
 ///
 /// \param  data  Pointer to data
 /// \return uint16_t from data
@@ -22,7 +22,39 @@ constexpr auto big_endian_data2uint16(uint8_t const* data) {
   return static_cast<uint16_t>(data[0uz] << 8u | data[1uz] << 0u);
 }
 
-/// Data to uint32_t (big endian)
+/// Big endian data to accessory address
+///
+/// \param  data  Pointer to data
+/// \return Accessory address
+constexpr auto big_endian_data2accessory_address(uint8_t const* data) {
+  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x07FFu);
+}
+
+/// Big endian data to loco address
+///
+/// \param  data  Pointer to data
+/// \return Loco address
+constexpr auto big_endian_data2loco_address(uint8_t const* data) {
+  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x3FFFu);
+}
+
+/// Big endian data to CV address
+///
+/// \param  data  Pointer to data
+/// \return CV address
+constexpr auto big_endian_data2cv_address(uint8_t const* data) {
+  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x03FFu);
+}
+
+/// Little endian data to uint16_t
+///
+/// \param  data  Pointer to data
+/// \return uint16_t from data
+constexpr auto little_endian_data2uint16(uint8_t const* data) {
+  return static_cast<uint16_t>(data[1uz] << 8u | data[0uz] << 0u);
+}
+
+/// Little endian data to uint32_t
 ///
 /// \param  data  Pointer to data
 /// \return uint32_t from data
@@ -31,28 +63,12 @@ constexpr auto little_endian_data2uint32(uint8_t const* data) {
                                data[1uz] << 8u | data[0uz] << 0u);
 }
 
-/// Data to accessory address
-///
-/// \param  data  Pointer to data
-/// \return Accessory address
-constexpr auto data2accessory_address(uint8_t const* data) {
-  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x07FFu);
-}
-
-/// Data to loco address
+/// Little endian data to loco address
 ///
 /// \param  data  Pointer to data
 /// \return Loco address
-constexpr auto data2loco_address(uint8_t const* data) {
-  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x3FFFu);
-}
-
-/// Data to CV address
-///
-/// \param  data  Pointer to data
-/// \return CV address
-constexpr auto data2cv_address(uint8_t const* data) {
-  return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x03FFu);
+constexpr auto little_endian_data2loco_address(uint8_t const* data) {
+  return static_cast<uint16_t>(little_endian_data2uint16(data) & 0x3FFFu);
 }
 
 } // namespace z21
