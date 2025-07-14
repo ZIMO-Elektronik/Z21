@@ -15,6 +15,7 @@ public:
 
   bool programmingShortCircuitFailure() const;
   bool programmingFailure() const;
+  uint8_t qosFailureRate() const;
   int decoderOnProgrammingTrack() const;
   int16_t mainCurrent() const;
   int16_t progCurrent() const;

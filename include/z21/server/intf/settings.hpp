@@ -33,10 +33,10 @@ struct Settings {
   // Required
 
   [[nodiscard]] virtual CommonSettings commonSettings() = 0;
-  virtual void commonSettings(CommonSettings const&) = 0;
+  virtual void commonSettings(CommonSettings const& common_settings) = 0;
 
   [[nodiscard]] virtual MmDccSettings mmDccSettings() = 0;
-  virtual void mmDccSettings(MmDccSettings const&) = 0;
+  virtual void mmDccSettings(MmDccSettings const& mm_dcc_settings) = 0;
 };
 
 } // namespace z21::server::intf

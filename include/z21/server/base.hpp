@@ -537,6 +537,7 @@ private:
   void lanRailComGetData(Socket const& sock, uint8_t type, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::RailCom>)
   {
+    /// \bug https://github.com/ZIMO-Elektronik/Z21/issues/13
     assert(type == 0x01u);
     lanRailComDataChanged(loco_addr, sock);
   }

@@ -282,15 +282,19 @@ void Server::cvPomAccessoryWrite(uint16_t accy_addr,
 // LAN_RAILCOM_GETDATA
 z21::RailComData Server::railComData(uint16_t loco_addr) {
   auto const loco_info{_loco_list->locoInfo(loco_addr)};
+  auto const speed{static_cast<uint8_t>(std::max(
+    z21::decode_rvvvvvvv(loco_info.speed_steps, loco_info.rvvvvvvv), 0))};
+  auto const kmh{speed * 2};
   return {
     .loco_address = loco_addr,
     .receive_counter = 0u,
     .error_counter = 0u,
     .options = static_cast<z21::RailComData::Options>(
-      z21::RailComData::Options::Speed1 | z21::RailComData::Options::QoS),
-    .speed = static_cast<uint8_t>(std::min(
-      z21::decode_rvvvvvvv(loco_info.speed_steps, loco_info.rvvvvvvv), 0)),
-    .qos = 0u,
+      (kmh >= 256 ? z21::RailComData::Options::Speed2
+                  : z21::RailComData::Options::Speed1) |
+      z21::RailComData::Options::QoS),
+    .speed = kmh,
+    .qos = _system->qosFailureRate(),
   };
 }
 

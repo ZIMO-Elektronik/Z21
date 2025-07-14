@@ -1,6 +1,6 @@
 # Changelog
 
-##
+## 0.3.2
 - Bugfix `LAN_X_LOCO_INFO` DB0 (most significant bits of loco address) ([#11](https://github.com/ZIMO-Elektronik/Z21/issues/11))
 - Bugfix `LAN_RAILCOM_GETDATA` used little endian loco address ([#12](https://github.com/ZIMO-Elektronik/Z21/issues/12))
 

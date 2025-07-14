@@ -114,6 +114,7 @@ System::~System() {
     auto& sliders{get<2uz>(_failure_rates_widgets)};
     config.setValue("system_prog_short_failure_rate", sliders[0uz]->value());
     config.setValue("system_prog_failure_rate", sliders[1uz]->value());
+    config.setValue("system_qos_failure_rate", sliders[2uz]->value());
   }
 
   {
@@ -146,6 +147,12 @@ bool System::programmingFailure() const {
   return slider->value() &&
          random_failure() <=
            (static_cast<double>(slider->value()) / slider->maximum());
+}
+
+//
+uint8_t System::qosFailureRate() const {
+  auto const& slider{get<2uz>(_failure_rates_widgets)[2uz]};
+  return static_cast<uint8_t>(slider->value());
 }
 
 //
@@ -205,6 +212,14 @@ void System::initFailureRatesWidgets() {
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
+  labels.push_back(new QLabel{"Quality of service [%]"});
+  sliders.push_back(new QSlider{Qt::Horizontal});
+  sliders.back()->setMinimum(0);
+  sliders.back()->setMaximum(100);
+  sliders.back()->setStatusTip("Failure rate for quality of service");
+  values.push_back(new QLabel{QString::number(sliders.back()->value())});
+
+  //
   for (auto i{0uz}; i < std::size(labels); ++i)
     //
     connect(sliders[i], &QSlider::valueChanged, [=, this](int value) {
@@ -219,6 +234,9 @@ void System::initFailureRatesWidgets() {
   if (auto const value{config.value("system_prog_failure_rate")};
       value.isValid())
     sliders[1uz]->setValue(value.toInt());
+  if (auto const value{config.value("system_qos_failure_rate")};
+      value.isValid())
+    sliders[2uz]->setValue(value.toInt());
 }
 
 //
