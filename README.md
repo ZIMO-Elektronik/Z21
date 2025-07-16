@@ -4,7 +4,7 @@
 
 <img src="https://github.com/ZIMO-Elektronik/Z21/raw/master/data/images/logo.png" width="15%" align="right">
 
-The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command station with support for LocoNet, R-Bus and XpressNet devices. It has an open LAN interface with a well-documented protocol that has been continuously developed since then. This C++ library of the same name contains platform-independent code for the server-side (i.e. the part that runs on a command station) implementation of the protocol.
+The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command station with support for LocoNet, R-Bus and XpressNet devices. It has an open LAN interface with a well-documented protocol that has been continuously developed since then. This C++ library of the same name contains **platform-independent** code for the server-side (i.e. the part that runs on a command station) implementation of the protocol.
 
 <details>
   <summary>Table of Contents</summary>
@@ -21,6 +21,10 @@ The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command s
       <ul>
         <li><a href="#server">Server</a></li>
         <li><a href="#interfaces">Interfaces</a></li>
+        <li><a href="#commands">Commands</a></li>
+        <ul>
+          <li><a href="#broadcasts">Broadcasts</a></li>
+        </ul>
       </ul>
   </ol>
 </details>
@@ -63,13 +67,13 @@ This library is meant to be consumed with CMake,
 
 ```cmake
 # Either by including it with CPM
-cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.3.1")
+cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.3.2")
 
 # or the FetchContent module
 FetchContent_Declare(
   DCC
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/Z21"
-  GIT_TAG v0.3.1)
+  GIT_TAG v0.3.2)
 
 target_link_libraries(YourTarget PRIVATE Z21::Z21)
 ```
@@ -78,7 +82,7 @@ or, on [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32), with
 ```yaml
 dependencies:
   zimo-elektronik/z21:
-    version: "0.3.1"
+    version: "0.3.2"
 ```
 
 ### Build
@@ -98,7 +102,7 @@ The simulator allows you to try out the library directly in a simple GUI. The ap
 On [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32) examples from the [examples](https://github.com/ZIMO-Elektronik/DCC/raw/master/examples) subfolder can be built directly using the [IDF Frontend](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-py.html).
 
 ```sh
-idf.py create-project-from-example "zimo-elektronik/z21^0.3.1:esp32"
+idf.py create-project-from-example "zimo-elektronik/z21^0.3.2:esp32"
 ```
 
 ## Usage
@@ -161,7 +165,6 @@ void Server::transmit(z21::Socket const& sock,
 ```
 
 ### Interfaces
-
 | Interface                        | Responsibility                                                         |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | [Can](#can)                      | Send and receive messages from CAN occupancy detectors                 |
@@ -206,7 +209,71 @@ void Server::transmit(z21::Socket const& sock,
 :construction:
 
 #### System
-:construction:
+The system interface covers the following commands.
+| Command                    | Reply                               | Broadcast                   |
+| -------------------------- | ----------------------------------- | --------------------------- |
+| LAN_GET_SERIAL_NUMBER      | Reply_to_LAN_GET_SERIAL_NUMBER      | -                           |
+| LAN_GET_CODE               | Reply_to_LAN_GET_CODE               | -                           |
+| LAN_GET_HWINFO             | Reply_to_LAN_GET_HWINFO             | -                           |
+| LAN_LOGOFF                 | -                                   | -                           |
+| LAN_X_GET_VERSION          | Reply_to_LAN_X_GET_VERSION          | -                           |
+| LAN_X_GET_STATUS           | LAN_X_STATUS_CHANGED                | -                           |
+| LAN_X_SET_TRACK_POWER_OFF  | LAN_X_BC_TRACK_POWER_OFF            | LAN_X_BC_TRACK_POWER_OFF    |
+| LAN_X_SET_TRACK_POWER_ON   | LAN_X_BC_TRACK_POWER_ON             | LAN_X_BC_TRACK_POWER_ON     |
+| LAN_X_GET_TURNOUT_INFO     | LAN_X_TURNOUT_INFO                  | LAN_X_TURNOUT_INFO          |
+| LAN_X_SET_STOP             | LAN_X_BC_STOPPED                    | LAN_X_BC_STOPPED            |
+| LAN_X_GET_FIRMWARE_VERSION | Reply_to_LAN_X_GET_FIRMWARE_VERSION | -                           |
+| LAN_SET_BROADCASTFLAGS     | -                                   | -                           |
+| LAN_GET_BROADCASTFLAGS     | Reply_to_LAN_GET_BROADCASTFLAGS     | -                           |
+| LAN_SYSTEMSTATE_GETDATA    | LAN_SYSTEMSTATE_DATACHANGED         | LAN_SYSTEMSTATE_DATACHANGED |
+
+As well as the subsequent broadcasts.
+| Broadcast                    |
+| ---------------------------- |
+| LAN_X_BC_TRACK_POWER_OFF     |
+| LAN_X_BC_TRACK_POWER_ON      |
+| LAN_X_BC_PROGRAMMING_MODE    |
+| LAN_X_BC_TRACK_SHORT_CIRCUIT |
+| LAN_X_BC_STOPPED             |
+| LAN_SYSTEMSTATE_DATACHANGED  |
+
+As mentioned before, the system interface **must** be inherited and implemented. As a minimum requirement, this concerns the method for switching the track voltage on and off, as well as that for the global collective stop.
+```cpp
+[[nodiscard]] virtual bool trackPower(bool on) = 0;
+[[nodiscard]] virtual bool stop() = 0;
+```
+
+Optionally, the getter for the serial number can be overridden, where the default implementation returns `0`, as well as the callback for logout events, where the default is a noop.
+```cpp
+[[nodiscard]] virtual int32_t serialNumber() const { return 0; }
+virtual void logoff(Socket const& sock) {}
+```
+
+The getter for the [system state](https://github.com/ZIMO-Elektronik/Z21/tree/master/include/z21/system_state.hpp) occupies a special position. It provides a mutable reference through which the system state can be directly manipulated. This allows for a combination of implicit and explicit state changes at the user's discretion. If this function is not overridden, the library defaults are used, and commands like `LAN_X_SET_TRACK_POWER_ON` simply set or clear the corresponding flags. However, if this function is overridden, users can change these flags or other values, such as track voltage, as desired.
+```cpp
+[[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
+```
+
+> [!TIP]
+> A typical override could look something like this, where the current and voltage values of the system state are updated by ADC measurements.
+> ```cpp
+> z21::SystemState& Server::systemState() {
+>   auto& sys_state{ServerBase::systemState()};
+>   sys_state.main_current = adc_read_current();
+>   sys_state.supply_voltage = adc_read_voltage();
+>   return sys_state;
+> }
+> ```
+
+Also optional is a series of broadcasts, which are [pure virtual](https://en.cppreference.com/w/cpp/language/abstract_class.html) but are already implemented in the base class.
+```cpp
+virtual void broadcastTrackPowerOff() = 0;
+virtual void broadcastTrackPowerOn() = 0;
+virtual void broadcastProgrammingMode() = 0;
+virtual void broadcastTrackShortCircuit() = 0;
+virtual void broadcastStopped() = 0;
+virtual void broadcastSystemStateData() = 0;
+```
 
 #### ZLink
 :construction:
@@ -214,84 +281,88 @@ void Server::transmit(z21::Socket const& sock,
 #### Logging
 :construction:
 
-## All Commands
-| Command                      | Reply                               | Broadcast                    |
-| ---------------------------- | ----------------------------------- | ---------------------------- |
-| lanGetSerialNumber           | replyToLanGetSerialNumber           |                              |
-| lanGetCommonSettings         | replyToLanGetCommonSettings         |                              |
-| lanSetCommonSettings         |                                     |                              |
-| lanGetMmDccSettings          | lanGetMmDccSettings                 |                              |
-| lanSetMmDccSettings          |                                     |                              |
-| lanGetCode                   | replyToLanGetCode                   |                              |
-| lanGetHwInfo                 | replyToLanGetHwInfo                 |                              |
-| lanLogoff                    | -                                   |                              |
-| lanXGetVersion               | replyToLanXGetVersion               |                              |
-| lanXGetStatus                | lanXStatusChanged                   |                              |
-| lanXSetTrackPowerOff         | lanXBcTrackPowerOff                 | lanXBcTrackPowerOff          |
-| lanXSetTrackPowerOn          | lanXBcTrackPowerOn                  | lanXBcTrackPowerOn           |
-| lanXDccReadRegister          | lanXCv[NackSc\|Nack\|Result] (n.a.) | lanXBcProgrammingMode (n.a.) |
-| lanXCvRead                   | lanXCv[NackSc\|Nack\|Result]        | lanXBcProgrammingMode        |
-| lanXDccWriteRegister         | lanXCv[NackSc\|Nack\|Result] (n.a.) | lanXBcProgrammingMode (n.a.) |
-| lanXCvWrite                  | lanXCv[NackSc\|Nack\|Result]        | lanXBcProgrammingMode        |
-| lanXMmWriteByte (n.a.)       | lanXCv[NackSc\|Nack\|Result] (n.a.) | lanXBcProgrammingMode (n.a.) |
-| lanXGetTurnoutInfo           |                                     | lanXTurnoutInfo              |
-| lanXGetExtAccessoryInfo      |                                     | lanXExtAccessoryInfo         |
-| lanXSetTurnout               |                                     | lanXTurnoutInfo              |
-| lanXSetExtAccessory          |                                     | lanXExtAccessoryInfo         |
-| lanXSetStop                  | lanXBcStopped                       |                              |
-| lanXSetLocoEStop             |                                     | lanXLocoInfo                 |
-| lanXPurgeLoco                | -                                   |                              |
-| lanXGetLocoInfo              | lanXLocoInfo                        |                              |
-| lanXSetLocoDrive             | -                                   | lanXLocoInfo                 |
-| lanXSetLocoFunction          | -                                   | lanXLocoInfo                 |
-| lanXSetLocoFunctionGroup     | -                                   | lanXLocoInfo                 |
-| lanXSetLocoBinaryState       | -                                   |                              |
-| lanXCvPom                    | lanXCv[NackSc\|Nack\|Result]        |                              |
-| lanXCvPomAccessory           | lanXCv[NackSc\|Nack\|Result]        |                              |
-| lanXGetFirmwareVersion       | replyToLanXGetFirmwareVersion       |                              |
-| lanSetBroadcastFlags         | -                                   |                              |
-| lanGetBroadcastFlags         | replyToLanGetBroadcastFlags         |                              |
-| lanGetLocoMode               | replyToLanGetLocoMode               |                              |
-| lanSetLocoMode               | -                                   |                              |
-| lanGetTurnoutMode            | replyToLanGetTurnoutMode            |                              |
-| lanSetTurnoutMode            | -                                   |                              |
-| lanRmBusGetData              |                                     |                              |
-| lanRmBusProgramModule        |                                     |                              |
-| lanSystemStateGetData        | lanSystemStateDataChanged           |                              |
-| lanRailComGetData            | lanRailComDataChanged               |                              |
-| lanLocoNetFromLan            |                                     |                              |
-| lanLocoNetDispatchAddr       |                                     |                              |
-| lanLocoNetDetector           |                                     |                              |
-| lanCanDetector               |                                     |                              |
-| lanCanDeviceGetDescription   |                                     |                              |
-| lanCanDeviceSetDescription   |                                     |                              |
-| lanCanBoosterSetTrackPower   |                                     |                              |
-| lanFastClockControl          |                                     |                              |
-| lanFastClockSettingsGet      |                                     |                              |
-| lanFastClockSettingsSet      |                                     |                              |
-| lanBoosterSetPower           |                                     |                              |
-| lanBoosterGetDescription     |                                     |                              |
-| lanBoosterSetDescription     |                                     |                              |
-| lanBoosterSystemStateGetData |                                     |                              |
-| lanDecoderGetDescription     |                                     |                              |
-| lanDecoderSetDescription     |                                     |                              |
-| lanDecoderSystemStateGetData |                                     |                              |
-| lanZLinkGetHwInfo            |                                     |                              |
+## Commands
+| Command                           | Reply                                                | Broadcast                   |
+| --------------------------------- | ---------------------------------------------------- | --------------------------- |
+| LAN_GET_SERIAL_NUMBER             | Reply_to_LAN_GET_SERIAL_NUMBER                       | -                           |
+| LAN_GET_COMMON_SETTINGS           | Reply_to_LAN_GET_COMMON_SETTINGS                     | -                           |
+| LAN_SET_COMMON_SETTINGS           | -                                                    | -                           |
+| LAN_GET_MMDCC_SETTINGS            | Reply_to_LAN_GET_MMDCC_SETTINGS                      | -                           |
+| LAN_SET_MMDCC_SETTINGS            | -                                                    | -                           |
+| LAN_GET_CODE                      | Reply_to_LAN_GET_CODE                                | -                           |
+| LAN_GET_HWINFO                    | Reply_to_LAN_GET_HWINFO                              | -                           |
+| LAN_LOGOFF                        | -                                                    | -                           |
+| LAN_X_GET_VERSION                 | Reply_to_LAN_X_GET_VERSION                           | -                           |
+| LAN_X_GET_STATUS                  | LAN_X_STATUS_CHANGED                                 | -                           |
+| LAN_X_SET_TRACK_POWER_OFF         | LAN_X_BC_TRACK_POWER_OFF                             | LAN_X_BC_TRACK_POWER_OFF    |
+| LAN_X_SET_TRACK_POWER_ON          | LAN_X_BC_TRACK_POWER_ON                              | LAN_X_BC_TRACK_POWER_ON     |
+| LAN_X_DCC_READ_REGISTER (n.a.)    | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | LAN_X_BC_PROGRAMMING_MODE   |
+| LAN_X_CV_READ                     | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | LAN_X_BC_PROGRAMMING_MODE   |
+| LAN_X_DCC_WRITE_REGISTER (n.a.)   | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | LAN_X_BC_PROGRAMMING_MODE   |
+| LAN_X_CV_WRITE                    | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | LAN_X_BC_PROGRAMMING_MODE   |
+| LAN_X_MM_WRITE_BYTE (n.a.)        | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | LAN_X_BC_PROGRAMMING_MODE   |
+| LAN_X_GET_TURNOUT_INFO            | LAN_X_TURNOUT_INFO                                   | LAN_X_TURNOUT_INFO          |
+| LAN_X_GET_EXT_ACCESSORY_INFO      | LAN_X_EXT_ACCESSORY_INFO                             | LAN_X_EXT_ACCESSORY_INFO    |
+| LAN_X_SET_TURNOUT                 | -                                                    | LAN_X_TURNOUT_INFO          |
+| LAN_X_SET_EXT_ACCESSORY           | -                                                    | LAN_X_EXT_ACCESSORY_INFO    |
+| LAN_X_SET_STOP                    | LAN_X_BC_STOPPED                                     | LAN_X_BC_STOPPED            |
+| LAN_X_SET_LOCO_E_STOP             | -                                                    | LAN_X_LOCO_INFO             |
+| LAN_X_PURGE_LOCO                  | -                                                    |                             |
+| LAN_X_GET_LOCO_INFO               | LAN_X_LOCO_INFO                                      |                             |
+| LAN_X_SET_LOCO_DRIVE              | -                                                    | LAN_X_LOCO_INFO             |
+| LAN_X_SET_LOCO_FUNCTION           | -                                                    | LAN_X_LOCO_INFO             |
+| LAN_X_SET_LOCO_FUNCTION_GROUP     | -                                                    | LAN_X_LOCO_INFO             |
+| LAN_X_SET_LOCO_BINARY_STATE       | -                                                    |                             |
+| LAN_X_CV_POM_WRITE_BYTE           | -                                                    |                             |
+| LAN_X_CV_POM_WRITE_BIT            | -                                                    |                             |
+| LAN_X_CV_POM_READ_BYTE            | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT |                             |
+| LAN_X_CV_POM_ACCESSORY_WRITE_BYTE | -                                                    |                             |
+| LAN_X_CV_POM_ACCESSORY_WRITE_BIT  | -                                                    |                             |
+| LAN_X_CV_POM_ACCESSORY_READ_BYTE  | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT |                             |
+| LAN_X_GET_FIRMWARE_VERSION        | Reply_to_LAN_X_GET_FIRMWARE_VERSION                  |                             |
+| LAN_SET_BROADCASTFLAGS            | -                                                    |                             |
+| LAN_GET_BROADCASTFLAGS            | Reply_to_LAN_GET_BROADCASTFLAGS                      |                             |
+| LAN_GET_LOCOMODE                  | Reply_to_LAN_GET_LOCOMODE                            |                             |
+| LAN_SET_LOCOMODE                  | -                                                    |                             |
+| LAN_GET_TURNOUTMODE               | Reply_to_LAN_GET_TURNOUTMODE                         |                             |
+| LAN_SET_TURNOUTMODE               | -                                                    |                             |
+| LAN_RMBUS_GETDATA                 |                                                      |                             |
+| LAN_RMBUS_PROGRAMMODULE           |                                                      |                             |
+| LAN_SYSTEMSTATE_GETDATA           | LAN_SYSTEMSTATE_DATACHANGED                          | LAN_SYSTEMSTATE_DATACHANGED |
+| LAN_RAILCOM_GETDATA               | LAN_RAILCOM_DATACHANGED                              | LAN_RAILCOM_DATACHANGED     |
+| LAN_LOCONET_FROM_LAN              |                                                      |                             |
+| LAN_LOCONET_DISPATCH_ADDR         |                                                      |                             |
+| LAN_LOCONET_DETECTOR              |                                                      |                             |
+| LAN_CAN_DETECTOR                  |                                                      |                             |
+| LAN_CAN_DEVICE_GET_DESCRIPTION    |                                                      |                             |
+| LAN_CAN_DEVICE_SET_DESCRIPTION    |                                                      |                             |
+| LAN_CAN_BOOSTER_SET_TRACKPOWER    |                                                      |                             |
+| LAN_FAST_CLOCK_CONTROL            |                                                      |                             |
+| LAN_FAST_CLOCK_SETTINGS_GET       |                                                      |                             |
+| LAN_FAST_CLOCK_SETTINGS_SET       |                                                      |                             |
+| LAN_BOOSTER_SET_POWER             |                                                      |                             |
+| LAN_BOOSTER_GET_DESCRIPTION       |                                                      |                             |
+| LAN_BOOSTER_SET_DESCRIPTION       |                                                      |                             |
+| LAN_BOOSTER_SYSTEMSTATE_GETDATA   |                                                      |                             |
+| LAN_DECODER_GET_DESCRIPTION       |                                                      |                             |
+| LAN_DECODER_SET_DESCRIPTION       |                                                      |                             |
+| LAN_DECODER_SYSTEMSTATE_GETDATA   |                                                      |                             |
+| LAN_ZLINK_GET_HWINFO              |                                                      |                             |
 
 ## Broadcasts
-| Broadcast                           |
-| ----------------------------------- |
-| lanXTurnoutInfo                     |
-| lanXExtAccessoryInfo                |
-| lanXBcTrackPowerOff                 |
-| lanXBcTrackPowerOn                  |
-| lanXBcProgrammingMode               |
-| lanXBcTrackShortCircuit             |
-| lanXBcStopped                       |
-| lanXLocoInfo                        |
-| lanRmbusDataChanged                 |
-| lanSystemStateDataChanged           |
-| lanRailComDataChanged               |
-| lanCanBoosterSystemStateDataChanged |
-| lanBoosterSystemStateDataChanged    |
-| lanDecoderSystemStateDataChanged    |
+| Broadcast                               |
+| --------------------------------------- |
+| LAN_X_TURNOUT_INFO                      |
+| LAN_X_EXT_ACCESSORY_INFO                |
+| LAN_X_BC_TRACK_POWER_OFF                |
+| LAN_X_BC_TRACK_POWER_ON                 |
+| LAN_X_BC_PROGRAMMING_MODE               |
+| LAN_X_BC_TRACK_SHORT_CIRCUIT            |
+| LAN_X_BC_STOPPED                        |
+| LAN_X_LOCO_INFO                         |
+| LAN_RMBUS_DATACHANGED                   |
+| LAN_SYSTEMSTATE_DATACHANGED             |
+| LAN_RAILCOM_DATACHANGED                 |
+| LAN_CAN_BOOSTER_SYSTEMSTATE_DATACHANGED |
+| LAN_BOOSTER_SYSTEMSTATE_DATACHANGED     |
+| LAN_DECODER_SYSTEMSTATE_DATACHANGED     |

@@ -28,6 +28,7 @@ namespace z21::server::intf {
 /// - LAN_X_GET_STATUS
 /// - LAN_X_SET_TRACK_POWER_OFF
 /// - LAN_X_SET_TRACK_POWER_ON
+/// - LAN_X_SET_STOP
 /// - LAN_X_GET_FIRMWARE_VERSION
 /// - LAN_SET_BROADCASTFLAGS
 /// - LAN_GET_BROADCASTFLAGS
@@ -35,8 +36,8 @@ namespace z21::server::intf {
 ///
 /// Replies:
 /// - Reply_to_LAN_GET_SERIAL_NUMBER
-/// - Reply_to_LAN_GET_CODE = 0x18u,
-/// - Reply_to_LAN_GET_HWINFO = 0x1Au,
+/// - Reply_to_LAN_GET_CODE
+/// - Reply_to_LAN_GET_HWINFO
 /// - LAN_X_BC_TRACK_POWER_OFF
 /// - LAN_X_BC_TRACK_POWER_ON
 /// - LAN_X_BC_PROGRAMMING_MODE
@@ -73,7 +74,7 @@ struct System {
   [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
 
   /// \todo
-  virtual void logoff(Socket const&) {}
+  virtual void logoff(Socket const& sock) {}
 
   /// \todo
   [[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
