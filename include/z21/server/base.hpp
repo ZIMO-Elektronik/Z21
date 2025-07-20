@@ -289,16 +289,14 @@ private:
   }
 
   /// \todo document
-  void
-  lanXSetTurnout(Socket const& sock, uint16_t accy_addr, bool p, bool a, bool q)
+  void lanXSetTurnout(Socket const&, uint16_t accy_addr, bool p, bool a, bool q)
     requires(std::derived_from<Base, intf::Switching>)
   {
     this->turnout(accy_addr, p, a, q);
   }
 
   /// \todo document
-  void
-  lanXSetExtAccessory(Socket const& sock, uint16_t accy_addr, uint8_t dddddddd)
+  void lanXSetExtAccessory(Socket const&, uint16_t accy_addr, uint8_t dddddddd)
     requires(std::derived_from<Base, intf::Switching>)
   {
     this->accessory(accy_addr, dddddddd);
@@ -373,7 +371,8 @@ private:
         return this->locoFunction(
           loco_addr,
           1u << index,
-          !(static_cast<bool>(loco_info.f31_0 & (1u << index))) << index);
+          static_cast<uint32_t>(
+            !(static_cast<bool>(loco_info.f31_0 & (1u << index))) << index));
         break;
       }
     }
@@ -391,18 +390,23 @@ private:
         return this->locoFunction(
           loco_addr, 0b1'1111u, (state & 0b0'1111u) << 1u | state >> 4u);
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_2:
-        return this->locoFunction(loco_addr, 0b1111u << 5u, state << 5u);
+        return this->locoFunction(
+          loco_addr, 0b1111u << 5u, static_cast<uint32_t>(state << 5u));
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_3:
-        return this->locoFunction(loco_addr, 0b1111u << 9u, state << 9u);
+        return this->locoFunction(
+          loco_addr, 0b1111u << 9u, static_cast<uint32_t>(state << 9u));
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_4:
-        return this->locoFunction(loco_addr, 0b1111u << 13u, state << 13u);
+        return this->locoFunction(
+          loco_addr, 0b1111u << 13u, static_cast<uint32_t>(state << 13u));
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_5:
-        return this->locoFunction(loco_addr, 0b1111u << 21u, state << 21u);
+        return this->locoFunction(
+          loco_addr, 0b1111u << 21u, static_cast<uint32_t>(state << 21u));
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_6: break;
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_7: break;
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_8: break;
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_9: break;
       case DB0::LAN_X_SET_LOCO_FUNCTION_GROUP_10: break;
+      default: break;
     }
   }
 
@@ -1476,6 +1480,11 @@ private:
                   logf('C', sock, "LAN_X_SET_TRACK_POWER_ON", chunk);
                   lanXSetTrackPowerOn(sock);
                   break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
+                  break;
               }
               break;
 
@@ -1485,6 +1494,11 @@ private:
                   logf('C', sock, "LAN_X_DCC_READ_REGISTER", chunk);
                   if constexpr (std::derived_from<Base, intf::Programming>)
                     lanXDccReadRegister(sock);
+                  break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
                   break;
               }
               break;
@@ -1502,6 +1516,11 @@ private:
                   if constexpr (std::derived_from<Base, intf::Programming>)
                     lanXDccWriteRegister(sock);
                   break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
+                  break;
               }
               break;
 
@@ -1518,6 +1537,11 @@ private:
                   logf('C', sock, "LAN_X_MM_WRITE_BYTE", chunk);
                   if constexpr (std::derived_from<Base, intf::Programming>)
                     lanXMmWriteByte(sock);
+                  break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
                   break;
               }
               break;
@@ -1582,6 +1606,11 @@ private:
                   if constexpr (std::derived_from<Base, intf::Driving>)
                     lanXGetLocoInfo(
                       sock, big_endian_data2loco_address(data(chunk) + 2));
+                  break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
                   break;
               }
               break;
@@ -1650,6 +1679,12 @@ private:
                   if constexpr (std::derived_from<Base, intf::Driving>)
                     lanXSetLocoBinaryState(sock);
                   break;
+
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
+                  break;
               }
               break;
 
@@ -1709,6 +1744,12 @@ private:
                           big_endian_data2cv_address(data(chunk) + 4));
                       break;
                   }
+                  break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
+                  break;
               }
               break;
 
@@ -1718,7 +1759,17 @@ private:
                   logf('C', sock, "LAN_X_GET_FIRMWARE_VERSION", chunk);
                   lanXGetFirmwareVersion(sock);
                   break;
+                default:
+                  logf(
+                    'C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+                  lanXUnknownCommand(sock);
+                  break;
               }
+              break;
+
+            default:
+              logf('C', sock, "LAN_X_UNKNOWN_COMMAND", chunk, "%02X", header);
+              lanXUnknownCommand(sock);
               break;
           }
           break;

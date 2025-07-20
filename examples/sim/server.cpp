@@ -136,7 +136,7 @@ bool Server::stop() { return true; }
 // LAN_GET_SERIAL_NUMBER
 int32_t Server::serialNumber() const {
   auto const id{QSysInfo::machineUniqueId()};
-  return std::size(id) >= 4uz
+  return std::size(id) >= 4
            ? id[3uz] << 24u | id[2uz] << 16u | id[1uz] << 8u | id[0uz] << 0u
            : rand();
 }
@@ -218,7 +218,7 @@ void Server::turnoutMode(uint16_t accy_addr, z21::TurnoutInfo::Mode mode) {
 // LAN_X_CV_READ
 bool Server::cvRead(uint16_t cv_addr) {
   emit ledStatus(Led::ProgrammingMode);
-  QTimer::singleShot(200ms, [=] {
+  QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
     else if (_system->decoderOnProgrammingTrack() == 0)
@@ -231,7 +231,7 @@ bool Server::cvRead(uint16_t cv_addr) {
 // LAN_X_CV_WRITE
 bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
   emit ledStatus(Led::ProgrammingMode);
-  QTimer::singleShot(200ms, [=] {
+  QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
     else if (_system->decoderOnProgrammingTrack() == 0)
@@ -243,7 +243,7 @@ bool Server::cvWrite(uint16_t cv_addr, uint8_t byte) {
 
 // LAN_X_CV_POM_READ_BYTE
 void Server::cvPomRead(uint16_t loco_addr, uint16_t cv_addr) {
-  QTimer::singleShot(200ms, [=] {
+  QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
     else _loco_list->cvPomRead(loco_addr, cv_addr);
@@ -252,7 +252,7 @@ void Server::cvPomRead(uint16_t loco_addr, uint16_t cv_addr) {
 
 // LAN_X_CV_POM_WRITE_BYTE
 void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
-  QTimer::singleShot(200ms, [=] {
+  QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
     else _loco_list->cvPomWrite(loco_addr, cv_addr, byte);
@@ -261,7 +261,7 @@ void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
 
 // ACCESSORY_READ_BYTE
 void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
-  QTimer::singleShot(200ms, [=] {
+  QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
     else _turnout_list->cvPomAccessoryRead(accy_addr, cv_addr);
@@ -272,7 +272,7 @@ void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
 void Server::cvPomAccessoryWrite(uint16_t accy_addr,
                                  uint16_t cv_addr,
                                  uint8_t byte) {
-  QTimer::singleShot(200ms, [=] {
+  QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
     else _turnout_list->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
@@ -293,7 +293,7 @@ z21::RailComData Server::railComData(uint16_t loco_addr) {
       (kmh >= 256 ? z21::RailComData::Options::Speed2
                   : z21::RailComData::Options::Speed1) |
       z21::RailComData::Options::QoS),
-    .speed = kmh,
+    .speed = static_cast<uint8_t>(kmh >= 256 ? kmh - 256 : kmh),
     .qos = _system->qosFailureRate(),
   };
 }

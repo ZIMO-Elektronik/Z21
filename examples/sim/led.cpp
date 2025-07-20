@@ -18,7 +18,7 @@ void Led::setStatus(Status status) {
 }
 
 // Try to replicate original Z21 LED status indicator as close as possible
-void Led::paintEvent(QPaintEvent* event) {
+void Led::paintEvent(QPaintEvent*) {
   QPainter p{this};
   p.setRenderHint(QPainter::Antialiasing);
   QPainterPath path;
