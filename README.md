@@ -67,13 +67,13 @@ This library is meant to be consumed with CMake,
 
 ```cmake
 # Either by including it with CPM
-cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.3.2")
+cpmaddpackage("gh:ZIMO-Elektronik/Z21@0.3.3")
 
 # or the FetchContent module
 FetchContent_Declare(
   DCC
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/Z21"
-  GIT_TAG v0.3.2)
+  GIT_TAG v0.3.3)
 
 target_link_libraries(YourTarget PRIVATE Z21::Z21)
 ```
@@ -82,7 +82,7 @@ or, on [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32), with
 ```yaml
 dependencies:
   zimo-elektronik/z21:
-    version: "0.3.2"
+    version: "0.3.3"
 ```
 
 ### Build
@@ -102,7 +102,7 @@ The simulator allows you to try out the library directly in a simple GUI. The ap
 On [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32) examples from the [examples](https://github.com/ZIMO-Elektronik/DCC/raw/master/examples) subfolder can be built directly using the [IDF Frontend](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-py.html).
 
 ```sh
-idf.py create-project-from-example "zimo-elektronik/z21^0.3.2:esp32"
+idf.py create-project-from-example "zimo-elektronik/z21^0.3.3:esp32"
 ```
 
 ## Usage
@@ -246,7 +246,7 @@ As mentioned before, the system interface **must** be inherited and implemented.
 Optionally, the getter for the serial number can be overridden, where the default implementation returns `0`, as well as the callback for logout events, where the default is a noop.
 ```cpp
 [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
-virtual void logoff(Socket const& sock) {}
+virtual void logoff(Socket const&) {}
 ```
 
 The getter for the [system state](https://github.com/ZIMO-Elektronik/Z21/tree/master/include/z21/system_state.hpp) occupies a special position. It provides a mutable reference through which the system state can be directly manipulated. This allows for a combination of implicit and explicit state changes at the user's discretion. If this function is not overridden, the library defaults are used, and commands like `LAN_X_SET_TRACK_POWER_ON` simply set or clear the corresponding flags. However, if this function is overridden, users can change these flags or other values, such as track voltage, as desired.

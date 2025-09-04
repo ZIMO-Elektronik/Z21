@@ -47,11 +47,14 @@ struct Programming {
   cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) = 0;
 
   /// \todo
-  virtual void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) = 0;
+  virtual void
+  cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr, bool c) = 0;
 
   /// \todo
-  virtual void
-  cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte) = 0;
+  virtual void cvPomAccessoryWrite(uint16_t accy_addr,
+                                   uint16_t cv_addr,
+                                   uint8_t byte,
+                                   bool c) = 0;
 
   // Implemented by Base
 

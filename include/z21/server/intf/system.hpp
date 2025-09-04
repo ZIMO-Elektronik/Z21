@@ -74,7 +74,7 @@ struct System {
   [[nodiscard]] virtual int32_t serialNumber() const { return 0; }
 
   /// \todo
-  virtual void logoff(Socket const& sock) {}
+  virtual void logoff(Socket const&) {}
 
   /// \todo
   [[nodiscard]] virtual SystemState& systemState() { return _sys_state; }
