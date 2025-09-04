@@ -63,9 +63,11 @@ private:
   [[nodiscard]] bool cvWrite(uint16_t cv_addr, uint8_t byte) final;
   void cvPomRead(uint16_t loco_addr, uint16_t cv_addr) final;
   void cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) final;
-  void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) final;
-  void
-  cvPomAccessoryWrite(uint16_t accy_addr, uint16_t cv_addr, uint8_t byte) final;
+  void cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr, bool) final;
+  void cvPomAccessoryWrite(uint16_t accy_addr,
+                           uint16_t cv_addr,
+                           uint8_t byte,
+                           bool) final;
 
   // RailCom interface
   [[nodiscard]] z21::RailComData railComData(uint16_t loco_addr) final;

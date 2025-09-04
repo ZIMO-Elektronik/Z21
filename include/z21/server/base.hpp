@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <ztl/string.hpp>
+
 #include <bit>
 #include <map>
 #include <span>
@@ -445,13 +447,11 @@ private:
   }
 
   /// \todo document
-  void lanXCvPomAccessoryWriteByte(Socket const&,
-                                   uint16_t accy_addr,
-                                   uint16_t cv_addr,
-                                   uint8_t byte)
+  void lanXCvPomAccessoryWriteByte(
+    Socket const&, uint16_t accy_addr, uint16_t cv_addr, uint8_t byte, bool c)
     requires(std::derived_from<Base, intf::Programming>)
   {
-    this->cvPomAccessoryWrite(accy_addr, cv_addr, byte);
+    this->cvPomAccessoryWrite(accy_addr, cv_addr, byte, c);
   }
 
   /// \todo document
@@ -464,12 +464,13 @@ private:
   /// \todo document
   void lanXCvPomAccessoryReadByte(Socket const& sock,
                                   uint16_t accy_addr,
-                                  uint16_t cv_addr)
+                                  uint16_t cv_addr,
+                                  bool c)
     requires(std::derived_from<Base, intf::Programming>)
   {
     if (full(_cv_request_deque)) return;
     _cv_request_deque.push_back(&sock);
-    this->cvPomAccessoryRead(accy_addr, cv_addr);
+    this->cvPomAccessoryRead(accy_addr, cv_addr, c);
   }
 
   /// \todo document
@@ -1724,9 +1725,10 @@ private:
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvPomAccessoryWriteByte(
                           sock,
-                          big_endian_data2accessory_address(data(chunk) + 2),
+                          stupid_data2accessory_address(data(chunk) + 2),
                           big_endian_data2cv_address(data(chunk) + 4),
-                          chunk[6uz]);
+                          chunk[6uz],
+                          chunk[3uz] & 0x08u);
                       break;
                     case 0xE8u:
                       logf(
@@ -1740,8 +1742,9 @@ private:
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvPomAccessoryReadByte(
                           sock,
-                          big_endian_data2accessory_address(data(chunk) + 2),
-                          big_endian_data2cv_address(data(chunk) + 4));
+                          stupid_data2accessory_address(data(chunk) + 2),
+                          big_endian_data2cv_address(data(chunk) + 4),
+                          chunk[3uz] & 0x08u);
                       break;
                   }
                   break;

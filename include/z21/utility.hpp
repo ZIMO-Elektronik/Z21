@@ -63,6 +63,20 @@ constexpr auto big_endian_data2accessory_address(uint8_t const* data) {
   return static_cast<uint16_t>(big_endian_data2uint16(data) & 0x07FFu);
 }
 
+/// Stupid data to accessory address
+///
+/// \warning
+/// This encoding is used by the LAN_X_CV_POM_ACCESSORY_* commands. I don't know
+/// WHAT THE FUCK they where thinking.
+///
+/// \param  data  Pointer to data
+/// \return Accessory address
+constexpr auto stupid_data2accessory_address(uint8_t const* data) {
+  return static_cast<uint16_t>(
+    (data[0uz] << 7u | (data[1uz] & 0xF0u) >> 2u | (data[1uz] & 0x03u)) &
+    0x07FFu);
+}
+
 /// Little endian data to loco address
 ///
 /// \param  data  Pointer to data

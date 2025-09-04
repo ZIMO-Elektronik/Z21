@@ -260,7 +260,7 @@ void Server::cvPomWrite(uint16_t loco_addr, uint16_t cv_addr, uint8_t byte) {
 }
 
 // ACCESSORY_READ_BYTE
-void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
+void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr, bool) {
   QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
@@ -271,7 +271,8 @@ void Server::cvPomAccessoryRead(uint16_t accy_addr, uint16_t cv_addr) {
 // LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
 void Server::cvPomAccessoryWrite(uint16_t accy_addr,
                                  uint16_t cv_addr,
-                                 uint8_t byte) {
+                                 uint8_t byte,
+                                 bool) {
   QTimer::singleShot(200ms, [=, this] {
     if (_system->programmingShortCircuitFailure()) cvNackShortCircuit();
     else if (_system->programmingFailure()) cvNack();
