@@ -9,12 +9,56 @@ jobs:
   upload_components:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v5.0.0
       - uses: espressif/upload-components-ci-action@v1
         with:
           name: Z21
           version: ${{ github.ref_name }}
           namespace: zimo-elektronik
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
+
+  build:
+    uses: ./.github/workflows/build.yml
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - uses: actions/download-artifact@v5.0.0
+        with:
+          path: ./artifacts
+      - name: Find archive files
+        run: |
+          ARTIFACTS=$(find ./artifacts -type f -name '*.zip')
+          [ -z "$ARTIFACTS" ] && exit 1
+          echo "ARTIFACT_FILES<<EOF" >> $GITHUB_ENV
+          printf "%s\n" "$ARTIFACTS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Print ARTIFACT_FILES
+        run: |
+          echo "artifacts $ARTIFACT_FILES"
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          TAG_NO_V=${TAG#v}
+          # Extract bullets for the matching version
+          NOTES=$(awk -v tag="## $TAG_NO_V" '
+            $0 ~ tag {flag=1; next} 
+            /^## / {flag=0} 
+            flag && /^- / {print}
+          ' CHANGELOG.md)
+          [ -z "$NOTES" ] && exit 1
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - uses: softprops/action-gh-release@v2.3.2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ env.RELEASE_NOTES }}
+          files: ${{ env.ARTIFACT_FILES }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
