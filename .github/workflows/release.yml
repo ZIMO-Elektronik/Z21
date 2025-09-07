@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
       - uses: espressif/upload-components-ci-action@v1
         with:
           name: Z21
@@ -25,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v5.0.0
         with:
           path: ./artifacts
