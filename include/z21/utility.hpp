@@ -73,7 +73,7 @@ constexpr auto big_endian_data2accessory_address(uint8_t const* data) {
 /// \return Accessory address
 constexpr auto stupid_data2accessory_address(uint8_t const* data) {
   return static_cast<uint16_t>(
-    (data[0uz] << 7u | (data[1uz] & 0xF0u) >> 2u | (data[1uz] & 0x03u)) &
+    (data[0uz] << 6u | (data[1uz] & 0xF0u) >> 2u | (data[1uz] & 0x03u)) &
     0x07FFu);
 }
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.4
+- Bugfix accessory address encoding still wrong ([#17](https://github.com/ZIMO-Elektronik/Z21/issues/17))
+
 ## 0.3.3
 - Bugfix accessory address encoding of `LAN_X_CV_POM_ACCESSORY_*` commands is weird ([#15](https://github.com/ZIMO-Elektronik/Z21/issues/15))
 
