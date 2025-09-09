@@ -39,11 +39,6 @@ jobs:
           echo "ARTIFACT_FILES<<EOF" >> $GITHUB_ENV
           printf "%s\n" "$ARTIFACTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
-      - name: Print ARTIFACT_FILES
-        run: |
-          echo "artifacts $ARTIFACT_FILES"
-
       - name: Release notes from CHANGELOG.md
         run: |
           TAG=${GITHUB_REF#refs/tags/}
