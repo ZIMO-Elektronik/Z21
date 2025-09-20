@@ -39,7 +39,7 @@ Settings::Settings(QWidget* parent) : QWidget{parent} {
     grid->addWidget(new QLabel{"Ext disable turnout timeout"}, row, 0);
     grid->addWidget(
       _common.ext_flags.disable_turnout_timeout_checkbox, row++, 2);
-    grid->addWidget(new QLabel{"Ext auto deactivate turnout output"}, row, 0);
+    grid->addWidget(new QLabel{"Ext disable turnout auto deactivate"}, row, 0);
     grid->addWidget(
       _common.ext_flags.disable_turnout_auto_deact_checkbox, row++, 2);
     grid->addWidget(new QLabel{"Ext RCN-213 turnout addressing"}, row, 0);
@@ -337,7 +337,7 @@ void Settings::initCommonWidgets() {
     _common.loconet_mode_combobox->setCurrentIndex(value.toInt());
   else _common.loconet_mode_combobox->setCurrentIndex(3);
   if (auto const value{config.value("settings_ext_flags")}; value.isValid())
-    commonExtFlags(static_cast<uint8_t>(value.toUInt()));
+    commonExtFlags(static_cast<z21::CommonSettings::ExtFlags>(value.toUInt()));
   if (auto const value{config.value("settings_purging_time")}; value.isValid())
     _common.purging_time_combobox->setCurrentIndex(value.toInt());
   if (auto const value{config.value("settings_bus_flags")}; value.isValid())
@@ -476,51 +476,56 @@ void Settings::initMmDccWidgets() {
 }
 
 //
-void Settings::commonExtFlags(uint8_t flags) {
+void Settings::commonExtFlags(z21::CommonSettings::ExtFlags flags) {
   //
   _common.ext_flags.disable_turnout_timeout_checkbox->setChecked(
-    static_cast<bool>(flags & 0x01u));
+    static_cast<bool>(flags &
+                      z21::CommonSettings::ExtFlags::TurnoutTimeoutDisable));
 
   //
   _common.ext_flags.disable_turnout_auto_deact_checkbox->setChecked(
-    static_cast<bool>(flags & 0x02u));
+    static_cast<bool>(flags &
+                      z21::CommonSettings::ExtFlags::TurnoutAutoDeactDisable));
 
   //
   _common.ext_flags.accessory_start_group1_checkbox->setChecked(
-    static_cast<bool>(flags & 0x04u));
+    static_cast<bool>(flags &
+                      z21::CommonSettings::ExtFlags::AccessoryStartGroup1));
 
   //
   _common.ext_flags.rbus_as_xbus2_checkbox->setChecked(
-    static_cast<bool>(flags & 0x20u));
+    static_cast<bool>(flags & z21::CommonSettings::ExtFlags::RBusAsXBus2));
 
   //
   _common.ext_flags.invert_accessory_red_green_checkbox->setChecked(
-    static_cast<bool>(flags & 0x40u));
+    static_cast<bool>(flags &
+                      z21::CommonSettings::ExtFlags::AccessoryInvRedGreen));
 }
 
-uint8_t Settings::commonExtFlags() const {
+z21::CommonSettings::ExtFlags Settings::commonExtFlags() const {
   uint8_t retval{};
 
   //
   if (_common.ext_flags.disable_turnout_timeout_checkbox->isChecked())
-    retval |= 0x01u;
+    retval |= z21::CommonSettings::ExtFlags::TurnoutTimeoutDisable;
 
   //
   if (_common.ext_flags.disable_turnout_auto_deact_checkbox->isChecked())
-    retval |= 0x02u;
+    retval |= z21::CommonSettings::ExtFlags::TurnoutAutoDeactDisable;
 
   //
   if (_common.ext_flags.accessory_start_group1_checkbox->isChecked())
-    retval |= 0x04u;
+    retval |= z21::CommonSettings::ExtFlags::AccessoryStartGroup1;
 
   //
-  if (_common.ext_flags.rbus_as_xbus2_checkbox->isChecked()) retval |= 0x20u;
+  if (_common.ext_flags.rbus_as_xbus2_checkbox->isChecked())
+    retval |= z21::CommonSettings::ExtFlags::RBusAsXBus2;
 
   //
   if (_common.ext_flags.invert_accessory_red_green_checkbox->isChecked())
-    retval |= 0x40u;
+    retval |= z21::CommonSettings::ExtFlags::AccessoryInvRedGreen;
 
-  return retval;
+  return static_cast<z21::CommonSettings::ExtFlags>(retval);
 }
 
 //

@@ -1413,7 +1413,8 @@ private:
                 .enable_loconet_current_source = static_cast<bool>(chunk[4uz]),
                 .loconet_fast_clock_rate = chunk[5uz],
                 .loconet_mode = chunk[6uz],
-                .ext_settings = chunk[7uz],
+                .ext_settings =
+                  static_cast<CommonSettings::ExtFlags>(chunk[7uz]),
                 .purging_time = chunk[8uz],
                 .bus_settings = chunk[9uz]});
           break;
