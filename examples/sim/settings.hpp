@@ -25,8 +25,8 @@ private:
   void initCommonWidgets();
   void initMmDccWidgets();
 
-  void commonExtFlags(uint8_t flags);
-  uint8_t commonExtFlags() const;
+  void commonExtFlags(z21::CommonSettings::ExtFlags flags);
+  z21::CommonSettings::ExtFlags commonExtFlags() const;
 
   void commonBusFlags(uint8_t flags);
   uint8_t commonBusFlags() const;

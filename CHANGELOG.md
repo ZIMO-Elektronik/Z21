@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.5
+- Add `CommonSettings::ExtFlags` enumeration
+
 ## 0.3.4
 - Bugfix accessory address encoding still wrong ([#17](https://github.com/ZIMO-Elektronik/Z21/issues/17))
 

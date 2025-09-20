@@ -50,7 +50,15 @@ struct CommonSettings {
   uint8_t loconet_mode{};
 
   ///
-  uint8_t ext_settings{};
+  enum ExtFlags : uint8_t {
+    TurnoutTimeoutDisable = 0x01u,
+    TurnoutAutoDeactDisable = 0x02u,
+    AccessoryStartGroup1 = 0x04u,
+    DccSnifferPassive = 0x08u,
+    DccSnifferSpeedStep28 = 0x10u,
+    RBusAsXBus2 = 0x20u,
+    AccessoryInvRedGreen = 0x40u,
+  } ext_settings{};
 
   ///
   uint8_t purging_time{};
