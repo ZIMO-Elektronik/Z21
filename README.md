@@ -1,6 +1,6 @@
 # Z21
 
-[![build](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml) [![tests](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml) [![license](https://img.shields.io/github/license/ZIMO-Elektronik/Z21)](https://github.com/ZIMO-Elektronik/Z21/raw/master/LICENSE)
+[![build](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/build.yml) [![tests](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/tests.yml) [![release](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/release.yml/badge.svg)](https://github.com/ZIMO-Elektronik/Z21/actions/workflows/release.yml) [![license](https://img.shields.io/github/license/ZIMO-Elektronik/Z21)](https://github.com/ZIMO-Elektronik/Z21/raw/master/LICENSE)
 
 <img src="https://github.com/ZIMO-Elektronik/Z21/raw/master/data/images/logo.png" width="15%" align="right">
 

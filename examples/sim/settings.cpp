@@ -276,7 +276,7 @@ void Settings::initCommonWidgets() {
     "Use R-Bus as additional X-Bus interface for throttles and other XpressNet "
     "devices");
   _common.ext_flags.invert_accessory_red_green_checkbox->setStatusTip(
-    "Invert meaning of straight/branch or green/red for accessory decoders");
+    "Invert meaning of green/red or straight/diverging for accessory decoders");
 
   _common.purging_time_combobox->addItem("Off");
   _common.purging_time_combobox->addItem("1min");
