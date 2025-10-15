@@ -32,7 +32,7 @@ struct LocoInfo {
     DCC128 = 4u,
   } speed_steps : 3 {DCC128};
 
-  uint8_t rvvvvvvv{ztl::make_mask(7u)};
+  uint8_t rvvvvvvv{ztl::mask<7u>};
 
   bool double_traction : 1 {};
   bool smart_search : 1 {};
@@ -69,7 +69,7 @@ constexpr int32_t decode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps,
     // 28 speed steps with intermediate
     if (speed_steps == LocoInfo::DCC28) {
       speed <<= 1;
-      if (!(rvvvvvvv & ztl::make_mask(4u))) --speed;
+      if (!(rvvvvvvv & ztl::mask<4u>)) --speed;
     }
 
     return speed;
@@ -94,7 +94,7 @@ encode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps, bool dir, int32_t speed) {
   // 28 speed steps with intermediate
   if (speed_steps == LocoInfo::DCC28) {
     vvvvvvv = (vvvvvvv >> 1) + 1;
-    if (!(speed % 2)) vvvvvvv |= ztl::make_mask(4u);
+    if (!(speed % 2)) vvvvvvv |= ztl::mask<4u>;
   }
 
   return static_cast<uint8_t>(static_cast<uint32_t>(dir << 7u) | vvvvvvv);

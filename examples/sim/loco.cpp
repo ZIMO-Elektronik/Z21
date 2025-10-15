@@ -71,9 +71,8 @@ void Loco::updateLabel() {
             QString{" "};
   }
 
-  text += "R" +
-          QString::number(static_cast<bool>(rvvvvvvv & ztl::make_mask(7u))) +
-          " ";
+  text +=
+    "R" + QString::number(static_cast<bool>(rvvvvvvv & ztl::mask<7u>)) + " ";
 
   if (auto const speed{z21::decode_rvvvvvvv(speed_steps, rvvvvvvv)}; !speed)
     text += "Stop";
