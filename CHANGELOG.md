@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.6
+- Bugfix ESP-IDF example does not compile due to missing `get_socket.*pp` files
+- Bugfix ESP-IDF setting `Werror` and Z21 setting `Wpedantic` results in failed build
+
 ## 0.3.5
 - Add `CommonSettings::ExtFlags` enumeration
 
