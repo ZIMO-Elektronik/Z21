@@ -78,8 +78,7 @@ else()
 endif()
 
 target_common_warnings(Z21 INTERFACE)
-target_compile_options(Z21 INTERFACE "$<$<BOOL:${ESP_PLATFORM}>:-Wno-error>"
-                                     -Wno-suggest-override)
+target_compile_options(Z21 INTERFACE "$<$<BOOL:${ESP_PLATFORM}>:-Wno-error>")
 
 if(NOT TARGET ZTL::ZTL)
   cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.23.0")

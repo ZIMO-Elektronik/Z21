@@ -6,3 +6,6 @@ issues: https://github.com/ZIMO-Elektronik/Z21/issues
 
 maintainers:
   - "Vincent Hamp <hamp@zimo.at>"
+
+dependencies:
+  idf: ">=5.2.0"
