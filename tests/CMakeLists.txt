@@ -8,6 +8,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL Linux)
 endif()
 
 target_common_warnings(Z21Tests PRIVATE)
+target_compile_options(Z21Tests PRIVATE -Werror)
 
 cpmaddpackage(URI "gh:google/googletest#main" OPTIONS "INSTALL_GTEST OFF")
 

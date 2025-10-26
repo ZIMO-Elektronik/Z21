@@ -71,17 +71,16 @@ target_compile_definitions(
     Z21_SERVER_MAX_LOCO_ADDRESSES_PER_CLIENT=${Z21_SERVER_MAX_LOCO_ADDRESSES_PER_CLIENT}
 )
 
-if(PROJECT_IS_TOP_LEVEL)
+# https://github.com/espressif/esp-idf/issues/17773
+if(PROJECT_IS_TOP_LEVEL AND NOT ESP_PLATFORM)
   target_include_directories(Z21 INTERFACE include)
+  target_common_warnings(Z21 INTERFACE)
 else()
   target_include_directories(Z21 SYSTEM INTERFACE include)
 endif()
 
-target_common_warnings(Z21 INTERFACE)
-target_compile_options(Z21 INTERFACE "$<$<BOOL:${ESP_PLATFORM}>:-Wno-error>")
-
 if(NOT TARGET ZTL::ZTL)
-  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.23.0")
+  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.23.1")
 endif()
 
 target_link_libraries(Z21 INTERFACE ZTL::ZTL)
