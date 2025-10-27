@@ -52,4 +52,4 @@ inline QDataStream& operator>>(QDataStream& stream,
   return stream;
 }
 
-Q_DECLARE_METATYPE(z21::TurnoutInfo);
+Q_DECLARE_METATYPE(z21::TurnoutInfo)

@@ -62,4 +62,4 @@ inline QDataStream& operator>>(QDataStream& stream, z21::LocoInfo& loco_info) {
   return stream;
 }
 
-Q_DECLARE_METATYPE(z21::LocoInfo);
+Q_DECLARE_METATYPE(z21::LocoInfo)
