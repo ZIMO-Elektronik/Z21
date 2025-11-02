@@ -11,7 +11,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTORCC_OPTIONS "-compress-algo;zlib" "--compress;9")
 
-file(GLOB_RECURSE SRC *.c *.cpp)
+file(GLOB_RECURSE SRC src/*.cpp)
 add_executable(Z21Sim WIN32 ${COMMON_SRC} ${SRC})
 
 target_compile_definitions(
