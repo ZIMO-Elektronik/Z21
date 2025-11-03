@@ -44,9 +44,9 @@ struct LocoInfo {
 ///
 /// \param  speed_steps Speed steps
 /// \param  rvvvvvvv    Direction and speed byte
-/// \retval -1  EStop
-/// \retval 0   Stop
-/// \retval >0  Speed
+/// \retval -1          EStop
+/// \retval 0           Stop
+/// \retval >0          Speed
 constexpr int32_t decode_rvvvvvvv(LocoInfo::SpeedSteps speed_steps,
                                   uint8_t rvvvvvvv) {
   // 128 speed steps
