@@ -15,7 +15,7 @@
 namespace z21 {
 
 /// \todo document
-enum class XHeader : uint8_t {
+enum struct XHeader : uint8_t {
   // clang-format off
   // Client to Z21
   LAN_X_21 = 0x21u, LAN_X_GET_VERSION = 0x21u, LAN_X_GET_STATUS = 0x21u, LAN_X_SET_TRACK_POWER_OFF = 0x21u, LAN_X_SET_TRACK_POWER_ON = 0x21u,

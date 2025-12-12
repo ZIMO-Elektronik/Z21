@@ -16,7 +16,7 @@
 namespace z21 {
 
 /// \todo document
-enum class CentralState : uint8_t {
+enum struct CentralState : uint8_t {
   EmergencyStop = 0x01u,         ///< The emergency stop for decoder
   TrackVoltageOff = 0x02u,       ///< The track voltage is switched off
   ShortCircuit = 0x04u,          ///< Short-circuit

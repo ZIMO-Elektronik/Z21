@@ -16,7 +16,7 @@
 namespace z21 {
 
 ///
-enum class CentralStateEx : uint8_t {
+enum struct CentralStateEx : uint8_t {
   HighTemperature = 0x01,       ///< Temperature too high
   PowerLost = 0x02u,            ///< Input voltage too low
   ShortCircuitExternal = 0x04u, ///< S.C. at the external booster output
