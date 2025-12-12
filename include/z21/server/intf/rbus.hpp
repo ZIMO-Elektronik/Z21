@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <cassert>
+
 namespace z21::server::intf {
 
 /// \todo document

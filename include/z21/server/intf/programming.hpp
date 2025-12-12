@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace z21::server::intf {
 
 /// \todo document

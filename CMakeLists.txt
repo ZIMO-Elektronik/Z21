@@ -9,7 +9,7 @@ endif()
 FetchContent_Declare(
   CMakeModules
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/CMakeModules"
-  GIT_TAG v0.10.0
+  GIT_TAG v0.12.0
   SOURCE_DIR ${CMAKE_BINARY_DIR}/CMakeModules)
 FetchContent_MakeAvailable(CMakeModules)
 
@@ -81,7 +81,7 @@ else()
 endif()
 
 if(NOT TARGET ZTL::ZTL)
-  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.23.1")
+  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.24.0")
 endif()
 
 target_link_libraries(Z21 INTERFACE ZTL::ZTL)
@@ -96,6 +96,7 @@ if(PROJECT_IS_TOP_LEVEL)
   file(GLOB_RECURSE SRC examples/*.[ch]pp include/*.[ch]pp src/*.[ch]pp
        tests/*.[ch]pp)
   add_clang_format_target(Z21Format OPTIONS -i FILES ${SRC})
+  add_include_what_you_must_target(Z21IncludeWhatYouMust TARGET Z21)
 endif()
 
 if(BUILD_TESTING
