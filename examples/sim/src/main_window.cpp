@@ -121,11 +121,12 @@ void MainWindow::applyDefaultSize() {
                        std::min(available.height(), 800)};
   setMinimumSize(min_size);
 
-  QSize const desired{
-    std::clamp(static_cast<int>(available.width() * 0.8), min_size.width(),
-               available.width()),
-    std::clamp(static_cast<int>(available.height() * 0.8), min_size.height(),
-               available.height())};
+  QSize const desired{std::clamp(static_cast<int>(available.width() * 0.8),
+                                 min_size.width(),
+                                 available.width()),
+                      std::clamp(static_cast<int>(available.height() * 0.8),
+                                 min_size.height(),
+                                 available.height())};
 
   resize(desired);
   move(available.center() - rect().center());

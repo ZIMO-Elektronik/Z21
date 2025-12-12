@@ -15,7 +15,7 @@
 namespace z21 {
 
 /// \todo document
-enum class DB0 : uint8_t {
+enum struct DB0 : uint8_t {
   // clang-format off
   // Client to Z21
   LAN_X_GET_VERSION = 0x21u,

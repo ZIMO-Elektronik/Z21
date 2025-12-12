@@ -15,7 +15,7 @@
 namespace z21 {
 
 /// \todo document
-enum class HwType : uint32_t {
+enum struct HwType : uint32_t {
   Z21_OLD = 0x0000'0200u,   // „black Z21” (hardware variant from 2012)
   Z21_NEW = 0x0000'0201u,   // „black Z21”(hardware variant from 2013)
   SMARTRAIL = 0x0000'0202u, // SmartRail (from 2012)

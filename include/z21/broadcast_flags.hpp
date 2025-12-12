@@ -20,7 +20,7 @@ namespace z21 {
 ///
 /// These flags determine whether a client has subscribed to a broadcast message
 /// or not. Only subscribed clients receive the respective messages.
-enum class BroadcastFlags : uint32_t {
+enum struct BroadcastFlags : uint32_t {
   DrivingSwitching = 0x00000001u,
   RBus = 0x00000002u,
   RailComSubscribed = 0x00000004u,

@@ -1,8 +1,8 @@
 #include "get_socket.hpp"
+#include <fcntl.h>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <fcntl.h>
 #include <z21/z21.hpp>
 
 namespace {
