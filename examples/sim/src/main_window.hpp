@@ -16,6 +16,7 @@ private slots:
 
 private:
   void restoreGeometryState();
+  void applyDefaultSize();
 
   Server* _server{new Server{this}};
 };

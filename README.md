@@ -98,6 +98,20 @@ cmake --build build --target Z21Sim
 The simulator allows you to try out the library directly in a simple GUI. The application starts a Z21 server to which you can connect directly via [Z21 app](https://www.z21.eu/en/products/z21-app). You can then control locomotives, switch turnouts or simulate various errors such as a short circuit.
 ![Z21Sim](https://github.com/ZIMO-Elektronik/Z21/raw/master/data/images/Z21Sim.png)
 
+#### Docker (web UI)
+A container recipe is available that builds the simulator and serves its Qt UI through noVNC in the browser.
+```sh
+# Build the image
+docker build -t z21sim-webui -f docker/Dockerfile .
+
+# Run, exposing the noVNC UI and the UDP ports the simulator listens on
+docker run --rm -p 6080:6080 -p 21105:21105/udp -p 21106:21106/udp z21sim-webui
+```
+Open `http://localhost:6080` to interact with the simulator UI from your browser. Optional environment overrides: `GEOMETRY` (default `1920x1080`), `WEB_PORT` (default `6080`), `VNC_PORT` (default `5900`). Persist settings by binding a host file to `/opt/z21sim/config.ini`.
+Notes:
+- The Docker build uses a Debug configuration to avoid Qt source builds that are triggered only for Release builds.
+- The container auto-detects the installed Qt version (via `pkg-config --modversion Qt6Core`) and passes it to CMake; override with `-DQT_VERSION=…` if needed.
+
 #### ESP32
 On [ESP32 platforms](https://www.espressif.com/en/products/socs/esp32) examples from the [examples](https://github.com/ZIMO-Elektronik/DCC/raw/master/examples) subfolder can be built directly using the [IDF Frontend](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-py.html).
 

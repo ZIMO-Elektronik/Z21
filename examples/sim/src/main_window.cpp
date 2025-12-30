@@ -1,5 +1,6 @@
 #include "main_window.hpp"
 #include <QApplication>
+#include <QGuiApplication>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -14,8 +15,9 @@
 
 // Create layout with menus, toolbars and tabs
 MainWindow::MainWindow() {
-  // Initial size
-  setMinimumSize(1920, 900);
+  // Initial size that's friendly to common macOS laptop resolutions and scales
+  // with the primary screen (restored size wins if saved previously).
+  applyDefaultSize();
 
   QToolBar* toolbar{addToolBar("")};
 
@@ -105,4 +107,26 @@ void MainWindow::restoreGeometryState() {
     restoreGeometry(geometry.toByteArray());
   if (auto const state{config.value("main_window_state")}; state.isValid())
     restoreState(state.toByteArray());
+}
+
+// Apply a sensible default size based on available screen real estate
+void MainWindow::applyDefaultSize() {
+  auto* screen{QGuiApplication::primaryScreen()};
+  if (!screen) return;
+
+  auto const available{screen->availableGeometry()};
+
+  // Keep the window usable on smaller MacBooks while giving room for the tabs
+  QSize const min_size{std::min(available.width(), 1280),
+                       std::min(available.height(), 800)};
+  setMinimumSize(min_size);
+
+  QSize const desired{
+    std::clamp(static_cast<int>(available.width() * 0.8), min_size.width(),
+               available.width()),
+    std::clamp(static_cast<int>(available.height() * 0.8), min_size.height(),
+               available.height())};
+
+  resize(desired);
+  move(available.center() - rect().center());
 }

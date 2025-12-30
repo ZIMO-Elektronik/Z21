@@ -2,6 +2,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
+#include <fcntl.h>
 #include <z21/z21.hpp>
 
 namespace {
@@ -22,6 +23,26 @@ int get_socket([[maybe_unused]] bool blocking) {
   if (sock < 0) {
     printf("socket failed %s\n", strerror(errno));
     return -1;
+  }
+
+  // macOS does not support setting SOCK_NONBLOCK at creation time
+#elif defined(__APPLE__)
+  auto const sock{socket(AF_INET, SOCK_DGRAM, IPPROTO_IP)};
+  if (sock < 0) {
+    printf("socket failed %s\n", strerror(errno));
+    return -1;
+  }
+
+  if (!blocking) {
+    auto flags{fcntl(sock, F_GETFL, 0)};
+    if (flags < 0) {
+      printf("fcntl failed %s\n", strerror(errno));
+      return -1;
+    }
+    if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0) {
+      printf("fcntl failed %s\n", strerror(errno));
+      return -1;
+    }
   }
 
   // On Windows things are a little more involved...
