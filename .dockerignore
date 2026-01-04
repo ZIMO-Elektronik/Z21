@@ -1,7 +1,6 @@
 build
 **/build
 cmake-build-*
-.git
 .gitmodules
 .gitignore
 *.o

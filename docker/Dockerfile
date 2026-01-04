@@ -7,6 +7,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Build dependencies for the simulator
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+      gcc-14 \
+      g++-14 \
       build-essential \
       ca-certificates \
       cmake \
@@ -34,6 +36,7 @@ COPY . .
 # Configure and build the simulator (Debug avoids the Release-only Qt-from-source path)
 RUN rm -rf build && \
     QT_VERSION=$(pkg-config --modversion Qt6Core | tr -d '\n') && \
+    CC=gcc-14 CXX=g++-14 \
     cmake -G Ninja -B build -S . \
       -DCMAKE_BUILD_TYPE=Debug \
       -DZ21_SIM_HIDE_CONFIDENTIAL_SETTINGS=ON \
@@ -56,6 +59,7 @@ RUN apt-get update && \
       ca-certificates \
       libasan8 \
       libubsan1 \
+      libstdc++6 \
       fluxbox \
       fonts-dejavu-core \
       libgl1 \
