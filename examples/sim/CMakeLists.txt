@@ -12,7 +12,22 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTORCC_OPTIONS "-compress-algo;zlib" "--compress;9")
 
 file(GLOB_RECURSE SRC src/*.cpp)
-add_executable(Z21Sim WIN32 ${COMMON_SRC} ${SRC})
+set(Z21SIM_EXE_TYPE "")
+if(WIN32)
+  list(APPEND Z21SIM_EXE_TYPE WIN32)
+elseif(APPLE)
+  list(APPEND Z21SIM_EXE_TYPE MACOSX_BUNDLE)
+endif()
+add_executable(Z21Sim ${Z21SIM_EXE_TYPE} ${COMMON_SRC} ${SRC})
+
+if(APPLE)
+  set_target_properties(Z21Sim PROPERTIES
+    MACOSX_BUNDLE_GUI_IDENTIFIER "com.zimo.Z21Sim"
+    MACOSX_BUNDLE_BUNDLE_NAME "Z21Sim"
+    MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+  )
+endif()
 
 target_compile_definitions(
   Z21Sim

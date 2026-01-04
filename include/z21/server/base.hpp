@@ -29,7 +29,7 @@
 
 namespace z21::server {
 
-#if defined(__apple_build_version__)
+#if defined(__apple_build_version__) || defined(__clang__)
 #  define Z21_REQUIRES(...)
 #  define Z21_REQUIRE_BODY(CONDITION, MESSAGE)                              \
     do {                                                                    \
