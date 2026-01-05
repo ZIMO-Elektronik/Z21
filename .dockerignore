@@ -1,0 +1,10 @@
+build
+**/build
+cmake-build-*
+.gitmodules
+.gitignore
+*.o
+*.obj
+*.log
+*.tmp
+*.swp
