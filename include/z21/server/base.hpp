@@ -1483,10 +1483,12 @@ private:
           return lanLogoff(sock, it);
 
         case Header::LAN_X:
+#if Z21_XBUS_ENABLE_CHECKSUM
           if (exor(chunk)) {
             logf('C', sock, "Wrong checksum", chunk);
             break;
           }
+#endif
           switch (static_cast<XHeader>(chunk[0uz])) {
             case XHeader::LAN_X_21:
               switch (static_cast<DB0>(chunk[1uz])) {
