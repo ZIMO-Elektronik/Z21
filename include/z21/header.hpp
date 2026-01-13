@@ -15,7 +15,7 @@
 namespace z21 {
 
 /// \todo document
-enum class Header : uint8_t {
+enum struct Header : uint8_t {
   // clang-format off
   // Client to Z21
   LAN_GET_SERIAL_NUMBER = 0x10u,

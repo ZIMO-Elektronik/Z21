@@ -1,5 +1,10 @@
 # Changelog
 
+##
+- Add Docker support for Z21Sim with noVNC web UI ([#21](https://github.com/ZIMO-Elektronik/Z21/pull/21))
+- Add macOS support for Z21Sim ([#21](https://github.com/ZIMO-Elektronik/Z21/pull/21))
+- Bugfix disable X-Bus checksum by default ([#22](https://github.com/ZIMO-Elektronik/Z21/issues/22))
+
 ## 0.3.6
 - Bugfix ESP-IDF example does not compile due to missing `get_socket.*pp` files
 - Bugfix ESP-IDF setting `Werror` and Z21 setting `Wpedantic` results in failed build
@@ -27,7 +32,7 @@
 - Add `LAN_X_SET_LOCO_FUNCTION_GROUP`
 
 ## 0.1.1
-- Bugfix increase Sim example minimum window size to 1920x900
+- Bugfix increase Z21Sim example minimum window size to 1920x900
 
 ## 0.1.0
 - Initial release

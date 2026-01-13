@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 
   // Apply breeze stylesheet
   QFile file{":/dark-green/stylesheet.qss"};
-  file.open(QFile::ReadOnly | QFile::Text);
+  auto const _{file.open(QFile::ReadOnly | QFile::Text)};
   QTextStream stream{&file};
   app.setStyleSheet(stream.readAll());
 

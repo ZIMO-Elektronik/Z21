@@ -9,7 +9,7 @@ endif()
 FetchContent_Declare(
   CMakeModules
   GIT_REPOSITORY "https://github.com/ZIMO-Elektronik/CMakeModules"
-  GIT_TAG v0.10.0
+  GIT_TAG v0.12.1
   SOURCE_DIR ${CMAKE_BINARY_DIR}/CMakeModules)
 FetchContent_MakeAvailable(CMakeModules)
 
@@ -29,6 +29,12 @@ set(Z21_XBUS_PROTOCOL_VERSION
     0x40u
     CACHE STRING
           "X-Bus protocol version (0x30 = V3.0, 0x36 = V3.6, 0x40 = V4.0, … )")
+set(Z21_XBUS_ENABLE_CHECKSUM
+    OFF
+    CACHE
+      BOOL
+      "Enable X-Bus checksum (by default disabled due to WLANMAUS bug https://github.com/ZIMO-Elektronik/Z21/issues/22)"
+)
 set(Z21_COMMAND_STATION_ID
     0x12u
     CACHE STRING "Command station ID (0x12 = Z21 device family)")
@@ -62,6 +68,7 @@ target_compile_definitions(
     Z21_FIRMWARE_VERSION_MAJOR=${Z21_FIRMWARE_VERSION_MAJOR}
     Z21_FIRMWARE_VERSION_MINOR=${Z21_FIRMWARE_VERSION_MINOR}
     Z21_XBUS_PROTOCOL_VERSION=${Z21_XBUS_PROTOCOL_VERSION}
+    Z21_XBUS_ENABLE_CHECKSUM=$<BOOL:${Z21_XBUS_ENABLE_CHECKSUM}>
     Z21_COMMAND_STATION_ID=${Z21_COMMAND_STATION_ID}
     Z21_MAX_PAYLOAD_SIZE=${Z21_MAX_PAYLOAD_SIZE}
     Z21_MAX_DATASET_SIZE=${Z21_MAX_DATASET_SIZE}
@@ -81,7 +88,7 @@ else()
 endif()
 
 if(NOT TARGET ZTL::ZTL)
-  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.23.1")
+  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.24.1")
 endif()
 
 target_link_libraries(Z21 INTERFACE ZTL::ZTL)
@@ -93,9 +100,16 @@ if(PROJECT_IS_TOP_LEVEL)
     DOWNLOAD
     "https://github.com/ZIMO-Elektronik/.github/raw/master/data/.clang-format"
     ${CMAKE_CURRENT_LIST_DIR}/.clang-format)
-  file(GLOB_RECURSE SRC examples/*.[ch]pp include/*.[ch]pp src/*.[ch]pp
-       tests/*.[ch]pp)
+  file(
+    GLOB_RECURSE
+    SRC
+    examples/*.[ch]pp
+    include/*.h
+    include/*.[ch]pp
+    src/*.[ch]pp
+    tests/*.[ch]pp)
   add_clang_format_target(Z21Format OPTIONS -i FILES ${SRC})
+  add_include_what_you_must_target(Z21IncludeWhatYouMust TARGET Z21)
 endif()
 
 if(BUILD_TESTING

@@ -29,19 +29,21 @@
 
 namespace z21::server {
 
+/// Workaround for Apple Clang
 #if defined(__apple_build_version__) || defined(__clang__)
 #  define Z21_REQUIRES(...)
-#  define Z21_REQUIRE_BODY(CONDITION, MESSAGE)                              \
-    do {                                                                    \
-      if constexpr (!(CONDITION)) {                                         \
-        static_assert((CONDITION), MESSAGE);                                \
-        return;                                                             \
-      }                                                                     \
+#  define Z21_REQUIRE_BODY(CONDITION, MESSAGE)                                 \
+    do {                                                                       \
+      if constexpr (!(CONDITION)) {                                            \
+        static_assert((CONDITION), MESSAGE);                                   \
+        return;                                                                \
+      }                                                                        \
     } while (false)
 #else
 #  define Z21_REQUIRES(...) requires(__VA_ARGS__)
-#  define Z21_REQUIRE_BODY(CONDITION, MESSAGE) do {                         \
-  } while (false)
+#  define Z21_REQUIRE_BODY(CONDITION, MESSAGE)                                 \
+    do {                                                                       \
+    } while (false)
 #endif
 
 template<intf::Interface... Ts>
@@ -101,21 +103,17 @@ public:
 
   /// \todo document
   void broadcastTurnoutInfo(uint16_t accy_addr) // final
-    Z21_REQUIRES(std::derived_from<Base, intf::Driving>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::Driving>),
-      "broadcastTurnoutInfo requires Driving interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::Driving>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Driving>),
+                     "broadcastTurnoutInfo requires Driving interface");
     lanXTurnoutInfo(accy_addr);
   }
 
   /// \todo document
   void broadcastExtAccessoryInfo(uint16_t accy_addr) // final
-    Z21_REQUIRES(std::derived_from<Base, intf::Driving>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::Driving>),
-      "broadcastExtAccessoryInfo requires Driving interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::Driving>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Driving>),
+                     "broadcastExtAccessoryInfo requires Driving interface");
     lanXExtAccessoryInfo(accy_addr);
   }
 
@@ -144,11 +142,9 @@ public:
 
   /// \todo document
   void broadcastLocoInfo(uint16_t loco_addr) // final
-    Z21_REQUIRES(std::derived_from<Base, intf::Driving>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::Driving>),
-      "broadcastLocoInfo requires Driving interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::Driving>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Driving>),
+                     "broadcastLocoInfo requires Driving interface");
     lanXLocoInfo(loco_addr);
   }
 
@@ -157,21 +153,17 @@ public:
 
   /// \todo document
   void broadcastRailComData(uint16_t loco_addr) // final
-    Z21_REQUIRES(std::derived_from<Base, intf::RailCom>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::RailCom>),
-      "broadcastRailComData requires RailCom interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::RailCom>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::RailCom>),
+                     "broadcastRailComData requires RailCom interface");
     lanRailComDataChanged(loco_addr);
   }
 
   /// \todo document
   void cvNackShortCircuit() // final
-    Z21_REQUIRES(std::derived_from<Base, intf::Programming>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::Programming>),
-      "cvNackShortCircuit requires Programming interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::Programming>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Programming>),
+                     "cvNackShortCircuit requires Programming interface");
     if (empty(_cv_request_deque)) return;
     lanXCvNackSc(*_cv_request_deque.front());
     _cv_request_deque.pop_front();
@@ -179,11 +171,9 @@ public:
 
   /// \todo document
   void cvNack() // final
-    Z21_REQUIRES(std::derived_from<Base, intf::Programming>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::Programming>),
-      "cvNack requires Programming interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::Programming>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Programming>),
+                     "cvNack requires Programming interface");
     if (empty(_cv_request_deque)) return;
     lanXCvNack(*_cv_request_deque.front());
     _cv_request_deque.pop_front();
@@ -191,11 +181,9 @@ public:
 
   /// \todo document
   void cvAck(uint16_t cv_addr, uint8_t byte) // final
-    Z21_REQUIRES(std::derived_from<Base, intf::Programming>)
-  {
-    Z21_REQUIRE_BODY(
-      (std::derived_from<Base, intf::Programming>),
-      "cvAck requires Programming interface");
+    Z21_REQUIRES(std::derived_from<Base, intf::Programming>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Programming>),
+                     "cvAck requires Programming interface");
     if (empty(_cv_request_deque)) return;
     lanXCvResult(*_cv_request_deque.front(), cv_addr, byte);
     _cv_request_deque.pop_front();
@@ -1495,10 +1483,12 @@ private:
           return lanLogoff(sock, it);
 
         case Header::LAN_X:
+#if Z21_XBUS_ENABLE_CHECKSUM
           if (exor(chunk)) {
             logf('C', sock, "Wrong checksum", chunk);
             break;
           }
+#endif
           switch (static_cast<XHeader>(chunk[0uz])) {
             case XHeader::LAN_X_21:
               switch (static_cast<DB0>(chunk[1uz])) {
