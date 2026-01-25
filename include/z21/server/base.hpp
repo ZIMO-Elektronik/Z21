@@ -1546,13 +1546,20 @@ private:
                 }
                 break;
 
-              case XHeader::LAN_X_DCC_READ_REGISTER:
+              case XHeader::LAN_X_22:
                 switch (static_cast<DB0>(chunk[1uz])) {
                   case DB0::LAN_X_DCC_READ_REGISTER:
                     if (size(chunk) == 0x08uz - 4uz) {
                       logf('C', sock, "LAN_X_DCC_READ_REGISTER", chunk);
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXDccReadRegister(sock);
+                    }
+                    break;
+                  case DB0::LAN_X_CV_READ_ALT:
+                    if (size(chunk) == 0x08uz - 4uz) {
+                      logf('C', sock, "LAN_X_CV_READ_ALT", chunk);
+                      if constexpr (std::derived_from<Base, intf::Programming>)
+                        lanXCvRead(sock, static_cast<uint8_t>(chunk[2uz] - 1u));
                     }
                     break;
                   default:
@@ -1569,6 +1576,13 @@ private:
 
               case XHeader::LAN_X_23:
                 switch (static_cast<DB0>(chunk[1uz])) {
+                  case DB0::LAN_X_DCC_WRITE_REGISTER:
+                    if (size(chunk) == 0x09uz - 4uz) {
+                      logf('C', sock, "LAN_X_DCC_WRITE_REGISTER", chunk);
+                      if constexpr (std::derived_from<Base, intf::Programming>)
+                        lanXDccWriteRegister(sock);
+                    }
+                    break;
                   case DB0::LAN_X_CV_READ:
                     if (size(chunk) == 0x09uz - 4uz) {
                       logf('C', sock, "LAN_X_CV_READ", chunk);
@@ -1577,11 +1591,21 @@ private:
                                    big_endian_data2cv_address(data(chunk) + 2));
                     }
                     break;
-                  case DB0::LAN_X_DCC_WRITE_REGISTER:
+                  case DB0::LAN_X_CV_READ_ALT:
                     if (size(chunk) == 0x09uz - 4uz) {
-                      logf('C', sock, "LAN_X_DCC_WRITE_REGISTER", chunk);
+                      logf('C', sock, "LAN_X_CV_READ_ALT", chunk);
                       if constexpr (std::derived_from<Base, intf::Programming>)
-                        lanXDccWriteRegister(sock);
+                        lanXCvRead(sock,
+                                   big_endian_data2cv_address(data(chunk) + 2));
+                    }
+                    break;
+                  case DB0::LAN_X_CV_WRITE_ALT:
+                    if (size(chunk) == 0x09uz - 4uz) {
+                      logf('C', sock, "LAN_X_CV_WRITE_ALT", chunk);
+                      if constexpr (std::derived_from<Base, intf::Programming>)
+                        lanXCvWrite(sock,
+                                    static_cast<uint8_t>(chunk[2uz] - 1u),
+                                    chunk[3uz]);
                     }
                     break;
                   default:
@@ -1601,6 +1625,15 @@ private:
                   case DB0::LAN_X_CV_WRITE:
                     if (size(chunk) == 0x0Auz - 4uz) {
                       logf('C', sock, "LAN_X_CV_WRITE", chunk);
+                      if constexpr (std::derived_from<Base, intf::Programming>)
+                        lanXCvWrite(sock,
+                                    big_endian_data2cv_address(data(chunk) + 2),
+                                    chunk[4uz]);
+                    }
+                    break;
+                  case DB0::LAN_X_CV_WRITE_ALT:
+                    if (size(chunk) == 0x0Auz - 4uz) {
+                      logf('C', sock, "LAN_X_CV_WRITE_ALT", chunk);
                       if constexpr (std::derived_from<Base, intf::Programming>)
                         lanXCvWrite(sock,
                                     big_endian_data2cv_address(data(chunk) + 2),
