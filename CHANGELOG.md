@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.8
+- Add undocumented CV commands ([#25](https://github.com/ZIMO-Elektronik/Z21/issues/25))
+
 ## 0.3.7
 - Add Docker support for Z21Sim with noVNC web UI ([#21](https://github.com/ZIMO-Elektronik/Z21/pull/21))
 - Add macOS support for Z21Sim ([#21](https://github.com/ZIMO-Elektronik/Z21/pull/21))
