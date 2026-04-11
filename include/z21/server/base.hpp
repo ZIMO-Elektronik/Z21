@@ -94,7 +94,9 @@ public:
 
   /// \todo document
   void execute() {
+    auto const sys_state{intf::System::_sys_state};
     for (auto it{begin(_clients)}; it != end(_clients);) it = execute(it);
+    if (sys_state != this->systemState()) broadcastSystemStateData();
   }
 
   /// \todo document
@@ -1239,7 +1241,7 @@ private:
   /// - activated the corresponding broadcast
   /// - explicitly requested the system status
   void lanSystemStateDataChanged(Socket const& sock = {}) {
-    auto const sys_state{this->systemState()};
+    SystemState const& sys_state{this->systemState()};
 
     std::array<uint8_t, 0x14uz> const reply{
       0x14u,                                                       // Length

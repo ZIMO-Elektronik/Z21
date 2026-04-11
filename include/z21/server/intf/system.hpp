@@ -99,7 +99,7 @@ struct System {
   /// \todo
   virtual void broadcastSystemStateData() = 0;
 
-private:
+protected:
   SystemState _sys_state{};
 };
 
