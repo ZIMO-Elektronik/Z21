@@ -16,5 +16,4 @@ struct BaseMock : ServerBase {
   MOCK_METHOD(bool, trackPower, (bool), (final));
   MOCK_METHOD(bool, stop, (), (final));
   MOCK_METHOD(void, logoff, (z21::Socket const&), (final));
-  MOCK_METHOD(z21::SystemState&, systemState, (), (final));
 };
