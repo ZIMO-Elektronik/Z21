@@ -1,5 +1,8 @@
 # Changelog
 
+##
+- Add support for deprecated version of `LAN_RAILCOM_GETDATA` ([#13](https://github.com/ZIMO-Elektronik/Z21/issues/13))
+
 ## 0.3.8
 - Add undocumented CV commands ([#25](https://github.com/ZIMO-Elektronik/Z21/issues/25))
 

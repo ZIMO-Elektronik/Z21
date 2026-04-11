@@ -562,11 +562,9 @@ private:
   }
 
   /// \todo document
-  void lanRailComGetData(Socket const& sock, uint8_t type, uint16_t loco_addr)
+  void lanRailComGetData(Socket const& sock, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::RailCom>)
   {
-    /// \bug https://github.com/ZIMO-Elektronik/Z21/issues/13
-    assert(type == 0x01u);
     lanRailComDataChanged(loco_addr, sock);
   }
 
@@ -1290,8 +1288,11 @@ private:
   {
     auto const railcom_data{this->railComData(loco_addr)};
 
-    std::array<uint8_t, 0x11uz> const reply{
-      0x11u,                                                     // Length
+    // Don't attach entry to reply if we got address 0
+    auto const length{railcom_data.loco_address ? 0x11uz : 0x04uz};
+
+    std::array<uint8_t, 0x11uz> const chunk{
+      static_cast<uint8_t>(length),                              // Length
       0x00u,                                                     //
       std::to_underlying(Header::LAN_RAILCOM_DATACHANGED),       // Header
       0x00u,                                                     //
@@ -1309,6 +1310,7 @@ private:
       railcom_data.qos,                                          //
       0x00u                                                      // Reserved
     };
+    std::span<uint8_t const> reply{cbegin(chunk), length};
 
     //
     if (sock) {
@@ -2036,13 +2038,20 @@ private:
           break;
 
         case Header::LAN_RAILCOM_GETDATA:
-          if (size(chunk) == 0x07uz - 4uz) {
+          // Deprecated version of polling RailCom data of next loco
+          // https://github.com/ZIMO-Elektronik/Z21/issues/13
+          if (size(chunk) == 0x04uz - 4uz) {
             logf('C', sock, "LAN_RAILCOM_GETDATA", chunk);
             if constexpr (std::derived_from<Base, intf::RailCom>)
+              lanRailComGetData(sock, 0u);
+          } else if (size(chunk) == 0x07uz - 4uz) {
+            logf('C', sock, "LAN_RAILCOM_GETDATA", chunk);
+            if constexpr (std::derived_from<Base, intf::RailCom>) {
+              auto const type{chunk[0uz]};
               lanRailComGetData(
                 sock,
-                chunk[0uz],
-                little_endian_data2loco_address(data(chunk) + 1));
+                type ? little_endian_data2loco_address(data(chunk) + 1) : 0u);
+            }
           }
           break;
 
