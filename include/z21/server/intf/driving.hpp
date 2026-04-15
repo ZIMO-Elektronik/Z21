@@ -40,6 +40,12 @@ struct Driving {
   [[nodiscard]] virtual LocoInfo locoInfo(uint16_t loco_addr) = 0;
 
   /// \todo
+  virtual void locoEStop(uint16_t loco_addr) = 0;
+
+  /// \todo
+  virtual void locoPurge(uint16_t loco_addr) = 0;
+
+  /// \todo
   virtual void locoDrive(uint16_t loco_addr,
                          LocoInfo::SpeedSteps speed_steps,
                          uint8_t rvvvvvvv) = 0;

@@ -13,6 +13,8 @@ public:
 
   // Driving interface
   z21::LocoInfo locoInfo(uint16_t loco_addr);
+  void locoEStop(uint16_t loco_addr);
+  void locoPurge(uint16_t loco_addr);
   void locoDrive(uint16_t loco_addr,
                  z21::LocoInfo::SpeedSteps speed_steps,
                  uint8_t rvvvvvvv);

@@ -163,6 +163,12 @@ z21::LocoInfo Server::locoInfo(uint16_t loco_addr) {
   return _loco_list->locoInfo(loco_addr);
 }
 
+// LAN_X_SET_LOCO_E_STOP
+void Server::locoEStop(uint16_t loco_addr) { _loco_list->locoEStop(loco_addr); }
+
+// LAN_X_PURGE_LOCO
+void Server::locoPurge(uint16_t loco_addr) { _loco_list->locoPurge(loco_addr); }
+
 // LAN_X_SET_LOCO_FUNCTION | LAN_X_SET_LOCO_FUNCTION_GROUP
 void Server::locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state) {
   _loco_list->locoFunction(loco_addr, mask, state);

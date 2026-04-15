@@ -48,6 +48,35 @@ z21::LocoInfo LocoList::locoInfo(uint16_t loco_addr) {
   return (*this)[loco_addr]->locoInfo();
 }
 
+// LAN_X_SET_LOCO_E_STOP
+void LocoList::locoEStop(uint16_t loco_addr) {
+  auto const before{(*this)[loco_addr]->locoInfo()};
+  (*this)[loco_addr]->locoEStop();
+  auto const after{(*this)[loco_addr]->locoInfo()};
+  if (before != after) emit broadcastLocoInfo(loco_addr);
+}
+
+// LAN_X_PURGE_LOCO
+void LocoList::locoPurge(uint16_t loco_addr) {
+  // Find loco by address string
+  auto const addr_str{QString::number(loco_addr)};
+  auto list{findItems(addr_str, Qt::MatchFixedString)};
+
+  // Loco found, purge it
+  if (std::size(list) == 1uz) {
+    auto list_widget{list.first()};
+    removeItemWidget(list_widget);
+  }
+  // Loco not found
+  else if (std::empty(list)) {
+  }
+  // Loco found multiple times, shouldn't happen
+  else
+    assert(false);
+
+  std::unreachable();
+}
+
 // LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP
 void LocoList::locoDrive(uint16_t loco_addr,
                          z21::LocoInfo::SpeedSteps speed_steps,

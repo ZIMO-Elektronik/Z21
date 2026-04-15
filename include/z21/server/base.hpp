@@ -338,17 +338,14 @@ private:
   void lanXSetLocoEStop(Socket const&, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    auto const loco_info{this->locoInfo(loco_addr)};
-    this->locoDrive(loco_addr,
-                    loco_info.speed_steps,
-                    (loco_info.rvvvvvvv & 0b1000'0000u) | 0b1u);
+    this->locoEStop(loco_addr);
   }
 
   /// \todo document
-  void lanXPurgeLoco(Socket const&, uint16_t)
+  void lanXPurgeLoco(Socket const&, uint16_t loco_addr)
     requires(std::derived_from<Base, intf::Driving>)
   {
-    /// \todo
+    this->locoPurge(loco_addr);
   }
 
   /// \todo document
