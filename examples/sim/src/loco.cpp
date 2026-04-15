@@ -22,6 +22,13 @@ void Loco::locoInfo(z21::LocoInfo loco_info) {
   updateLabel();
 }
 
+// LAN_X_SET_LOCO_E_STOP
+void Loco::locoEStop() {
+  this->rvvvvvvv = z21::encode_rvvvvvvv(
+    this->speed_steps, static_cast<bool>(rvvvvvvv & ztl::mask<7u>), -1);
+  updateLabel();
+}
+
 // LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP
 void Loco::locoDrive(z21::LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv) {
   this->speed_steps = speed_steps;

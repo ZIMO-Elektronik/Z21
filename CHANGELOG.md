@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+- Add `locoEStop` and `locoPurge` methods to `Driving` interface ([#31](https://github.com/ZIMO-Elektronik/Z21/issues/31))
+
 ## 0.3.9
 - Add support for deprecated version of `LAN_RAILCOM_GETDATA` ([#13](https://github.com/ZIMO-Elektronik/Z21/issues/13))
 - Bugfix broadcast `LAN_SYSTEMSTATE_DATACHANGED` automatically when detecting changes ([#28](https://github.com/ZIMO-Elektronik/Z21/issues/28))
