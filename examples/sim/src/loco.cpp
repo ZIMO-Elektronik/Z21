@@ -13,19 +13,18 @@ Loco::Loco(QWidget* parent) : QWidget{parent} {
   updateLabel();
 }
 
+// LAN_X_SET_LOCO_E_STOP
+void Loco::locoEStop() {
+  this->rvvvvvvv = (rvvvvvvv & ztl::mask<7u>) | 0b1u;
+  updateLabel();
+}
+
 // LAN_X_GET_LOCO_INFO
 z21::LocoInfo Loco::locoInfo() { return *this; }
 
 // LAN_X_SET_LOCO_INFO (not part of the actual protocol)
 void Loco::locoInfo(z21::LocoInfo loco_info) {
   static_cast<z21::LocoInfo&>(*this) = loco_info;
-  updateLabel();
-}
-
-// LAN_X_SET_LOCO_E_STOP
-void Loco::locoEStop() {
-  this->rvvvvvvv = z21::encode_rvvvvvvv(
-    this->speed_steps, static_cast<bool>(rvvvvvvv & ztl::mask<7u>), -1);
   updateLabel();
 }
 

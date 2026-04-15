@@ -14,9 +14,9 @@ public:
 
 public slots:
   // Driving interface
+  void locoEStop();
   z21::LocoInfo locoInfo();
   void locoInfo(z21::LocoInfo loco_info);
-  void locoEStop();
   void locoDrive(z21::LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv);
   void locoFunction(uint32_t mask, uint32_t state);
   z21::LocoInfo::Mode locoMode();

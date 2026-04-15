@@ -43,11 +43,6 @@ LocoList::~LocoList() {
   config.endArray();
 }
 
-// LAN_X_GET_LOCO_INFO
-z21::LocoInfo LocoList::locoInfo(uint16_t loco_addr) {
-  return (*this)[loco_addr]->locoInfo();
-}
-
 // LAN_X_SET_LOCO_E_STOP
 void LocoList::locoEStop(uint16_t loco_addr) {
   auto const before{(*this)[loco_addr]->locoInfo()};
@@ -75,6 +70,11 @@ void LocoList::locoPurge(uint16_t loco_addr) {
     assert(false);
 
   std::unreachable();
+}
+
+// LAN_X_GET_LOCO_INFO
+z21::LocoInfo LocoList::locoInfo(uint16_t loco_addr) {
+  return (*this)[loco_addr]->locoInfo();
 }
 
 // LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP
