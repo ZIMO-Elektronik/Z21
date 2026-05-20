@@ -12,7 +12,7 @@ jobs:
       matrix:
         esp_idf_version: [latest, v5.5.4, v5.4.3, v5.3.4, v5.2.6]
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: espressif/esp-idf-ci-action@v1.2.0
@@ -24,7 +24,7 @@ jobs:
   x86_64-linux-gnu-gcc:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install prerequisites
@@ -37,7 +37,7 @@ jobs:
         run: |
           echo "ARTIFACT_NAME=$(find build -type f -name "Z21Sim-*.zip" -printf "%f\n")" >> $GITHUB_ENV
           echo "ARTIFACT_PATH=$(find build -type f -name "Z21Sim-*.zip")" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v4.6.2
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_PATH }}
@@ -45,7 +45,7 @@ jobs:
   x86_64-w64-mingw32-gcc:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install prerequisites
@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "ARTIFACT_NAME=$(find build -type f -name "Z21Sim-*.zip" -printf "%f\n")" >> $GITHUB_ENV
           echo "ARTIFACT_PATH=$(find build -type f -name "Z21Sim-*.zip")" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v4.6.2
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_PATH }}
