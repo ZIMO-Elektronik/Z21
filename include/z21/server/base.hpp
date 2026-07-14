@@ -1471,10 +1471,12 @@ private:
                   .bit_verify_to_one = static_cast<bool>(chunk[3uz]),
                   .programming_ack_current = chunk[10uz],
                   .flags = static_cast<MmDccSettings::Flags>(chunk[11uz]),
-                  .output_voltage = static_cast<uint16_t>(chunk[13uz] << 8u |
-                                                          chunk[12uz] << 0u),
+                  .output_voltage = static_cast<uint16_t>(
+                    static_cast<uint32_t>(chunk[13uz]) << 8u |
+                    static_cast<uint32_t>(chunk[12uz]) << 0u),
                   .programming_voltage = static_cast<uint16_t>(
-                    chunk[15uz] << 8u | chunk[14uz] << 0u)});
+                    static_cast<uint32_t>(chunk[15uz]) << 8u |
+                    static_cast<uint32_t>(chunk[14uz]) << 0u)});
           }
           break;
 
