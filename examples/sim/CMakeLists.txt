@@ -3,7 +3,9 @@ option(Z21_SIM_HIDE_CONFIDENTIAL_SETTINGS
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 23)
-set(QT_VERSION 6.6.3 CACHE STRING "Preferred Qt6 version")
+set(QT_VERSION
+    6.6.3
+    CACHE STRING "Preferred Qt6 version")
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
@@ -21,12 +23,12 @@ endif()
 add_executable(Z21Sim ${Z21SIM_EXE_TYPE} ${COMMON_SRC} ${SRC})
 
 if(APPLE)
-  set_target_properties(Z21Sim PROPERTIES
-    MACOSX_BUNDLE_GUI_IDENTIFIER "com.zimo.Z21Sim"
-    MACOSX_BUNDLE_BUNDLE_NAME "Z21Sim"
-    MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-  )
+  set_target_properties(
+    Z21Sim
+    PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "com.zimo.Z21Sim"
+               MACOSX_BUNDLE_BUNDLE_NAME "Z21Sim"
+               MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+               MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}")
 endif()
 
 target_compile_definitions(
@@ -43,7 +45,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL Linux AND CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 target_common_warnings(Z21Sim PRIVATE)
-target_common_errors(Z21Sim PRIVATE -Wno-shadow)
+target_common_errors(Z21Sim PRIVATE -Werror -Wno-format-nonliteral -Wno-shadow
+                     -Wno-suggest-override)
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)
   if(CMAKE_SYSTEM_NAME STREQUAL Linux)
