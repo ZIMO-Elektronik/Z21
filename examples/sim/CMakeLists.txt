@@ -45,7 +45,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL Linux AND CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 target_common_warnings(Z21Sim PRIVATE)
-target_common_errors(Z21Sim PRIVATE -Werror -Wno-format-nonliteral -Wno-shadow
+target_common_errors(Z21Sim PRIVATE -Wno-format-nonliteral -Wno-shadow
                      -Wno-suggest-override)
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)

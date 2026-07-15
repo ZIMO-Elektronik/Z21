@@ -88,7 +88,7 @@ else()
 endif()
 
 if(NOT TARGET ZTL::ZTL)
-  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.25.0")
+  cpmaddpackage("gh:ZIMO-Elektronik/ZTL@0.25.1")
 endif()
 
 target_link_libraries(Z21 INTERFACE ZTL::ZTL)
