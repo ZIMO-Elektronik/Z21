@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: espressif/esp-idf-ci-action@v1.2.0
+      - uses: espressif/esp-idf-ci-action@v1
         with:
           path: examples/posix
           esp_idf_version: ${{ matrix.esp_idf_version }}
