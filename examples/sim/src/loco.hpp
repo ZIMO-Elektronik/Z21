@@ -17,6 +17,8 @@ public slots:
   void locoEStop();
   z21::LocoInfo locoInfo();
   void locoInfo(z21::LocoInfo loco_info);
+  std::string_view locoName();
+  void locoName(uint8_t, std::string_view name);
   void locoDrive(z21::LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv);
   void locoFunction(uint32_t mask, uint32_t state);
   z21::LocoInfo::Mode locoMode();
@@ -30,7 +32,7 @@ private:
   void updateLabel();
 
   QLabel* _label{new QLabel{this}};
-
+  std::string _name{};
   std::array<uint8_t, 1024uz> _cvs{initial_loco_cvs};
 };
 

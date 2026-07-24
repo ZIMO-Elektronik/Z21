@@ -18,9 +18,11 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
     config.setArrayIndex(i);
     auto const addr{config.value("address")};
     auto const loco_info{config.value("loco_info")};
+    auto const name{config.value("name").toString()};
     if (!addr.isValid() || !loco_info.isValid()) continue;
     auto loco{new Loco};
     loco->locoInfo(loco_info.value<z21::LocoInfo>());
+    loco->locoName(i, name.toStdString());
     auto list_widget{
       new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr.toString()}};
     addItem(list_widget);
@@ -39,6 +41,9 @@ LocoList::~LocoList() {
     auto loco{static_cast<Loco*>(itemWidget(list_widget))};
     config.setValue("address", list_widget->text());
     config.setValue("loco_info", QVariant::fromValue(loco->locoInfo()));
+    config.setValue("name",
+                    QString::fromUtf8(std::data(loco->locoName()),
+                                      std::ssize(loco->locoName())));
   }
   config.endArray();
 }
@@ -75,6 +80,13 @@ void LocoList::locoPurge(uint16_t loco_addr) {
 // LAN_X_GET_LOCO_INFO
 z21::LocoInfo LocoList::locoInfo(uint16_t loco_addr) {
   return (*this)[loco_addr]->locoInfo();
+}
+
+// LAN_X_SET_LOCO_NAME
+void LocoList::locoName(uint16_t loco_addr,
+                        uint8_t index,
+                        std::string_view name) {
+  (*this)[loco_addr]->locoName(index, name);
 }
 
 // LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP

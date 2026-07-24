@@ -22,6 +22,15 @@ void Loco::locoEStop() {
 // LAN_X_GET_LOCO_INFO
 z21::LocoInfo Loco::locoInfo() { return *this; }
 
+// LAN_X_GET_LOCO_NAME (not part of the actual protocol)
+std::string_view Loco::locoName() { return _name; }
+
+// LAN_X_SET_LOCO_NAME
+void Loco::locoName(uint8_t, std::string_view name) {
+  _name = name;
+  updateLabel();
+}
+
 // LAN_X_SET_LOCO_INFO (not part of the actual protocol)
 void Loco::locoInfo(z21::LocoInfo loco_info) {
   static_cast<z21::LocoInfo&>(*this) = loco_info;
@@ -65,6 +74,7 @@ void Loco::updateLabel() {
   // Not yet supported
   // text += "B" + QString::number(0) + " ";
 
+  // Mode
   if (mode == LocoInfo::Mode::DCC) {
     text += (speed_steps == LocoInfo::DCC14   ? "DCC14 "
              : speed_steps == LocoInfo::DCC28 ? "DCC28 "
@@ -77,16 +87,20 @@ void Loco::updateLabel() {
             QString{" "};
   }
 
+  // RVVVVVVV
   text +=
     "R" + QString::number(static_cast<bool>(rvvvvvvv & ztl::mask<7u>)) + " ";
-
   if (auto const speed{z21::decode_rvvvvvvv(speed_steps, rvvvvvvv)}; !speed)
     text += "Stop";
   else if (speed == -1) text += "EStop";
   else text += "V" + QString::number(speed);
   text += " ";
 
-  text += "F" + QString{"%1"}.arg(f31_0, 8, 16, QLatin1Char('0'));
+  // Functions
+  text += "F" + QString{"%1"}.arg(f31_0, 8, 16, QLatin1Char('0')) + " ";
+
+  // Name
+  if (std::size(_name)) text += "\"" + _name + "\"";
 
   _label->setText(text);
 }

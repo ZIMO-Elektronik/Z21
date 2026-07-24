@@ -169,6 +169,13 @@ z21::LocoInfo Server::locoInfo(uint16_t loco_addr) {
   return _loco_list->locoInfo(loco_addr);
 }
 
+// LAN_X_SET_LOCO_NAME
+void Server::locoName(uint16_t loco_addr,
+                      uint8_t index,
+                      std::string_view name) {
+  _loco_list->locoName(loco_addr, index, name);
+}
+
 // LAN_X_SET_LOCO_FUNCTION | LAN_X_SET_LOCO_FUNCTION_GROUP
 void Server::locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state) {
   _loco_list->locoFunction(loco_addr, mask, state);

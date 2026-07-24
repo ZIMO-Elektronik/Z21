@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.1
+- Add `LAN_X_SET_LOCO_NAME` ([#35](https://github.com/ZIMO-Elektronik/Z21/issues/35))
+
 ## 0.4.0
 - Add `locoEStop` and `locoPurge` methods to `Driving` interface ([#31](https://github.com/ZIMO-Elektronik/Z21/issues/31))
 

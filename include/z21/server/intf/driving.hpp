@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <string_view>
 #include "../../loco_info.hpp"
 
 namespace z21::server::intf {
@@ -20,6 +21,7 @@ namespace z21::server::intf {
 /// - LAN_X_SET_LOCO_E_STOP
 /// - LAN_X_PURGE_LOCO
 /// - LAN_X_GET_LOCO_INFO
+/// - LAN_X_SET_LOCO_NAME
 /// - LAN_X_SET_LOCO_DRIVE
 /// - LAN_X_SET_LOCO_FUNCTION
 /// - LAN_X_SET_LOCO_FUNCTION_GROUP
@@ -44,6 +46,10 @@ struct Driving {
 
   /// \todo
   [[nodiscard]] virtual LocoInfo locoInfo(uint16_t loco_addr) = 0;
+
+  /// \todo
+  virtual void
+  locoName(uint16_t loco_addr, uint8_t index, std::string_view name) = 0;
 
   /// \todo
   virtual void locoDrive(uint16_t loco_addr,
