@@ -442,6 +442,16 @@ private:
   }
 
   /// \todo document
+  void lanXSetLocoName(Socket const&,
+                       uint16_t loco_addr,
+                       uint8_t index,
+                       std::string_view name)
+    requires(std::derived_from<Base, intf::Driving>)
+  {
+    this->locoName(loco_addr, index, name);
+  }
+
+  /// \todo document
   void lanXCvPomWriteByte(Socket const&,
                           uint16_t loco_addr,
                           uint16_t cv_addr,
@@ -1841,6 +1851,7 @@ private:
 
               case XHeader::LAN_X_E6:
                 switch (static_cast<DB0>(chunk[1uz])) {
+                  case DB0::LAN_X_SET_LOCO_NAME: goto lan_x_set_loco_name;
                   case DB0::LAN_X_CV_POM:
                     switch (chunk[4uz] & 0xFCu) {
                       case 0xECu:
@@ -1931,6 +1942,30 @@ private:
                          header);
                     lanXUnknownCommand(sock);
                     break;
+                }
+                break;
+
+              lan_x_set_loco_name:
+              case XHeader::LAN_X_E7: [[fallthrough]];
+              case XHeader::LAN_X_E8: [[fallthrough]];
+              case XHeader::LAN_X_E9: [[fallthrough]];
+              case XHeader::LAN_X_EA: [[fallthrough]];
+              case XHeader::LAN_X_EB: [[fallthrough]];
+              case XHeader::LAN_X_EC: [[fallthrough]];
+              case XHeader::LAN_X_ED: [[fallthrough]];
+              case XHeader::LAN_X_EE: [[fallthrough]];
+              case XHeader::LAN_X_EF:
+                if (auto const strlen{chunk[0uz] -
+                                      std::to_underlying(XHeader::LAN_X_E6) +
+                                      sizeof(char)};
+                    size(chunk) == 7uz + strlen) {
+                  logf('C', sock, "LAN_X_SET_LOCO_NAME", chunk);
+                  if constexpr (std::derived_from<Base, intf::Driving>)
+                    lanXSetLocoName(
+                      sock,
+                      big_endian_data2loco_address(data(chunk) + 2),
+                      chunk[4uz],
+                      {reinterpret_cast<char const*>(data(chunk) + 6), strlen});
                 }
                 break;
 

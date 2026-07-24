@@ -323,6 +323,7 @@ virtual void broadcastSystemStateData() = 0;
 | LAN_X_SET_LOCO_E_STOP             | -                                                    | LAN_X_LOCO_INFO             |
 | LAN_X_PURGE_LOCO                  | -                                                    |                             |
 | LAN_X_GET_LOCO_INFO               | LAN_X_LOCO_INFO                                      |                             |
+| LAN_X_SET_LOCO_NAME               | -                                                    |                             |
 | LAN_X_SET_LOCO_DRIVE              | -                                                    | LAN_X_LOCO_INFO             |
 | LAN_X_SET_LOCO_FUNCTION           | -                                                    | LAN_X_LOCO_INFO             |
 | LAN_X_SET_LOCO_FUNCTION_GROUP     | -                                                    | LAN_X_LOCO_INFO             |
