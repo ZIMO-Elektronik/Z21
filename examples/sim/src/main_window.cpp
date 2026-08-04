@@ -117,8 +117,8 @@ void MainWindow::applyDefaultSize() {
   auto const available{screen->availableGeometry()};
 
   // Keep the window usable on smaller MacBooks while giving room for the tabs
-  QSize const min_size{std::min(available.width(), 1280),
-                       std::min(available.height(), 800)};
+  QSize const min_size{std::min(available.width(), 1400),
+                       std::min(available.height(), 960)};
   setMinimumSize(min_size);
 
   QSize const desired{std::clamp(static_cast<int>(available.width() * 0.8),

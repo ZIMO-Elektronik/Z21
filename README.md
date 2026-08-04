@@ -32,9 +32,9 @@ The [ROCO](https://www.roco.cc/ren/) [Z21](https://www.z21.eu/en) is a command s
 ## Protocol
 The official documentation of the protocol can be downloaded from the ROCO homepage in English and German.
 
-| English                                                                                                                                                                               | German                                                                                                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Z21 LAN protocol V1.13](https://www.z21.eu/media/Kwc_Basic_DownloadTag_Component/root-en-main_47-1652-959-downloadTag-download/default/d559b9cf/1699290380/z21-lan-protokoll-en.pdf) | [Z21 LAN Protokoll V1.13](https://www.z21.eu/media/Kwc_Basic_DownloadTag_Component/47-1652-959-downloadTag/default/69bad87e/1699290251/z21-lan-protokoll.pdf)|
+| English                                                                                                                                                                               | German                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Z21 LAN protocol V1.13](https://www.z21.eu/media/Kwc_Basic_DownloadTag_Component/root-en-main_47-1652-959-downloadTag-download/default/d559b9cf/1699290380/z21-lan-protokoll-en.pdf) | [Z21 LAN Protokoll V1.13](https://www.z21.eu/media/Kwc_Basic_DownloadTag_Component/47-1652-959-downloadTag/default/69bad87e/1699290251/z21-lan-protokoll.pdf) |
 
 ## Features
 - Platform-independent
@@ -321,48 +321,48 @@ virtual void broadcastSystemStateData() = 0;
 | LAN_X_SET_EXT_ACCESSORY           | -                                                    | LAN_X_EXT_ACCESSORY_INFO    |
 | LAN_X_SET_STOP                    | LAN_X_BC_STOPPED                                     | LAN_X_BC_STOPPED            |
 | LAN_X_SET_LOCO_E_STOP             | -                                                    | LAN_X_LOCO_INFO             |
-| LAN_X_PURGE_LOCO                  | -                                                    |                             |
-| LAN_X_GET_LOCO_INFO               | LAN_X_LOCO_INFO                                      |                             |
-| LAN_X_SET_LOCO_NAME               | -                                                    |                             |
+| LAN_X_PURGE_LOCO                  | -                                                    | -                           |
+| LAN_X_GET_LOCO_INFO               | LAN_X_LOCO_INFO                                      | -                           |
+| LAN_X_SET_LOCO_ENTRY              | -                                                    | LAN_X_LOCO_ENTRY            |
 | LAN_X_SET_LOCO_DRIVE              | -                                                    | LAN_X_LOCO_INFO             |
 | LAN_X_SET_LOCO_FUNCTION           | -                                                    | LAN_X_LOCO_INFO             |
 | LAN_X_SET_LOCO_FUNCTION_GROUP     | -                                                    | LAN_X_LOCO_INFO             |
-| LAN_X_SET_LOCO_BINARY_STATE       | -                                                    |                             |
-| LAN_X_CV_POM_WRITE_BYTE           | -                                                    |                             |
-| LAN_X_CV_POM_WRITE_BIT            | -                                                    |                             |
-| LAN_X_CV_POM_READ_BYTE            | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT |                             |
-| LAN_X_CV_POM_ACCESSORY_WRITE_BYTE | -                                                    |                             |
-| LAN_X_CV_POM_ACCESSORY_WRITE_BIT  | -                                                    |                             |
-| LAN_X_CV_POM_ACCESSORY_READ_BYTE  | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT |                             |
-| LAN_X_GET_FIRMWARE_VERSION        | Reply_to_LAN_X_GET_FIRMWARE_VERSION                  |                             |
-| LAN_SET_BROADCASTFLAGS            | -                                                    |                             |
-| LAN_GET_BROADCASTFLAGS            | Reply_to_LAN_GET_BROADCASTFLAGS                      |                             |
-| LAN_GET_LOCOMODE                  | Reply_to_LAN_GET_LOCOMODE                            |                             |
-| LAN_SET_LOCOMODE                  | -                                                    |                             |
-| LAN_GET_TURNOUTMODE               | Reply_to_LAN_GET_TURNOUTMODE                         |                             |
-| LAN_SET_TURNOUTMODE               | -                                                    |                             |
-| LAN_RMBUS_GETDATA                 |                                                      |                             |
-| LAN_RMBUS_PROGRAMMODULE           |                                                      |                             |
+| LAN_X_SET_LOCO_BINARY_STATE       | -                                                    | -                           |
+| LAN_X_CV_POM_WRITE_BYTE           | -                                                    | -                           |
+| LAN_X_CV_POM_WRITE_BIT            | -                                                    | -                           |
+| LAN_X_CV_POM_READ_BYTE            | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | -                           |
+| LAN_X_CV_POM_ACCESSORY_WRITE_BYTE | -                                                    | -                           |
+| LAN_X_CV_POM_ACCESSORY_WRITE_BIT  | -                                                    | -                           |
+| LAN_X_CV_POM_ACCESSORY_READ_BYTE  | LAN_X_CV_NACK_SC<br>LAN_X_CV_NACK<br>LAN_X_CV_RESULT | -                           |
+| LAN_X_GET_FIRMWARE_VERSION        | Reply_to_LAN_X_GET_FIRMWARE_VERSION                  | -                           |
+| LAN_SET_BROADCASTFLAGS            | -                                                    | -                           |
+| LAN_GET_BROADCASTFLAGS            | Reply_to_LAN_GET_BROADCASTFLAGS                      | -                           |
+| LAN_GET_LOCOMODE                  | Reply_to_LAN_GET_LOCOMODE                            | -                           |
+| LAN_SET_LOCOMODE                  | -                                                    | -                           |
+| LAN_GET_TURNOUTMODE               | Reply_to_LAN_GET_TURNOUTMODE                         | -                           |
+| LAN_SET_TURNOUTMODE               | -                                                    | -                           |
+| LAN_RMBUS_GETDATA                 | ?                                                    | ?                           |
+| LAN_RMBUS_PROGRAMMODULE           | ?                                                    | ?                           |
 | LAN_SYSTEMSTATE_GETDATA           | LAN_SYSTEMSTATE_DATACHANGED                          | LAN_SYSTEMSTATE_DATACHANGED |
 | LAN_RAILCOM_GETDATA               | LAN_RAILCOM_DATACHANGED                              | LAN_RAILCOM_DATACHANGED     |
-| LAN_LOCONET_FROM_LAN              |                                                      |                             |
-| LAN_LOCONET_DISPATCH_ADDR         |                                                      |                             |
-| LAN_LOCONET_DETECTOR              |                                                      |                             |
-| LAN_CAN_DETECTOR                  |                                                      |                             |
-| LAN_CAN_DEVICE_GET_DESCRIPTION    |                                                      |                             |
-| LAN_CAN_DEVICE_SET_DESCRIPTION    |                                                      |                             |
-| LAN_CAN_BOOSTER_SET_TRACKPOWER    |                                                      |                             |
-| LAN_FAST_CLOCK_CONTROL            |                                                      |                             |
-| LAN_FAST_CLOCK_SETTINGS_GET       |                                                      |                             |
-| LAN_FAST_CLOCK_SETTINGS_SET       |                                                      |                             |
-| LAN_BOOSTER_SET_POWER             |                                                      |                             |
-| LAN_BOOSTER_GET_DESCRIPTION       |                                                      |                             |
-| LAN_BOOSTER_SET_DESCRIPTION       |                                                      |                             |
-| LAN_BOOSTER_SYSTEMSTATE_GETDATA   |                                                      |                             |
-| LAN_DECODER_GET_DESCRIPTION       |                                                      |                             |
-| LAN_DECODER_SET_DESCRIPTION       |                                                      |                             |
-| LAN_DECODER_SYSTEMSTATE_GETDATA   |                                                      |                             |
-| LAN_ZLINK_GET_HWINFO              |                                                      |                             |
+| LAN_LOCONET_FROM_LAN              | ?                                                    | ?                           |
+| LAN_LOCONET_DISPATCH_ADDR         | ?                                                    | ?                           |
+| LAN_LOCONET_DETECTOR              | ?                                                    | ?                           |
+| LAN_CAN_DETECTOR                  | ?                                                    | ?                           |
+| LAN_CAN_DEVICE_GET_DESCRIPTION    | ?                                                    | ?                           |
+| LAN_CAN_DEVICE_SET_DESCRIPTION    | ?                                                    | ?                           |
+| LAN_CAN_BOOSTER_SET_TRACKPOWER    | ?                                                    | ?                           |
+| LAN_FAST_CLOCK_CONTROL            | ?                                                    | ?                           |
+| LAN_FAST_CLOCK_SETTINGS_GET       | ?                                                    | ?                           |
+| LAN_FAST_CLOCK_SETTINGS_SET       | ?                                                    | ?                           |
+| LAN_BOOSTER_SET_POWER             | ?                                                    | ?                           |
+| LAN_BOOSTER_GET_DESCRIPTION       | ?                                                    | ?                           |
+| LAN_BOOSTER_SET_DESCRIPTION       | ?                                                    | ?                           |
+| LAN_BOOSTER_SYSTEMSTATE_GETDATA   | ?                                                    | ?                           |
+| LAN_DECODER_GET_DESCRIPTION       | ?                                                    | ?                           |
+| LAN_DECODER_SET_DESCRIPTION       | ?                                                    | ?                           |
+| LAN_DECODER_SYSTEMSTATE_GETDATA   | ?                                                    | ?                           |
+| LAN_ZLINK_GET_HWINFO              | ?                                                    | ?                           |
 
 ## Broadcasts
 | Broadcast                               |
@@ -375,6 +375,7 @@ virtual void broadcastSystemStateData() = 0;
 | LAN_X_BC_TRACK_SHORT_CIRCUIT            |
 | LAN_X_BC_STOPPED                        |
 | LAN_X_LOCO_INFO                         |
+| LAN_X_LOCO_ENTRY                        |
 | LAN_RMBUS_DATACHANGED                   |
 | LAN_SYSTEMSTATE_DATACHANGED             |
 | LAN_RAILCOM_DATACHANGED                 |

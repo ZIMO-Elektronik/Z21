@@ -18,11 +18,12 @@ LocoList::LocoList(QWidget* parent) : QListWidget{parent} {
     config.setArrayIndex(i);
     auto const addr{config.value("address")};
     auto const loco_info{config.value("loco_info")};
-    auto const name{config.value("name").toString()};
-    if (!addr.isValid() || !loco_info.isValid()) continue;
+    auto const loco_entry{config.value("loco_entry")};
+    if (!addr.isValid() || !loco_info.isValid() || !loco_entry.isValid())
+      continue;
     auto loco{new Loco};
     loco->locoInfo(loco_info.value<z21::LocoInfo>());
-    loco->locoName(i, name.toStdString());
+    loco->locoEntry(loco_entry.value<z21::LocoEntry>());
     auto list_widget{
       new QListWidgetItem{QPixmap{":/icons/loco.svg"}, addr.toString()}};
     addItem(list_widget);
@@ -41,9 +42,7 @@ LocoList::~LocoList() {
     auto loco{static_cast<Loco*>(itemWidget(list_widget))};
     config.setValue("address", list_widget->text());
     config.setValue("loco_info", QVariant::fromValue(loco->locoInfo()));
-    config.setValue("name",
-                    QString::fromUtf8(std::data(loco->locoName()),
-                                      std::ssize(loco->locoName())));
+    config.setValue("loco_entry", QVariant::fromValue(loco->locoEntry()));
   }
   config.endArray();
 }
@@ -82,11 +81,14 @@ z21::LocoInfo LocoList::locoInfo(uint16_t loco_addr) {
   return (*this)[loco_addr]->locoInfo();
 }
 
-// LAN_X_SET_LOCO_NAME
-void LocoList::locoName(uint16_t loco_addr,
-                        uint8_t index,
-                        std::string_view name) {
-  (*this)[loco_addr]->locoName(index, name);
+// LAN_X_LOCO_ENTRY
+z21::LocoEntry LocoList::locoEntry(uint16_t loco_addr) {
+  return (*this)[loco_addr]->locoEntry();
+}
+
+// LAN_X_SET_LOCO_ENTRY
+void LocoList::locoEntry(uint16_t loco_addr, z21::LocoEntry loco_entry) {
+  (*this)[loco_addr]->locoEntry(std::move(loco_entry));
 }
 
 // LAN_X_SET_LOCO_DRIVE | LAN_X_SET_LOCO_E_STOP

@@ -44,11 +44,9 @@ inline QDataStream& operator>>(QDataStream& stream,
   z21::TurnoutInfo::Mode mode;
   stream >> mode;
   turnout_info.mode = mode;
-
   z21::TurnoutInfo::Position position;
   stream >> position;
   turnout_info.position = position;
-
   return stream;
 }
 

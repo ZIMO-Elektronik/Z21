@@ -6,7 +6,7 @@
 #include "initial_cvs.hpp"
 
 // Single loco entry for LocoList
-class Loco : public QWidget, public z21::LocoInfo {
+class Loco : public QWidget, public z21::LocoInfo, public z21::LocoEntry {
   Q_OBJECT
 
 public:
@@ -15,13 +15,13 @@ public:
 public slots:
   // Driving interface
   void locoEStop();
-  z21::LocoInfo locoInfo();
+  [[nodiscard]] z21::LocoInfo locoInfo();
   void locoInfo(z21::LocoInfo loco_info);
-  std::string_view locoName();
-  void locoName(uint8_t, std::string_view name);
+  [[nodiscard]] z21::LocoEntry locoEntry();
+  void locoEntry(z21::LocoEntry loco_entry);
   void locoDrive(z21::LocoInfo::SpeedSteps speed_steps, uint8_t rvvvvvvv);
   void locoFunction(uint32_t mask, uint32_t state);
-  z21::LocoInfo::Mode locoMode();
+  [[nodiscard]] z21::LocoInfo::Mode locoMode();
   void locoMode(z21::LocoInfo::Mode mode);
 
   // Programming interface
@@ -32,7 +32,6 @@ private:
   void updateLabel();
 
   QLabel* _label{new QLabel{this}};
-  std::string _name{};
   std::array<uint8_t, 1024uz> _cvs{initial_loco_cvs};
 };
 
@@ -49,20 +48,41 @@ inline QDataStream& operator>>(QDataStream& stream, z21::LocoInfo& loco_info) {
   z21::LocoInfo::Mode mode;
   stream >> mode;
   loco_info.mode = mode;
-
   z21::LocoInfo::SpeedSteps speed_steps;
   stream >> speed_steps;
   loco_info.speed_steps = speed_steps;
-
   uint8_t rvvvvvvv;
   stream >> rvvvvvvv;
   loco_info.rvvvvvvv = rvvvvvvv;
-
   uint32_t f31_0;
   stream >> f31_0;
   loco_info.f31_0 = f31_0;
-
   return stream;
 }
 
 Q_DECLARE_METATYPE(z21::LocoInfo)
+
+// Overload operator<< for serialization of z21::LocoEntry
+inline QDataStream& operator<<(QDataStream& stream,
+                               z21::LocoEntry const& loco_entry) {
+  stream << loco_entry.index << loco_entry.size
+         << QString::fromStdString(loco_entry.name);
+  return stream;
+}
+
+// Overload operator>> for deserialization of z21::LocoEntry
+inline QDataStream& operator>>(QDataStream& stream,
+                               z21::LocoEntry& loco_entry) {
+  uint8_t index;
+  stream >> index;
+  loco_entry.index = index;
+  uint8_t size;
+  stream >> size;
+  loco_entry.size = size;
+  QString name;
+  stream >> name;
+  loco_entry.name = name.toStdString();
+  return stream;
+}
+
+Q_DECLARE_METATYPE(z21::LocoEntry)
