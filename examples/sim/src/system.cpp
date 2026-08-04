@@ -17,6 +17,8 @@ double random_failure() {
 
 } // namespace
 
+using namespace Qt::StringLiterals;
+
 // Load system state from config and create layout
 System::System(QWidget* parent) : QWidget{parent} {
   auto layout{new QGridLayout};
@@ -64,13 +66,24 @@ System::System(QWidget* parent) : QWidget{parent} {
   }
 
   {
+    auto groupbox{new QGroupBox{"Locos"}};
+    auto grid{new QGridLayout};
+    auto button{new QPushButton{"Send"}};
+    grid->addWidget(new QLabel{u"Send locos to ᴡʟᴀɴMAUS"_s}, 0, 0);
+    grid->addWidget(button, 0, 1);
+    connect(button, &QPushButton::clicked, this, &System::broadcastLocos);
+    groupbox->setLayout(grid);
+    layout->addWidget(groupbox, 1, 0, 1, 1);
+  }
+
+  {
     initProgramTrack();
     auto groupbox{new QGroupBox{"Program track"}};
     auto grid{new QGridLayout};
     grid->addWidget(new QLabel{"Decoder on program track"}, 0, 0);
     grid->addWidget(_program_track_combobox, 0, 1);
     groupbox->setLayout(grid);
-    layout->addWidget(groupbox, 1, 0, 1, 1);
+    layout->addWidget(groupbox, 2, 0, 1, 1);
   }
 
   {
@@ -85,7 +98,7 @@ System::System(QWidget* parent) : QWidget{parent} {
       grid->addWidget(sliders[i], static_cast<int>(i), 2);
     }
     groupbox->setLayout(grid);
-    layout->addWidget(groupbox, 2, 0, 1, 1);
+    layout->addWidget(groupbox, 3, 0, 1, 1);
   }
 
   {
@@ -100,7 +113,7 @@ System::System(QWidget* parent) : QWidget{parent} {
       grid->addWidget(sliders[i], static_cast<int>(i), 2);
     }
     groupbox->setLayout(grid);
-    layout->addWidget(groupbox, 3, 0, 4, 1);
+    layout->addWidget(groupbox, 4, 0, 4, 1);
   }
 
   setLayout(layout);
@@ -261,6 +274,7 @@ void System::initCurrentsVoltagesTemperatureWidgets() {
   sliders.push_back(new QSlider{Qt::Horizontal});
   sliders.back()->setMinimum(0);
   sliders.back()->setMaximum(10000);
+  sliders.back()->setStatusTip("Current on the main track [mA]");
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
@@ -268,6 +282,7 @@ void System::initCurrentsVoltagesTemperatureWidgets() {
   sliders.push_back(new QSlider{Qt::Horizontal});
   sliders.back()->setMinimum(0);
   sliders.back()->setMaximum(2000);
+  sliders.back()->setStatusTip("Current on programming track [mA]");
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
@@ -275,6 +290,7 @@ void System::initCurrentsVoltagesTemperatureWidgets() {
   sliders.push_back(new QSlider{Qt::Horizontal});
   sliders.back()->setMinimum(0);
   sliders.back()->setMaximum(sliders[0uz]->maximum());
+  sliders.back()->setStatusTip("Smoothed current on the main track [mA]");
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
@@ -282,6 +298,7 @@ void System::initCurrentsVoltagesTemperatureWidgets() {
   sliders.push_back(new QSlider{Qt::Horizontal});
   sliders.back()->setMinimum(0);
   sliders.back()->setMaximum(100);
+  sliders.back()->setStatusTip("Command station internal temperature [°C]");
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
@@ -289,6 +306,7 @@ void System::initCurrentsVoltagesTemperatureWidgets() {
   sliders.push_back(new QSlider{Qt::Horizontal});
   sliders.back()->setMinimum(12000);
   sliders.back()->setMaximum(sliders.back()->minimum() * 2);
+  sliders.back()->setStatusTip("Supply voltage [mV]");
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //
@@ -296,6 +314,8 @@ void System::initCurrentsVoltagesTemperatureWidgets() {
   sliders.push_back(new QSlider{Qt::Horizontal});
   sliders.back()->setMinimum(sliders[4uz]->minimum());
   sliders.back()->setMaximum(sliders[4uz]->maximum() - 1000);
+  sliders.back()->setStatusTip(
+    "Internal voltage, identical to track voltage [mV]");
   values.push_back(new QLabel{QString::number(sliders.back()->value())});
 
   //

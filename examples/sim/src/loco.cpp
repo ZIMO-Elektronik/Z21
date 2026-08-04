@@ -22,18 +22,18 @@ void Loco::locoEStop() {
 // LAN_X_GET_LOCO_INFO
 z21::LocoInfo Loco::locoInfo() { return *this; }
 
-// LAN_X_GET_LOCO_NAME (not part of the actual protocol)
-std::string_view Loco::locoName() { return _name; }
-
-// LAN_X_SET_LOCO_NAME
-void Loco::locoName(uint8_t, std::string_view name) {
-  _name = name;
-  updateLabel();
-}
-
 // LAN_X_SET_LOCO_INFO (not part of the actual protocol)
 void Loco::locoInfo(z21::LocoInfo loco_info) {
   static_cast<z21::LocoInfo&>(*this) = loco_info;
+  updateLabel();
+}
+
+// LAN_X_GET_LOCO_ENTRY (not part of the actual protocol)
+z21::LocoEntry Loco::locoEntry() { return *this; }
+
+// LAN_X_SET_LOCO_ENTRY
+void Loco::locoEntry(z21::LocoEntry loco_entry) {
+  static_cast<z21::LocoEntry&>(*this) = loco_entry;
   updateLabel();
 }
 
@@ -100,7 +100,7 @@ void Loco::updateLabel() {
   text += "F" + QString{"%1"}.arg(f31_0, 8, 16, QLatin1Char('0')) + " ";
 
   // Name
-  if (std::size(_name)) text += "\"" + _name + "\"";
+  if (std::size(name)) text += "\"" + name + "\"";
 
   _label->setText(text);
 }

@@ -150,6 +150,17 @@ public:
   }
 
   /// \todo document
+  ///
+  /// \warning
+  /// ᴡʟᴀɴMAUS devices require a 100ms pause between each entry.
+  void broadcastLocoEntry(uint16_t loco_addr) // final
+    Z21_REQUIRES(std::derived_from<Base, intf::Driving>) {
+    Z21_REQUIRE_BODY((std::derived_from<Base, intf::Driving>),
+                     "broadcastLocoEntry requires Driving interface");
+    lanXLocoEntry(loco_addr);
+  }
+
+  /// \todo document
   void broadcastSystemStateData() final { lanSystemStateDataChanged(); }
 
   /// \todo document
@@ -442,16 +453,6 @@ private:
   }
 
   /// \todo document
-  void lanXSetLocoName(Socket const&,
-                       uint16_t loco_addr,
-                       uint8_t index,
-                       std::string_view name)
-    requires(std::derived_from<Base, intf::Driving>)
-  {
-    this->locoName(loco_addr, index, name);
-  }
-
-  /// \todo document
   void lanXCvPomWriteByte(Socket const&,
                           uint16_t loco_addr,
                           uint16_t cv_addr,
@@ -503,6 +504,14 @@ private:
     if (full(_cv_request_deque)) return;
     _cv_request_deque.push_back(&sock);
     this->cvPomAccessoryRead(accy_addr, cv_addr, c);
+  }
+
+  /// \todo document
+  void lanXSetLocoEntry(Socket const&, uint16_t loco_addr, LocoEntry loco_entry)
+    requires(std::derived_from<Base, intf::Driving>)
+  {
+    this->locoEntry(loco_addr, std::move(loco_entry));
+    lanXLocoEntry(loco_addr);
   }
 
   /// \todo document
@@ -1165,6 +1174,48 @@ private:
             std::ranges::contains(c.sub_loco_addrs, loco_addr)) {
           this->transmit(s, reply);
           logf('S', s, "LAN_X_LOCO_INFO", reply);
+        }
+  }
+
+  /// \todo document
+  void lanXLocoEntry(uint16_t loco_addr, Socket const& sock = {}) {
+    static constexpr auto max_strlen{
+      std::to_underlying(XHeader::LAN_X_SET_LOCO_ENTRY_LEN_10) -
+      std::to_underlying(XHeader::LAN_X_SET_LOCO_ENTRY_LEN_1) + 1uz};
+    auto const loco_entry{this->locoEntry(loco_addr)};
+    auto const strlen{std::min(size(loco_entry.name), max_strlen)};
+
+    std::array<uint8_t, 0x15uz> tmp{
+      static_cast<uint8_t>(0x0Cu + strlen - 1uz),   // Length
+      0x00u,                                        //
+      std::to_underlying(Header::LAN_X_LOCO_ENTRY), // Header
+      0x00u,                                        //
+      static_cast<uint8_t>(
+        std::to_underlying(XHeader::LAN_X_SET_LOCO_ENTRY_LEN_1) + strlen -
+        1uz),                                    // X-Header
+      std::to_underlying(DB0::LAN_X_LOCO_ENTRY), // DB0
+      static_cast<uint8_t>(loco_addr >> 8u),     // Address
+      static_cast<uint8_t>(loco_addr >> 0u),     //
+      loco_entry.index,                          // Loco index
+      loco_entry.size,                           // Locos size
+    };
+    auto it{std::copy_n(
+      cbegin(loco_entry.name), strlen, begin(tmp) + 10)}; // Loco name
+    *it = exor({cbegin(tmp) + 4, it});
+    std::span const reply{cbegin(tmp),
+                          static_cast<size_t>(it - cbegin(tmp) + 1)};
+
+    //
+    if (sock) {
+      this->transmit(sock, reply);
+      logf('S', sock, "LAN_X_LOCO_ENTRY", reply);
+    }
+    //
+    else
+      for (auto const& [s, c] : _clients)
+        if (std::to_underlying(c.bc_flags & BroadcastFlags::DrivingSwitching)) {
+          this->transmit(s, reply);
+          logf('S', s, "LAN_X_LOCO_ENTRY", reply);
         }
   }
 
@@ -1851,7 +1902,6 @@ private:
 
               case XHeader::LAN_X_E6:
                 switch (static_cast<DB0>(chunk[1uz])) {
-                  case DB0::LAN_X_SET_LOCO_NAME: goto lan_x_set_loco_name;
                   case DB0::LAN_X_CV_POM:
                     switch (chunk[4uz] & 0xFCu) {
                       case 0xECu:
@@ -1933,6 +1983,7 @@ private:
                         break;
                     }
                     break;
+                  case DB0::LAN_X_SET_LOCO_ENTRY: goto lan_x_set_loco_entry;
                   default:
                     logf('C',
                          sock,
@@ -1945,27 +1996,30 @@ private:
                 }
                 break;
 
-              lan_x_set_loco_name:
-              case XHeader::LAN_X_E7: [[fallthrough]];
-              case XHeader::LAN_X_E8: [[fallthrough]];
-              case XHeader::LAN_X_E9: [[fallthrough]];
-              case XHeader::LAN_X_EA: [[fallthrough]];
-              case XHeader::LAN_X_EB: [[fallthrough]];
-              case XHeader::LAN_X_EC: [[fallthrough]];
-              case XHeader::LAN_X_ED: [[fallthrough]];
-              case XHeader::LAN_X_EE: [[fallthrough]];
-              case XHeader::LAN_X_EF:
-                if (auto const strlen{chunk[0uz] -
-                                      std::to_underlying(XHeader::LAN_X_E6) +
-                                      sizeof(char)};
+              lan_x_set_loco_entry:
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_2: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_3: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_4: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_5: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_6: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_7: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_8: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_9: [[fallthrough]];
+              case XHeader::LAN_X_SET_LOCO_ENTRY_LEN_10:
+                if (auto const strlen{
+                      chunk[0uz] -
+                      std::to_underlying(XHeader::LAN_X_SET_LOCO_ENTRY_LEN_1) +
+                      sizeof(char)};
                     size(chunk) == 7uz + strlen) {
-                  logf('C', sock, "LAN_X_SET_LOCO_NAME", chunk);
+                  logf('C', sock, "LAN_X_SET_LOCO_ENTRY", chunk);
                   if constexpr (std::derived_from<Base, intf::Driving>)
-                    lanXSetLocoName(
+                    lanXSetLocoEntry(
                       sock,
                       big_endian_data2loco_address(data(chunk) + 2),
-                      chunk[4uz],
-                      {reinterpret_cast<char const*>(data(chunk) + 6), strlen});
+                      {.index = chunk[4uz],
+                       .size = chunk[5uz],
+                       .name = {reinterpret_cast<char const*>(data(chunk) + 6),
+                                strlen}});
                 }
                 break;
 

@@ -36,11 +36,9 @@ inline QDataStream& operator>>(QDataStream& stream,
   uint8_t dddddddd;
   stream >> dddddddd;
   accessory_info.dddddddd = dddddddd;
-
   z21::AccessoryInfo::Status status;
   stream >> status;
   accessory_info.status = status;
-
   return stream;
 }
 

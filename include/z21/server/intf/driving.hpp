@@ -11,6 +11,7 @@
 #pragma once
 
 #include <string_view>
+#include "../../loco_entry.hpp"
 #include "../../loco_info.hpp"
 
 namespace z21::server::intf {
@@ -21,7 +22,7 @@ namespace z21::server::intf {
 /// - LAN_X_SET_LOCO_E_STOP
 /// - LAN_X_PURGE_LOCO
 /// - LAN_X_GET_LOCO_INFO
-/// - LAN_X_SET_LOCO_NAME
+/// - LAN_X_SET_LOCO_ENTRY
 /// - LAN_X_SET_LOCO_DRIVE
 /// - LAN_X_SET_LOCO_FUNCTION
 /// - LAN_X_SET_LOCO_FUNCTION_GROUP
@@ -31,6 +32,7 @@ namespace z21::server::intf {
 ///
 /// Replies:
 /// - LAN_X_LOCO_INFO
+/// - LAN_X_LOCO_ENTRY
 /// - Reply_to_LAN_GET_LOCOMODE
 struct Driving {
   /// Dtor
@@ -48,8 +50,10 @@ struct Driving {
   [[nodiscard]] virtual LocoInfo locoInfo(uint16_t loco_addr) = 0;
 
   /// \todo
-  virtual void
-  locoName(uint16_t loco_addr, uint8_t index, std::string_view name) = 0;
+  [[nodiscard]] virtual LocoEntry locoEntry(uint16_t loco_addr) = 0;
+
+  /// \todo
+  virtual void locoEntry(uint16_t loco_addr, LocoEntry loco_entry) = 0;
 
   /// \todo
   virtual void locoDrive(uint16_t loco_addr,
@@ -70,6 +74,9 @@ struct Driving {
 
   /// \todo
   virtual void broadcastLocoInfo(uint16_t loco_addr) = 0;
+
+  /// \todo
+  virtual void broadcastLocoEntry(uint16_t loco_addr) = 0;
 };
 
 } // namespace z21::server::intf

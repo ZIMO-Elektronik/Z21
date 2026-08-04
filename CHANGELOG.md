@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2
+- Add `LAN_X_LOCO_ENTRY` broadcasts ([#37](https://github.com/ZIMO-Elektronik/Z21/issues/37))
+- Add ᴡʟᴀɴMAUS sync button to Z21sim
+- Rename `LAN_X_SET_LOCO_NAME` to `LAN_X_SET_LOCO_ENTRY`
+
 ## 0.4.1
 - Add `LAN_X_SET_LOCO_NAME` ([#35](https://github.com/ZIMO-Elektronik/Z21/issues/35))
 

@@ -30,6 +30,7 @@ signals:
   void broadcastProgrammingMode();
   void broadcastTrackShortCircuit();
   void broadcastStopped();
+  void broadcastLocos();
   void broadcastSystemStateData();
 
 private:

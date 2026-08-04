@@ -33,7 +33,7 @@ set(Z21_XBUS_ENABLE_CHECKSUM
     OFF
     CACHE
       BOOL
-      "Enable X-Bus checksum (by default disabled due to WLANMAUS bug https://github.com/ZIMO-Elektronik/Z21/issues/22)"
+      "Enable X-Bus checksum (by default disabled due to ᴡʟᴀɴMAUS bug https://github.com/ZIMO-Elektronik/Z21/issues/22)"
 )
 set(Z21_COMMAND_STATION_ID
     0x12u

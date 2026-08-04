@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QTimer>
 #include <chrono>
+#include <thread>
 
 using namespace std::chrono_literals;
 
@@ -69,6 +70,20 @@ Server::Server(QWidget* parent) : QWidget{parent} {
   });
 
   // Connect loco broadcasts
+  connect(_system, &::System::broadcastLocos, [this] {
+    for (auto i{0}; i < _loco_list->count(); ++i) {
+      QListWidgetItem* item{_loco_list->item(i)};
+      if (!item) continue;
+      auto const loco_addr{item->text().toUInt()};
+      auto const loco{static_cast<Loco*>(_loco_list->itemWidget(item))};
+      if (!loco) continue;
+      auto loco_name{static_cast<z21::LocoEntry*>(loco)};
+      loco_name->index = i;
+      loco_name->size = _loco_list->count();
+      broadcastLocoEntry(loco_addr);
+      std::this_thread::sleep_for(100ms); // WTF ROCO?
+    }
+  });
   connect(_loco_list,
           &::LocoList::broadcastLocoInfo,
           [this](uint16_t loco_addr) { broadcastLocoInfo(loco_addr); });
@@ -169,11 +184,14 @@ z21::LocoInfo Server::locoInfo(uint16_t loco_addr) {
   return _loco_list->locoInfo(loco_addr);
 }
 
-// LAN_X_SET_LOCO_NAME
-void Server::locoName(uint16_t loco_addr,
-                      uint8_t index,
-                      std::string_view name) {
-  _loco_list->locoName(loco_addr, index, name);
+// LAN_X_GET_LOCO_ENTRY (not part of the actual protocol)
+z21::LocoEntry Server::locoEntry(uint16_t loco_addr) {
+  return _loco_list->locoEntry(loco_addr);
+}
+
+// LAN_X_SET_LOCO_ENTRY
+void Server::locoEntry(uint16_t loco_addr, z21::LocoEntry loco_entry) {
+  _loco_list->locoEntry(loco_addr, std::move(loco_entry));
 }
 
 // LAN_X_SET_LOCO_FUNCTION | LAN_X_SET_LOCO_FUNCTION_GROUP

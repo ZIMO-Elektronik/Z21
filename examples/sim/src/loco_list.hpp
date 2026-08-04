@@ -14,13 +14,14 @@ public:
   // Driving interface
   void locoEStop(uint16_t loco_addr);
   void locoPurge(uint16_t loco_addr);
-  z21::LocoInfo locoInfo(uint16_t loco_addr);
-  void locoName(uint16_t loco_addr, uint8_t index, std::string_view name);
+  [[nodiscard]] z21::LocoInfo locoInfo(uint16_t loco_addr);
+  [[nodiscard]] z21::LocoEntry locoEntry(uint16_t loco_addr);
+  void locoEntry(uint16_t loco_addr, z21::LocoEntry loco_entry);
   void locoDrive(uint16_t loco_addr,
                  z21::LocoInfo::SpeedSteps speed_steps,
                  uint8_t rvvvvvvv);
   void locoFunction(uint16_t loco_addr, uint32_t mask, uint32_t state);
-  z21::LocoInfo::Mode locoMode(uint16_t loco_addr);
+  [[nodiscard]] z21::LocoInfo::Mode locoMode(uint16_t loco_addr);
   void locoMode(uint16_t loco_addr, z21::LocoInfo::Mode mode);
 
   // Programming interface
