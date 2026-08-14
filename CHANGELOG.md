@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.3
+- Bugfix allow 9 byte packets for `LAN_X_GET_TURNOUT_INFO` ([#40](https://github.com/ZIMO-Elektronik/Z21/pull/40))
+
 ## 0.4.2
 - Add `LAN_X_LOCO_ENTRY` broadcasts ([#37](https://github.com/ZIMO-Elektronik/Z21/issues/37))
 - Add ᴡʟᴀɴMAUS sync button to Z21sim
