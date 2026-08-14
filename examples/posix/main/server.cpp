@@ -7,10 +7,10 @@ void Server::transmit(z21::Socket const& sock,
                       std::span<uint8_t const> datasets) {
   // Transmit UDP datasets using sendto
   if (auto const len{sendto(sock.fd,
-                            std::bit_cast<char*>(data(datasets)),
+                            reinterpret_cast<char const*>(data(datasets)),
                             size(datasets),
                             0,
-                            std::bit_cast<sockaddr*>(&sock.addr),
+                            reinterpret_cast<sockaddr const*>(&sock.addr),
                             sock.len)};
       len < 0) {
     fprintf(stderr, "sendto failed %s", strerror(errno));

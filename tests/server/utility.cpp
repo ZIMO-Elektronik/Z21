@@ -5,8 +5,9 @@ using namespace z21;
 Socket fd_ip2socket(int sock_fd, std::string ip) {
   sockaddr_in dest_addr_ip4;
   inet_pton(AF_INET, ip.c_str(), &(dest_addr_ip4.sin_addr));
-  return {
-    sock_fd, std::bit_cast<sockaddr*>(&dest_addr_ip4), sizeof(dest_addr_ip4)};
+  return {sock_fd,
+          reinterpret_cast<sockaddr*>(&dest_addr_ip4),
+          sizeof(dest_addr_ip4)};
 }
 
 std::vector<uint8_t> make_lan_set_broadcastflags_dataset(BroadcastFlags flags) {

@@ -128,10 +128,10 @@ void Server::transmit(z21::Socket const& sock,
                       std::span<uint8_t const> datasets) {
   // Transmit UDP datasets using sendto
   if (auto const len{sendto(sock.fd,
-                            std::bit_cast<char*>(std::data(datasets)),
+                            reinterpret_cast<char const*>(std::data(datasets)),
                             std::size(datasets),
                             0,
-                            std::bit_cast<sockaddr*>(&sock.addr),
+                            reinterpret_cast<sockaddr const*>(&sock.addr),
                             sock.len)};
       len < 0) {
     printf("sendto failed %s\n", strerror(errno));
@@ -361,14 +361,14 @@ void Server::receive() {
 
   // Receive UDP datasets using recvfrom and execute them
   if (auto const len{recvfrom(_sock,
-                              std::bit_cast<char*>(std::data(rx)),
+                              reinterpret_cast<char*>(std::data(rx)),
                               sizeof(rx) - 1,
                               0,
-                              std::bit_cast<sockaddr*>(&dest_addr_ip4),
+                              reinterpret_cast<sockaddr*>(&dest_addr_ip4),
                               &socklen)};
       len >= 0) {
     ServerBase::receive(
-      {_sock, std::bit_cast<sockaddr*>(&dest_addr_ip4), socklen},
+      {_sock, reinterpret_cast<sockaddr*>(&dest_addr_ip4), socklen},
       {std::data(rx), static_cast<size_t>(len)});
     execute();
   }

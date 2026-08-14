@@ -81,7 +81,7 @@ int get_socket([[maybe_unused]] bool blocking) {
   dest_addr_ip4.sin_family = AF_INET;
   dest_addr_ip4.sin_port = htons(z21::port);
   if (auto const err{bind(sock,
-                          std::bit_cast<sockaddr*>(&dest_addr_ip4),
+                          reinterpret_cast<sockaddr*>(&dest_addr_ip4),
                           sizeof(dest_addr_ip4))}) {
     printf("bind failed %s\n", strerror(errno));
     return -1;

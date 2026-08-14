@@ -140,17 +140,18 @@ void server_task(int sock) {
   // Receive UDP datasets using recvfrom and execute them in an endless loop
   for (Server server;;) {
     if (auto const len{recvfrom(sock,
-                                std::bit_cast<char*>(data(rx)),
+                                reinterpret_cast<char*>(data(rx)),
                                 sizeof(rx) - 1,
                                 0,
-                                std::bit_cast<sockaddr*>(&dest_addr_ip4),
+                                reinterpret_cast<sockaddr*>(&dest_addr_ip4),
                                 &socklen)};
         len < 0) {
       printf("recvfrom failed %s\n", strerror(errno));
       std::exit(-1);
     } else if (len > 0) {
-      server.receive({sock, std::bit_cast<sockaddr*>(&dest_addr_ip4), socklen},
-                     {data(rx), static_cast<size_t>(len)});
+      server.receive(
+        {sock, reinterpret_cast<sockaddr*>(&dest_addr_ip4), socklen},
+        {data(rx), static_cast<size_t>(len)});
       server.execute();
     }
 
@@ -166,13 +167,13 @@ void Server::transmit(z21::Socket const& sock,
                       std::span<uint8_t const> datasets) {
   // Transmit UDP datasets using sendto
   if (auto const len{sendto(sock.fd,
-                            std::bit_cast<char*>(data(datasets)),
+                            reinterpret_cast<char const*>(data(datasets)),
                             size(datasets),
                             0,
-                            std::bit_cast<sockaddr*>(&sock.addr),
+                            reinterpret_cast<sockaddr const*>(&sock.addr),
                             sock.len)};
       len < 0) {
-    fprintf(stderr, "sendto failed %s", strerror(errno));
+    printf("sendto failed %s\n", strerror(errno));
     std::exit(-1);
   }
 }

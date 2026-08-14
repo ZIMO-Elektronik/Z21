@@ -1724,7 +1724,8 @@ private:
                 break;
 
               case XHeader::LAN_X_GET_TURNOUT_INFO:
-                if (size(chunk) == 0x08uz - 4uz || size(chunk) == 0x09uz - 4uz) {
+                if (size(chunk) == 0x08uz - 4uz ||
+                    size(chunk) == 0x09uz - 4uz) {
                   logf('C', sock, "LAN_X_GET_TURNOUT_INFO", chunk);
                   if constexpr (std::derived_from<Base, intf::Switching>)
                     lanXGetTurnoutInfo(
@@ -2309,7 +2310,7 @@ private:
     std::array<char, 256uz> buffer{c, ' '};
 
     // IP
-    sockaddr_in* sin{std::bit_cast<sockaddr_in*>(&sock.addr)};
+    sockaddr_in const* sin{reinterpret_cast<sockaddr_in const*>(&sock.addr)};
     inet_ntop(sock.addr.ss_family,
               &sin->sin_addr.s_addr,
               data(buffer) + len_post_prefix,
