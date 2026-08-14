@@ -1724,7 +1724,7 @@ private:
                 break;
 
               case XHeader::LAN_X_GET_TURNOUT_INFO:
-                if (size(chunk) == 0x08uz - 4uz) {
+                if (size(chunk) == 0x08uz - 4uz || size(chunk) == 0x09uz - 4uz) {
                   logf('C', sock, "LAN_X_GET_TURNOUT_INFO", chunk);
                   if constexpr (std::derived_from<Base, intf::Switching>)
                     lanXGetTurnoutInfo(
